@@ -6,6 +6,7 @@ from src.domain.exceptions import BondDomainError
 @dataclass
 class Bond:
     """ Represents the bond
+
     Args:
         id (int): Bond identifier.
         nominal_value (float): Nominal value of a single bond unit.

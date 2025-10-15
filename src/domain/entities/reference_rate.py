@@ -5,6 +5,7 @@ from datetime import datetime
 @dataclass
 class ReferenceRate:
     """ Represents the reference rate
+
     Args:
         id (int): Reference rate identifier.
         value (float): Reference rate value.

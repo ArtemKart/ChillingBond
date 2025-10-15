@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class User:
     """ Represents the user
+
     Args:
         id (int): User identifier.
         email (str): User email.
