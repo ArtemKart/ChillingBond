@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from src.domain.exceptions import BondDomainError
-
 
 @dataclass
 class Bond:
@@ -27,9 +25,3 @@ class Bond:
     initial_interest_rate: float
     first_interest_period: int
     reference_rate_margin: float
-
-
-    def _check_initial_period_duration(self) -> None:
-        if self.first_interest_period > self.maturity_period:
-            error_msg = "First Interest period cannot be larger that bond maturity period"
-            raise BondDomainError(error_msg)

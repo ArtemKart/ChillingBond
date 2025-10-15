@@ -13,6 +13,7 @@ class ReferenceRate:
         end_date (datetime): Date until which the reference rate is valid.
             Can be None if it is still in effect.
     """
+
     id: int
     value: float
     start_date: datetime
