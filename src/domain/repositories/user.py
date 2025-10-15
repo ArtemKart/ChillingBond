@@ -25,15 +25,6 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> list[User]:
-        """Retrieves all users.
-
-        Returns:
-            A list of User objects. Empty list if no users exist.
-        """
-        pass
-
-    @abstractmethod
     async def write(self, user: User) -> User:
         """Creates a new user in the repository.
 
