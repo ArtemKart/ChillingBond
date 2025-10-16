@@ -7,9 +7,13 @@ from src import ROOTDIR
 
 
 class Config(BaseSettings):
+    DB_APP_USER: str
+    DB_APP_PASSWORD: str
+
+    DB_MIGRATION_USER: str
+    DB_MIGRATION_PASSWORD: str
+
     DRIVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
     POSTGRES_HOST: str
     POSTGRES_PORT: str
     POSTGRES_DB: str
@@ -21,16 +25,26 @@ class Config(BaseSettings):
     )
 
     @property
-    def database_url(self) -> URL:
+    def database_app_url(self) -> URL:
         return URL.create(
             drivername=self.DRIVER,
-            username=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
+            username=self.DB_APP_USER,
+            password=self.DB_APP_PASSWORD,
             host=self.POSTGRES_HOST,
             port=int(self.POSTGRES_PORT),
             database=self.POSTGRES_DB,
         )
 
+    @property
+    def database_migration_url(self) -> URL:
+        return URL.create(
+            drivername=self.DRIVER,
+            username=self.DB_MIGRATION_USER,
+            password=self.DB_MIGRATION_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=int(self.POSTGRES_PORT),
+            database=self.POSTGRES_DB,
+        )
 
 @lru_cache
 def get_config() -> Config:
