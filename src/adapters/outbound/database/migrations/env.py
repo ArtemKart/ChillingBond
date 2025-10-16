@@ -21,7 +21,7 @@ local_config = get_config()
 config.set_section_option(
     "alembic",
     "sqlalchemy.url",
-    local_config.database_migration_url.render_as_string(hide_password=False),
+    local_config.database_migration_url,
 )
 
 

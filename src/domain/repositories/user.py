@@ -25,6 +25,18 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_by_email(self, email: str) -> User | None:
+        """Retrieves a user by its email.
+
+        Args:
+            email: User email address.
+
+        Returns:
+            A User object if found, None otherwise.
+        """
+        pass
+
+    @abstractmethod
     async def write(self, user: User) -> User:
         """Creates a new user in the repository.
 

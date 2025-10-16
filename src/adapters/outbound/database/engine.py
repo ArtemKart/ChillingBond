@@ -9,7 +9,7 @@ from src.adapters.config import get_config
 
 def get_engine() -> AsyncEngine | Engine:
     config = get_config()
-    return create_async_engine(config.database_app_url, echo=True, future=True)
+    return create_async_engine(config.database_app_url, echo=False, future=True)
 
 
 _engine = get_engine()

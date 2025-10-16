@@ -24,11 +24,11 @@ class BondRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> list[Bond]:
+    async def get_all(self, user_id: UUID) -> list[Bond]:
         """Retrieves all bonds.
 
         Returns:
-            A list of Bond objects. Empty list if no bonds exist.
+            A list of Bond objects related to the user. Empty list if no bonds exist.
         """
         pass
 

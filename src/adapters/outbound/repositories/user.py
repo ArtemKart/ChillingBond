@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +19,11 @@ class SQLAlchemyUserRepository(UserRepository):
         if model:
             return await self._to_entity(model)
         return None
+
+    async def get_by_email(self, email: str) -> UserEntity | None:
+        stmt = select(UserModel).where(UserModel.email == email)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def write(self, user: UserEntity) -> UserEntity:
         try:
@@ -49,7 +55,7 @@ class SQLAlchemyUserRepository(UserRepository):
 
     async def delete(self, user_id: UUID) -> None:
         try:
-            model = self._session.get(UserModel, user_id)
+            model = await self._session.get(UserModel, user_id)
             if model:
                 await self._session.delete(model)
                 await self._session.commit()
@@ -63,7 +69,7 @@ class SQLAlchemyUserRepository(UserRepository):
         return UserEntity(
             id=model.id,
             email=model.email,
-            password=model.password,
+            hashed_password=model.password,
             name=model.name,
         )
 
@@ -72,12 +78,12 @@ class SQLAlchemyUserRepository(UserRepository):
         return UserModel(
             id=entity.id,
             email=entity.email,
-            password=entity.password,
+            password=entity.hashed_password,
             name=entity.name,
         )
 
     @staticmethod
     async def _update_model(model: UserModel, entity: UserEntity) -> None:
         model.email = entity.email
-        model.password = entity.password
+        model.password = entity.hashed_password
         model.name = entity.name
