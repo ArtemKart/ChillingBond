@@ -48,7 +48,7 @@ class SQLAlchemyBondRepository(BondRepository):
 
     async def update(self, bond: BondEntity) -> BondEntity:
         try:
-            model = self._session.get(BondEntity, bond.id)
+            model = await self._session.get(BondModel, bond.id)
             await self._update_model(model, bond)
             await self._session.commit()
             await self._session.refresh(model)

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
-from src.adapters.inbound.api.dependencies import get_bond_create_use_case, BondRepoDep
+from src.adapters.inbound.api.dependencies import get_bond_create_use_case, BondRepoDep, get_bond_update_use_case
 from src.adapters.inbound.api.schemas.bond import BondResponse, BondCreate, BondUpdate
 from src.application.dto.bond import BondCreateDTO, BondUpdateDTO
 from src.application.use_cases.bond.bond_create import BondCreateUseCase
@@ -48,7 +48,7 @@ async def update_bond(
     bond_id: UUID,
     user_id: UUID, # TODO: replace with check permissions using get_current_user
     bond_data: BondUpdate,
-    use_case: Annotated[BondUpdateUseCase, Depends(get_bond_create_use_case)],
+    use_case: Annotated[BondUpdateUseCase, Depends(get_bond_update_use_case)],
 ):
     dto = BondUpdateDTO(
         buy_date=bond_data.buy_date,
@@ -59,4 +59,4 @@ async def update_bond(
         first_interest_period=bond_data.first_interest_period,
         reference_rate_margin=bond_data.reference_rate_margin,
     )
-    await use_case.execute(dto=dto, bond_id=bond_id, user_id=user_id)
+    return await use_case.execute(dto=dto, bond_id=bond_id, user_id=user_id)
