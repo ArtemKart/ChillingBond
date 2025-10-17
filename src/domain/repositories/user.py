@@ -25,11 +25,14 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> list[User]:
-        """Retrieves all users.
+    async def get_by_email(self, email: str) -> User | None:
+        """Retrieves a user by its email.
+
+        Args:
+            email: User email address.
 
         Returns:
-            A list of User objects. Empty list if no users exist.
+            A User object if found, None otherwise.
         """
         pass
 

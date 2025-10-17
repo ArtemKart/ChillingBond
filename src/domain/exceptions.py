@@ -2,5 +2,13 @@ class DomainError(Exception):
     pass
 
 
-class BondDomainError(DomainError):
+class NotFoundError(DomainError):
+    pass
+
+
+class ConflictError(DomainError):
+    pass
+
+
+class ValidationError(DomainError):
     pass
