@@ -11,7 +11,7 @@ class BondUpdateUseCase(BondBaseUseCase):
     def __init__(self, bond_repo: BondRepository) -> None:
         self.bond_repo = bond_repo
 
-    async def execute(self, dto: BondUpdateDTO, bond_id: UUID, user_id: UUID) -> BondDTO:  # type: ignore[return]
+    async def execute(self, dto: BondUpdateDTO, bond_id: UUID, user_id: UUID) -> BondDTO:
         bond = await self.bond_repo.get_one(bond_id)
         if not bond:
             raise NotFoundError("Bond not found")
