@@ -1,5 +1,5 @@
 import bcrypt
-from src.domain.services.password_hasher import PasswordHasher
+from src.domain.ports.services.password_hasher import PasswordHasher
 
 
 class BcryptPasswordHasher(PasswordHasher):

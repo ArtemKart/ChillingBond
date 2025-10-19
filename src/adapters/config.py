@@ -18,6 +18,9 @@ class Config(BaseSettings):
     POSTGRES_PORT: str
     POSTGRES_DB: str
 
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+
     model_config = SettingsConfigDict(
         env_file=ROOTDIR / ".env",
         env_file_encoding="utf-8",

@@ -2,12 +2,13 @@ from dataclasses import dataclass
 from typing import Self
 from uuid import UUID, uuid4
 
-from src.domain.services.password_hasher import PasswordHasher
+from src.domain.ports.services.password_hasher import PasswordHasher
+from src.domain.services.password_policy import PasswordPolicy
 
 
 @dataclass
 class User:
-    """ Represents the user
+    """Represents the user
 
     Args:
         id (UUID): User identifier.
@@ -29,12 +30,11 @@ class User:
         hasher: PasswordHasher,
         name: str | None = None,
     ) -> Self:
-        if len(plain_password) < 8:
-            raise ValueError("Password too short")
+        PasswordPolicy.validate(plain_password)
         hashed = await hasher.hash(plain_password)
         return cls(id=uuid4(), email=email, hashed_password=hashed, name=name)
 
-    async def change_password(self, new_password: str, hasher: PasswordHasher):
-        if len(new_password) < 8:
-            raise ValueError("Password too short")
-        self.hashed_password = await hasher.hash(new_password)
+    async def verify_password(
+        self, hasher: PasswordHasher, plain_password: str
+    ) -> bool:
+        return await hasher.verify(plain_password, self.hashed_password)

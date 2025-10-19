@@ -4,7 +4,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
-from src.adapters.inbound.api.dependencies import get_bond_create_use_case, BondRepoDep, get_bond_update_use_case
+from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    get_bond_create_use_case,
+    get_bond_update_use_case,
+)
+from src.adapters.inbound.api.dependencies.current_user_deps import get_current_user
+from src.adapters.inbound.api.dependencies.repo_deps import BondRepoDep
 from src.adapters.inbound.api.schemas.bond import BondResponse, BondCreate, BondUpdate
 from src.application.dto.bond import BondCreateDTO, BondUpdateDTO
 from src.application.use_cases.bond.bond_create import BondCreateUseCase
@@ -12,10 +17,12 @@ from src.application.use_cases.bond.bond_update import BondUpdateUseCase
 
 bond_router = APIRouter(prefix="/bonds", tags=["bond"])
 
+
 @bond_router.post("", response_model=BondResponse)
 async def create_bond(
     bond_data: BondCreate,
     use_case: Annotated[BondCreateUseCase, Depends(get_bond_create_use_case)],
+    user_id: Annotated[UUID, Depends(get_current_user)],
 ):
     dto = BondCreateDTO(
         buy_date=bond_data.buy_date,
@@ -25,28 +32,39 @@ async def create_bond(
         initial_interest_rate=bond_data.initial_interest_rate,
         first_interest_period=bond_data.first_interest_period,
         reference_rate_margin=bond_data.reference_rate_margin,
-        user_id=bond_data.user_id,
+        user_id=user_id,
     )
     return await use_case.execute(dto=dto)
 
 
 @bond_router.get("/{bond_id}", response_model=BondResponse)
-async def get_bond(bond_id: UUID, repo: BondRepoDep):
+async def get_bond(
+    user_id: Annotated[UUID, Depends(get_current_user)],
+    bond_id: UUID,
+    repo: BondRepoDep,
+):
     bond = await repo.get_one(bond_id)
     if not bond:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bond not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Bond not found"
+        )
+    if not bond.user_id == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+        )
     return bond
 
 
-@bond_router.get("/all/{user_id}", response_model=list[BondResponse])
-async def get_bonds(user_id: UUID, repo: BondRepoDep):
+@bond_router.get("", response_model=list[BondResponse])
+async def get_bonds(
+    user_id: Annotated[UUID, Depends(get_current_user)], repo: BondRepoDep
+):
     return await repo.get_all(user_id=user_id)
 
-
-@bond_router.put("/{bond_id}/user/{user_id}", response_model=BondResponse)
+@bond_router.put("/{bond_id}", response_model=BondResponse)
 async def update_bond(
     bond_id: UUID,
-    user_id: UUID, # TODO: replace with check permissions using get_current_user
+    user_id: Annotated[UUID, Depends(get_current_user)],
     bond_data: BondUpdate,
     use_case: Annotated[BondUpdateUseCase, Depends(get_bond_update_use_case)],
 ):
