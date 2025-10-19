@@ -1,9 +1,9 @@
 from src.application.dto.user import UserCreateDTO, UserDTO
 from src.application.use_cases.user.user_base import UserBaseUseCase
 from src.domain.exceptions import ValidationError
-from src.domain.repositories.user import UserRepository
+from src.domain.ports.repositories.user import UserRepository
 from src.domain.entities.user import User as UserEntity
-from src.domain.services.password_hasher import PasswordHasher
+from src.domain.ports.services.password_hasher import PasswordHasher
 
 
 class UserCreateUseCase(UserBaseUseCase):

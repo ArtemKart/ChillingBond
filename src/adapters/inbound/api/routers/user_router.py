@@ -4,7 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
-from src.adapters.inbound.api.dependencies import get_user_create_use_case, UserRepoDep
+from src.adapters.inbound.api.dependencies.repo_deps import UserRepoDep
+from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+    get_user_create_use_case,
+)
 from src.adapters.inbound.api.schemas.user import UserCreate, UserResponse
 from src.application.dto.user import UserCreateDTO
 from src.application.use_cases.user.user_create import UserCreateUseCase
@@ -25,14 +28,18 @@ async def create_user(
     return await use_case.execute(user_dto=dto)
 
 
-@user_router.get("/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK)
+@user_router.get(
+    "/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK
+)
 async def get_user(
     user_id: UUID,
     repo: UserRepoDep,
 ):
     user = await repo.get_one(user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     return user
 
 
@@ -40,5 +47,7 @@ async def get_user(
 async def delete_user(user_id: UUID, repo: UserRepoDep):
     user = await repo.get_one(user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     await repo.delete(user_id)

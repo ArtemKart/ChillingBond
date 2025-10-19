@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.adapters.exceptions import SQLAlchemyRepositoryError
 from src.domain.entities.user import User as UserEntity
-from src.domain.repositories.user import UserRepository
+from src.domain.ports.repositories.user import UserRepository
 from src.adapters.outbound.database.models import User as UserModel
 
 
@@ -23,7 +23,7 @@ class SQLAlchemyUserRepository(UserRepository):
     async def get_by_email(self, email: str) -> UserEntity | None:
         stmt = select(UserModel).where(UserModel.email == email)
         result = await self._session.execute(stmt)
-        return result.scalar_one_or_none()
+        return await self._to_entity(result.scalar_one_or_none())
 
     async def write(self, user: UserEntity) -> UserEntity:
         try:

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.adapters.exceptions import SQLAlchemyRepositoryError
 from src.domain.entities.bond import Bond as BondEntity
 from src.adapters.outbound.database.models import Bond as BondModel
-from src.domain.repositories.bond import BondRepository
+from src.domain.ports.repositories.bond import BondRepository
 
 
 class SQLAlchemyBondRepository(BondRepository):
@@ -96,7 +96,7 @@ class SQLAlchemyBondRepository(BondRepository):
             first_interest_period=entity.first_interest_period,
             reference_rate_margin=entity.reference_rate_margin,
             last_update=entity.last_update,
-            user_id=entity.user_id
+            user_id=entity.user_id,
         )
 
     @staticmethod

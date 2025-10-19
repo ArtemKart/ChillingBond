@@ -5,7 +5,7 @@ from uuid import UUID
 
 @dataclass
 class ReferenceRate:
-    """ Represents the reference rate
+    """Represents the reference rate
 
     Args:
         id (UUID): Reference rate identifier.

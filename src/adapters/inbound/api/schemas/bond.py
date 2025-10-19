@@ -15,8 +15,7 @@ class BondBase(BaseModel):
 
 
 class BondCreate(BondBase):
-    user_id: UUID
-
+    pass
 
 class BondResponse(BondBase):
     id: UUID

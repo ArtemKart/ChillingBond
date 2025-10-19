@@ -4,8 +4,8 @@ from src.application.dto.bond import BondCreateDTO, BondDTO
 from src.application.use_cases.bond.bond_base import BondBaseUseCase
 from src.domain.entities.bond import Bond as BondEntity
 from src.domain.exceptions import NotFoundError
-from src.domain.repositories.bond import BondRepository
-from src.domain.repositories.user import UserRepository
+from src.domain.ports.repositories.bond import BondRepository
+from src.domain.ports.repositories.user import UserRepository
 
 
 class BondCreateUseCase(BondBaseUseCase):
@@ -26,7 +26,7 @@ class BondCreateUseCase(BondBaseUseCase):
             initial_interest_rate=dto.initial_interest_rate,
             first_interest_period=dto.first_interest_period,
             reference_rate_margin=dto.reference_rate_margin,
-            user_id=dto.user_id
+            user_id=dto.user_id,
         )
         bond = await self.bond_repo.write(bond_entity)
         return await self.to_dto(bond)

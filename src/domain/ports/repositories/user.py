@@ -11,6 +11,7 @@ class UserRepository(ABC):
     Concrete implementations must provide persistence for User entities
     in various data stores.
     """
+
     @abstractmethod
     async def get_one(self, user_id: UUID) -> User | None:
         """Retrieves a user by its identifier.

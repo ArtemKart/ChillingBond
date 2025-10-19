@@ -5,7 +5,7 @@ from uuid import UUID
 
 @dataclass
 class Bond:
-    """ Represents the bond
+    """Represents the bond
 
     Args:
         id (UUID): Bond identifier.

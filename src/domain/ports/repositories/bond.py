@@ -11,6 +11,7 @@ class BondRepository(ABC):
     Concrete implementations must provide persistence for Bond entities
     in various data stores.
     """
+
     @abstractmethod
     async def get_one(self, bond_id: UUID) -> Bond | None:
         """Retrieves a bond by its identifier.

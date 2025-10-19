@@ -17,14 +17,18 @@ class User(MappedAsDataclass, Base):
 class Bond(MappedAsDataclass, Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
-    buy_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    buy_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     nominal_value: Mapped[float]
     series: Mapped[str]
     maturity_period: Mapped[int]
     initial_interest_rate: Mapped[float]
     first_interest_period: Mapped[int]
     reference_rate_margin: Mapped[float]
-    last_update: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    last_update: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now()
+    )
 
 
 class ReferenceRate(MappedAsDataclass, Base):
