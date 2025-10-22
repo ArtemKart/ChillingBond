@@ -12,3 +12,7 @@ class ConflictError(DomainError):
 
 class ValidationError(DomainError):
     pass
+
+
+class InvalidTokenError(DomainError):
+    pass

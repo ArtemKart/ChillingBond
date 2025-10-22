@@ -20,15 +20,14 @@ class SQLAlchemyBondRepository(BondRepository):
             return await self._to_entity(model)
         return None
 
-    async def get_all(self, user_id: UUID) -> list[BondEntity]:
-        try:
-            stmt = select(BondModel).where(BondModel.user_id == user_id)
-            result = await self._session.execute(stmt)
-            models = result.scalars().all()
-            return [await self._to_entity(model) for model in models]
-        except SQLAlchemyError as e:
-            error_msg = "Failed to fetch bonds"
-            raise SQLAlchemyRepositoryError(error_msg) from e
+    async def get_by_series(self, series: str) -> BondEntity | None:
+        res = await self._session.execute(
+            select(BondModel).where(BondModel.series == series)
+        )
+        model = res.scalar_one_or_none()
+        if not model:
+            return None
+        return await self._to_entity(model)
 
     async def write(self, bond: BondEntity) -> BondEntity:
         try:
@@ -42,7 +41,7 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
         except SQLAlchemyError as e:
-            error_msg = "Failed to save bond"
+            error_msg = "Failed to save bond_holder"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
@@ -54,7 +53,7 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.refresh(model)
             return await self._to_entity(model)
         except SQLAlchemyError as e:
-            error_msg = "Failed to update bond"
+            error_msg = "Failed to update bond_holder"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
@@ -65,7 +64,7 @@ class SQLAlchemyBondRepository(BondRepository):
                 await self._session.delete(model)
                 await self._session.commit()
         except SQLAlchemyError as e:
-            error_msg = "Failed to delete bond"
+            error_msg = "Failed to delete bond_holder"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
@@ -73,39 +72,31 @@ class SQLAlchemyBondRepository(BondRepository):
     async def _to_entity(model: BondModel) -> BondEntity:
         return BondEntity(
             id=model.id,
-            buy_date=model.buy_date,
             nominal_value=model.nominal_value,
             series=model.series,
             maturity_period=model.maturity_period,
             initial_interest_rate=model.initial_interest_rate,
             first_interest_period=model.first_interest_period,
             reference_rate_margin=model.reference_rate_margin,
-            last_update=model.last_update,
-            user_id=model.user_id,
         )
 
     @staticmethod
     async def _to_model(entity: BondEntity) -> BondModel:
         return BondModel(
             id=entity.id,
-            buy_date=entity.buy_date,
             nominal_value=entity.nominal_value,
             series=entity.series,
             maturity_period=entity.maturity_period,
             initial_interest_rate=entity.initial_interest_rate,
             first_interest_period=entity.first_interest_period,
             reference_rate_margin=entity.reference_rate_margin,
-            last_update=entity.last_update,
-            user_id=entity.user_id,
         )
 
     @staticmethod
     async def _update_model(model: BondModel, entity: BondEntity) -> None:
-        model.buy_date = entity.buy_date
         model.nominal_value = entity.nominal_value
         model.series = entity.series
         model.maturity_period = entity.maturity_period
         model.initial_interest_rate = entity.initial_interest_rate
         model.first_interest_period = entity.first_interest_period
         model.reference_rate_margin = entity.reference_rate_margin
-        model.last_update = entity.last_update

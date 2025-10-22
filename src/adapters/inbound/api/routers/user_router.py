@@ -6,7 +6,7 @@ from starlette import status
 
 from src.adapters.inbound.api.dependencies.repo_deps import UserRepoDep
 from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
-    get_user_create_use_case,
+    user_create_use_case,
 )
 from src.adapters.inbound.api.schemas.user import UserCreate, UserResponse
 from src.application.dto.user import UserCreateDTO
@@ -18,7 +18,7 @@ user_router = APIRouter(prefix="/users", tags=["user"])
 @user_router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
-    use_case: Annotated[UserCreateUseCase, Depends(get_user_create_use_case)],
+    use_case: Annotated[UserCreateUseCase, Depends(user_create_use_case)],
 ):
     dto = UserCreateDTO(
         email=user_data.email,

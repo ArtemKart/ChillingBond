@@ -23,7 +23,10 @@ class SQLAlchemyUserRepository(UserRepository):
     async def get_by_email(self, email: str) -> UserEntity | None:
         stmt = select(UserModel).where(UserModel.email == email)
         result = await self._session.execute(stmt)
-        return await self._to_entity(result.scalar_one_or_none())
+        user = result.scalar_one_or_none()
+        if not user:
+            return None
+        return await self._to_entity(user)
 
     async def write(self, user: UserEntity) -> UserEntity:
         try:

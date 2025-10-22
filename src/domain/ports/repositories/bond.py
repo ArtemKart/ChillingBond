@@ -5,7 +5,7 @@ from src.domain.entities.bond import Bond
 
 
 class BondRepository(ABC):
-    """Abstract repository for managing bond entities.
+    """Abstract repository for managing bond_holder entities.
 
     This interface defines the contract for implementing the Repository pattern.
     Concrete implementations must provide persistence for Bond entities
@@ -14,10 +14,10 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def get_one(self, bond_id: UUID) -> Bond | None:
-        """Retrieves a bond by its identifier.
+        """Retrieves a bond_holder by its identifier.
 
         Args:
-            bond_id: The unique identifier of the bond.
+            bond_id: The unique identifier of the bond_holder.
 
         Returns:
             A Bond object if found, None otherwise.
@@ -25,17 +25,19 @@ class BondRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self, user_id: UUID) -> list[Bond]:
-        """Retrieves all bonds.
+    async def get_by_series(self, series: str) -> Bond | None:
+        """Retrieves a bond_holder by series.
+        Args:
+            series: The unique series identifier.
 
         Returns:
-            A list of Bond objects related to the user. Empty list if no bonds exist.
+            A Bond object if found, None otherwise
         """
         pass
 
     @abstractmethod
     async def write(self, bond: Bond) -> Bond:
-        """Creates a new bond in the repository.
+        """Creates a new bond_holder in the repository.
 
         Args:
             bond: The Bond object to persist.
@@ -47,7 +49,7 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def update(self, bond: Bond) -> Bond:
-        """Updates an existing bond in the repository.
+        """Updates an existing bond_holder in the repository.
 
         Args:
             bond: The Bond object with updated data.
@@ -59,9 +61,9 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def delete(self, bond_id: UUID) -> None:
-        """Deletes a bond from the repository.
+        """Deletes a bond_holder from the repository.
 
         Args:
-            bond_id: The unique identifier of the bond to delete.
+            bond_id: The unique identifier of the bond_holder to delete.
         """
         pass

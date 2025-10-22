@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID
 
 from sqlalchemy import String, DateTime, func, ForeignKey
@@ -16,16 +16,20 @@ class User(MappedAsDataclass, Base):
 
 class Bond(MappedAsDataclass, Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
-    buy_date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
     nominal_value: Mapped[float]
-    series: Mapped[str]
+    series: Mapped[str] = mapped_column(unique=True, index=True)
     maturity_period: Mapped[int]
     initial_interest_rate: Mapped[float]
     first_interest_period: Mapped[int]
     reference_rate_margin: Mapped[float]
+
+
+class BondHolder(MappedAsDataclass, Base):
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
+    bond_id: Mapped[UUID] = mapped_column(ForeignKey("bond.id"))
+    quantity: Mapped[int]
+    purchase_date: Mapped[date]
     last_update: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), onupdate=func.now()
     )
