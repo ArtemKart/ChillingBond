@@ -1,0 +1,17 @@
+FROM python:3.13-slim
+ARG PROJECT_DIR=/home/app
+
+WORKDIR $PROJECT_DIR
+
+COPY ../pyproject.toml README.md alembic.ini uv.lock $PROJECT_DIR/
+COPY ../src $PROJECT_DIR/src
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN uv sync --frozen
+
+CMD ["uv", "run", "gunicorn", "src.adapters.inbound.api.main:app", \
+     "--workers", "4", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--bind", "0.0.0.0:8000", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]
