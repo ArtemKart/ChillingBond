@@ -9,8 +9,7 @@ from src.domain.exceptions import NotFoundError
 
 @pytest.fixture
 async def use_case(
-    mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock
+    mock_bondholder_repo: AsyncMock, mock_bond_repo: AsyncMock
 ) -> BondHolderGetAllUseCase:
     return BondHolderGetAllUseCase(mock_bondholder_repo, mock_bond_repo)
 
@@ -18,7 +17,7 @@ async def use_case(
 async def test_success_with_multiple_bondholders(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock
+    mock_bond_repo: AsyncMock,
 ) -> None:
     user_id = uuid4()
     bond_ids = [uuid4(), uuid4(), uuid4()]
@@ -55,7 +54,7 @@ async def test_success_with_multiple_bondholders(
 async def test_success_with_empty_list(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock
+    mock_bond_repo: AsyncMock,
 ) -> None:
     user_id = uuid4()
 
@@ -71,7 +70,7 @@ async def test_success_with_empty_list(
 async def test_success_with_single_bondholder(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock
+    mock_bond_repo: AsyncMock,
 ) -> None:
     user_id = uuid4()
     bond_id = uuid4()
@@ -90,16 +89,13 @@ async def test_success_with_single_bondholder(
     assert len(result) == 1
     mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
     mock_bond_repo.get_one.assert_called_once_with(bond_id=bond_id)
-    use_case.to_dto.assert_called_once_with(
-        bondholder=mock_bondholder,
-        bond=mock_bond
-    )
+    use_case.to_dto.assert_called_once_with(bondholder=mock_bondholder, bond=mock_bond)
 
 
 async def test_bond_not_found_first_item(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock
+    mock_bond_repo: AsyncMock,
 ) -> None:
     user_id = uuid4()
     bond_id = uuid4()
@@ -119,7 +115,7 @@ async def test_bond_not_found_first_item(
 async def test_bond_not_found_middle_item(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock
+    mock_bond_repo: AsyncMock,
 ) -> None:
     user_id = uuid4()
     bond_ids = [uuid4(), uuid4(), uuid4()]
@@ -145,7 +141,7 @@ async def test_bond_not_found_middle_item(
 async def test_preserves_order(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock
+    mock_bond_repo: AsyncMock,
 ) -> None:
     user_id = uuid4()
     bond_ids = [uuid4(), uuid4(), uuid4()]

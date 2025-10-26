@@ -28,6 +28,7 @@ async def mock_user_repo() -> AsyncMock:
 def mock_hasher() -> AsyncMock:
     return AsyncMock(spec=PasswordHasher)
 
+
 @pytest.fixture
 def mock_token_handler() -> AsyncMock:
     return AsyncMock(spec=TokenHandler)

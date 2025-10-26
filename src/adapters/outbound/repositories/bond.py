@@ -17,7 +17,7 @@ class SQLAlchemyBondRepository(BondRepository):
     async def get_one(self, bond_id: UUID) -> BondEntity | None:
         model = await self._session.get(BondModel, bond_id)
         if model:
-            return await self._to_entity(model)
+            return self._to_entity(model)
         return None
 
     async def get_by_series(self, series: str) -> BondEntity | None:
@@ -27,15 +27,15 @@ class SQLAlchemyBondRepository(BondRepository):
         model = res.scalar_one_or_none()
         if not model:
             return None
-        return await self._to_entity(model)
+        return self._to_entity(model)
 
     async def write(self, bond: BondEntity) -> BondEntity:
         try:
-            model = await self._to_model(bond)
+            model = self._to_model(bond)
             self._session.add(model)
             await self._session.commit()
             await self._session.refresh(model)
-            return await self._to_entity(model)
+            return self._to_entity(model)
         except IntegrityError as e:
             error_msg = "Bond already exists or constraint violated"
             await self._session.rollback()
@@ -51,7 +51,7 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._update_model(model, bond)
             await self._session.commit()
             await self._session.refresh(model)
-            return await self._to_entity(model)
+            return self._to_entity(model)
         except SQLAlchemyError as e:
             error_msg = "Failed to update bondholder"
             await self._session.rollback()
@@ -59,7 +59,7 @@ class SQLAlchemyBondRepository(BondRepository):
 
     async def delete(self, bond_id: UUID) -> None:
         try:
-            model = self._session.get(BondEntity, bond_id)
+            model = await self._session.get(BondModel, bond_id)
             if model:
                 await self._session.delete(model)
                 await self._session.commit()
@@ -69,7 +69,7 @@ class SQLAlchemyBondRepository(BondRepository):
             raise SQLAlchemyRepositoryError(error_msg) from e
 
     @staticmethod
-    async def _to_entity(model: BondModel) -> BondEntity:
+    def _to_entity(model: BondModel) -> BondEntity:
         return BondEntity(
             id=model.id,
             nominal_value=model.nominal_value,
@@ -81,7 +81,7 @@ class SQLAlchemyBondRepository(BondRepository):
         )
 
     @staticmethod
-    async def _to_model(entity: BondEntity) -> BondModel:
+    def _to_model(entity: BondEntity) -> BondModel:
         return BondModel(
             id=entity.id,
             nominal_value=entity.nominal_value,

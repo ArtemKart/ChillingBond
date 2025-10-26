@@ -17,21 +17,21 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
     async def get_one(self, bondholder_id: UUID) -> BondHolderEntity | None:
         model = await self._session.get(BondHolderModel, bondholder_id)
         if model:
-            return await self._to_entity(model)
+            return self._to_entity(model)
         return None
 
     async def get_all(self, user_id: UUID) -> list[BondHolderEntity]:
         stmt = select(BondHolderModel).where(BondHolderModel.user_id == user_id)
         result = await self._session.execute(stmt)
-        return [await self._to_entity(model) for model in result.scalars().all()]
+        return [self._to_entity(model) for model in result.scalars().all()]
 
     async def write(self, bondholder: BondHolderEntity) -> BondHolderEntity:
         try:
-            model = await self._to_model(bondholder)
+            model = self._to_model(bondholder)
             self._session.add(model)
             await self._session.commit()
             await self._session.refresh(model)
-            return await self._to_entity(model)
+            return self._to_entity(model)
         except IntegrityError as e:
             error_msg = "BondHolder already exists or constraint violated"
             await self._session.rollback()
@@ -44,17 +44,17 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
     async def update(self, bondholder: BondHolderEntity) -> BondHolderEntity:
         try:
             model = await self._session.get(BondHolderModel, bondholder.id)
-            await self._update_model(model, bondholder)
+            self._update_model(model, bondholder)
             await self._session.commit()
             await self._session.refresh(model)
-            return await self._to_entity(model)
+            return self._to_entity(model)
         except SQLAlchemyError as e:
             error_msg = "Failed to update BondHolder object"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
     @staticmethod
-    async def _to_entity(model: BondHolderModel) -> BondHolderEntity:
+    def _to_entity(model: BondHolderModel) -> BondHolderEntity:
         return BondHolderEntity(
             id=model.id,
             bond_id=model.bond_id,
@@ -65,7 +65,7 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         )
 
     @staticmethod
-    async def _to_model(entity: BondHolderEntity) -> BondHolderModel:
+    def _to_model(entity: BondHolderEntity) -> BondHolderModel:
         return BondHolderModel(
             id=entity.id,
             user_id=entity.user_id,
@@ -76,7 +76,7 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         )
 
     @staticmethod
-    async def _update_model(model: BondHolderModel, entity: BondHolderEntity) -> None:
+    def _update_model(model: BondHolderModel, entity: BondHolderEntity) -> None:
         model.user_id = entity.user_id
         model.bond_id = entity.bond_id
         model.quantity = entity.quantity

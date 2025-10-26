@@ -11,9 +11,7 @@ from src.domain.ports.services.password_hasher import PasswordHasher
 
 @pytest.fixture
 def use_case(
-    mock_user_repo: AsyncMock,
-    mock_hasher: AsyncMock,
-    mock_token_handler: AsyncMock
+    mock_user_repo: AsyncMock, mock_hasher: AsyncMock, mock_token_handler: AsyncMock
 ) -> UserLoginUseCase:
     return UserLoginUseCase(mock_user_repo, mock_hasher, mock_token_handler)
 
@@ -49,7 +47,7 @@ async def test_success_returns_token(
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
     sample_user: Mock,
-    sample_token: Mock
+    sample_token: Mock,
 ) -> None:
     mock_user_repo.get_by_email.return_value = sample_user
     sample_user.verify_password.return_value = True
@@ -65,15 +63,11 @@ async def test_success_returns_token(
         hasher=mock_hasher,
         plain_password=sample_form_data.password,
     )
-    mock_token_handler.create_token.assert_called_once_with(
-        subject=str(sample_user.id)
-    )
+    mock_token_handler.create_token.assert_called_once_with(subject=str(sample_user.id))
 
 
 async def test_user_not_found_raises_validation_error(
-    use_case: UserLoginUseCase,
-    mock_user_repo: AsyncMock,
-    sample_form_data: Mock
+    use_case: UserLoginUseCase, mock_user_repo: AsyncMock, sample_form_data: Mock
 ) -> None:
     mock_user_repo.get_by_email.return_value = None
 
@@ -88,7 +82,7 @@ async def test_incorrect_password_raises_validation_error(
     mock_user_repo: AsyncMock,
     mock_hasher: AsyncMock,
     sample_form_data: Mock,
-    sample_user: Mock
+    sample_user: Mock,
 ) -> None:
     mock_user_repo.get_by_email.return_value = sample_user
     sample_user.verify_password.return_value = False
@@ -109,7 +103,7 @@ async def test_with_different_credentials(
     mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_user: Mock,
-    sample_token: Mock
+    sample_token: Mock,
 ) -> None:
     form_data = Mock()
     form_data.username = "another@example.com"
@@ -124,8 +118,7 @@ async def test_with_different_credentials(
     assert result.token == sample_token.token
     mock_user_repo.get_by_email.assert_called_once_with(form_data.username)
     sample_user.verify_password.assert_called_once_with(
-        hasher=mock_hasher,
-        plain_password=form_data.password
+        hasher=mock_hasher, plain_password=form_data.password
     )
 
 
@@ -135,7 +128,7 @@ async def test_converts_user_id_to_string(
     mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
-    sample_token: Mock
+    sample_token: Mock,
 ) -> None:
     user = Mock()
     user.id = 12345
@@ -146,9 +139,7 @@ async def test_converts_user_id_to_string(
 
     await use_case.execute(sample_form_data)
 
-    mock_token_handler.create_token.assert_called_once_with(
-        subject="12345"
-    )
+    mock_token_handler.create_token.assert_called_once_with(subject="12345")
 
 
 async def test_handles_uuid_user_id(
@@ -157,9 +148,10 @@ async def test_handles_uuid_user_id(
     mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
-    sample_token: Mock
+    sample_token: Mock,
 ) -> None:
     from uuid import uuid4
+
     user_id = uuid4()
 
     user = Mock()
@@ -171,9 +163,7 @@ async def test_handles_uuid_user_id(
 
     await use_case.execute(sample_form_data)
 
-    mock_token_handler.create_token.assert_called_once_with(
-        subject=str(user_id)
-    )
+    mock_token_handler.create_token.assert_called_once_with(subject=str(user_id))
 
 
 async def test_does_not_create_token_on_failed_auth(
@@ -182,7 +172,7 @@ async def test_does_not_create_token_on_failed_auth(
     mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
-    sample_user: Mock
+    sample_user: Mock,
 ) -> None:
     mock_user_repo.get_by_email.return_value = sample_user
     sample_user.verify_password.return_value = False
@@ -200,10 +190,12 @@ async def test_pass_hasher_to_verify_password(
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
     sample_user: Mock,
-    sample_token: Mock
+    sample_token: Mock,
 ) -> None:
     custom_hasher = AsyncMock(spec=PasswordHasher)
-    custom_use_case = UserLoginUseCase(mock_user_repo, custom_hasher, mock_token_handler)
+    custom_use_case = UserLoginUseCase(
+        mock_user_repo, custom_hasher, mock_token_handler
+    )
 
     mock_user_repo.get_by_email.return_value = sample_user
     sample_user.verify_password.return_value = True
@@ -212,6 +204,5 @@ async def test_pass_hasher_to_verify_password(
     await custom_use_case.execute(sample_form_data)
 
     sample_user.verify_password.assert_called_once_with(
-        hasher=custom_hasher,
-        plain_password=sample_form_data.password
+        hasher=custom_hasher, plain_password=sample_form_data.password
     )
