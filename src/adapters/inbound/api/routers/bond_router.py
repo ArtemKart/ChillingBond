@@ -6,37 +6,37 @@ from starlette import status
 
 from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
     bond_add_to_bh_use_case,
-    create_bond_holder_use_case,
+    create_bondholder_use_case,
     bond_update_use_case,
     bh_get_use_case,
     bh_get_all_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse
-from src.adapters.inbound.api.schemas.bond_holder import (
+from src.adapters.inbound.api.schemas.bondholder import (
     BondHolderResponse,
     BondHolderChangeRequest,
     BondHolderCreateRequest,
 )
 from src.application.dto.bond import BondCreateDTO, BondUpdateDTO
-from src.application.dto.bond_holder import (
+from src.application.dto.bondholder import (
     BondHolderCreateDTO,
     BondHolderChangeQuantityDTO,
 )
-from src.application.use_cases.bond_holder.bond_holder_add import (
+from src.application.use_cases.bondholder.bondholder_add import (
     BondAddToBondHolderUseCase,
 )
-from src.application.use_cases.bond_holder.bond_holder_create import (
+from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
 )
-from src.application.use_cases.bond_holder.bond_holder_get import (
+from src.application.use_cases.bondholder.bondholder_get import (
     BondHolderGetUseCase,
     BondHolderGetAllUseCase,
 )
-from src.application.use_cases.bond_holder.bond_update import BondUpdateUseCase
+from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
 from src.domain.exceptions import NotFoundError, InvalidTokenError
 
-bond_router = APIRouter(prefix="/bonds", tags=["bond_holder"])
+bond_router = APIRouter(prefix="/bonds", tags=["bondholder"])
 
 
 @bond_router.post(
@@ -46,24 +46,24 @@ bond_router = APIRouter(prefix="/bonds", tags=["bond_holder"])
     description="Buy bonds. Create bond holder",
 )
 async def create_bond_purchase(
-    bond_holder_data: BondHolderCreateRequest,
+    bondholder_data: BondHolderCreateRequest,
     user_id: Annotated[UUID, Depends(current_user)],
-    use_case: Annotated[BondHolderCreateUseCase, Depends(create_bond_holder_use_case)],
+    use_case: Annotated[BondHolderCreateUseCase, Depends(create_bondholder_use_case)],
 ):
-    bond_holder_dto = BondHolderCreateDTO(
+    bondholder_dto = BondHolderCreateDTO(
         user_id=user_id,
-        quantity=bond_holder_data.quantity,
-        purchase_date=bond_holder_data.purchase_date,
+        quantity=bondholder_data.quantity,
+        purchase_date=bondholder_data.purchase_date,
     )
     bond_dto = BondCreateDTO(
-        series=bond_holder_data.series,
-        nominal_value=bond_holder_data.nominal_value,
-        maturity_period=bond_holder_data.maturity_period,
-        initial_interest_rate=bond_holder_data.initial_interest_rate,
-        first_interest_period=bond_holder_data.first_interest_period,
-        reference_rate_margin=bond_holder_data.reference_rate_margin,
+        series=bondholder_data.series,
+        nominal_value=bondholder_data.nominal_value,
+        maturity_period=bondholder_data.maturity_period,
+        initial_interest_rate=bondholder_data.initial_interest_rate,
+        first_interest_period=bondholder_data.first_interest_period,
+        reference_rate_margin=bondholder_data.reference_rate_margin,
     )
-    response_dto = await use_case.execute(bond_holder_dto, bond_dto)
+    response_dto = await use_case.execute(bondholder_dto, bond_dto)
     return BondHolderResponse(
         id=response_dto.id,
         quantity=response_dto.quantity,
@@ -104,7 +104,7 @@ async def get_bond(
     use_case: Annotated[BondHolderGetUseCase, Depends(bh_get_use_case)],
 ):
     try:
-        dto = await use_case.execute(bond_holder_id=purchase_id, user_id=user_id)
+        dto = await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
         return BondHolderResponse(
             id=dto.id,
             quantity=dto.quantity,

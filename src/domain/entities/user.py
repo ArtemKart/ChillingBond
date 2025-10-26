@@ -30,7 +30,7 @@ class User:
         hasher: PasswordHasher,
         name: str | None = None,
     ) -> Self:
-        PasswordPolicy.validate(plain_password)
+        await PasswordPolicy.validate(plain_password)
         hashed = await hasher.hash(plain_password)
         return cls(id=uuid4(), email=email, hashed_password=hashed, name=name)
 

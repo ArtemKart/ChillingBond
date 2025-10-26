@@ -171,6 +171,7 @@ dependencies = [
     { name = "gunicorn" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
+    { name = "pytest-asyncio" },
     { name = "sqlalchemy" },
 ]
 
@@ -191,6 +192,7 @@ requires-dist = [
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "pydantic-settings", specifier = ">=2.11.0" },
     { name = "pyjwt", specifier = ">=2.10.1" },
+    { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "sqlalchemy", specifier = ">=2.0.44" },
 ]
 

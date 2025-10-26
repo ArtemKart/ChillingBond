@@ -13,11 +13,11 @@ class UserAuthUseCase(UserBaseUseCase):
         self.token_handler = token_handler
 
     async def execute(self, token: str) -> UserDTO:
-        user_id_str: str = await self.token_handler.read_token(subject=token)
+        user_id_str = await self.token_handler.read_token(subject=token)
         if user_id_str is None:
             raise InvalidTokenError("Invalid token")
 
-        user_id: UUID = UUID(user_id_str)
+        user_id = UUID(user_id_str)
         user = await self.user_repo.get_one(user_id=user_id)
         if user is None:
             raise NotFoundError("User not found")

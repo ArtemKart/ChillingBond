@@ -5,7 +5,7 @@ class PasswordPolicy:
     MIN_LENGTH = 8
 
     @staticmethod
-    def validate(password: str) -> None:
+    async def validate(password: str) -> None:
         if len(password) < PasswordPolicy.MIN_LENGTH:
             raise ValidationError("Password too short")
         if not any(c.isdigit() for c in password):
