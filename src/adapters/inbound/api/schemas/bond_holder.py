@@ -1,36 +1,24 @@
 from datetime import datetime, date
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from .bond import BondBase
 
 
-class BondHolderResponse(BaseModel):
+class BondHolderResponse(BondBase):
     id: UUID
-    quantity: int
+    quantity: int = Field(..., gt=0, description="Number of bonds")
     purchase_date: date
     last_update: datetime | None = None
     bond_id: UUID
 
-    series: str
-    nominal_value: float
-    maturity_period: int
-    initial_interest_rate: float
-    first_interest_period: int
-    reference_rate_margin: float
-
 
 class BondHolderChangeRequest(BaseModel):
-    quantity: int
+    quantity: int = Field(..., gt=0, description="Quantity to change")
     is_positive: bool
 
 
-class BondHolderCreateRequest(BaseModel):
-    quantity: int
+class BondHolderCreateRequest(BondBase):
+    quantity: int = Field(..., gt=0, description="Number of bonds")
     purchase_date: date
-
-    series: str
-    nominal_value: float
-    maturity_period: int
-    initial_interest_rate: float
-    first_interest_period: int
-    reference_rate_margin: float

@@ -5,7 +5,7 @@ from src.domain.entities.bond_holder import BondHolder
 
 class BondHolderBaseUseCase:
     @staticmethod
-    async def to_dto(bond_holder: BondHolder, bond: Bond) -> BondHolderDTO:
+    def to_dto(bond_holder: BondHolder, bond: Bond) -> BondHolderDTO:
         return BondHolderDTO(
             id=bond_holder.id,
             user_id=bond_holder.user_id,

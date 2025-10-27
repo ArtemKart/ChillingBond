@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from uuid import UUID
+from uuid import UUID, uuid4
+
+from src.domain.exceptions import ValidationError
 
 
 @dataclass
@@ -26,3 +28,42 @@ class Bond:
     initial_interest_rate: float
     first_interest_period: int
     reference_rate_margin: float
+
+    @classmethod
+    def create(
+        cls,
+        series: str,
+        nominal_value: float,
+        maturity_period: int,
+        initial_interest_rate: float,
+        first_interest_period: int,
+        reference_rate_margin: float,
+    ) -> "Bond":
+        bond = Bond(
+            id=uuid4(),
+            series=series,
+            nominal_value=nominal_value,
+            maturity_period=maturity_period,
+            initial_interest_rate=initial_interest_rate,
+            first_interest_period=first_interest_period,
+            reference_rate_margin=reference_rate_margin,
+        )
+        bond.validate()
+        return bond
+
+    def validate(self) -> None:
+        self._validate_nominal_value()
+        self._validate_maturity_period()
+        self._validate_maturity_period()
+
+    def _validate_nominal_value(self) -> None:
+        if self.nominal_value <= 0:
+            raise ValidationError("Bond nominal_value must be greater than 0.")
+
+    def _validate_maturity_period(self) -> None:
+        if self.maturity_period <= 0:
+            raise ValidationError("Bond maturity_period must be greater than 0.")
+
+    def _validate_initial_interest_rate(self) -> None:
+        if self.initial_interest_rate <= 0:
+            raise ValidationError("Bond initial_interest_rate must be greater than 0.")

@@ -17,7 +17,7 @@ class SQLAlchemyUserRepository(UserRepository):
     async def get_one(self, user_id: UUID) -> UserEntity | None:
         model = await self._session.get(UserModel, user_id)
         if model:
-            return await self._to_entity(model)
+            return self._to_entity(model)
         return None
 
     async def get_by_email(self, email: str) -> UserEntity | None:
@@ -26,15 +26,15 @@ class SQLAlchemyUserRepository(UserRepository):
         user = result.scalar_one_or_none()
         if not user:
             return None
-        return await self._to_entity(user)
+        return self._to_entity(user)
 
     async def write(self, user: UserEntity) -> UserEntity:
         try:
-            model = await self._to_model(user)
+            model = self._to_model(user)
             self._session.add(model)
             await self._session.commit()
             await self._session.refresh(model)
-            return await self._to_entity(model)
+            return self._to_entity(model)
         except IntegrityError as e:
             error_msg = "User already exists or constraint violated"
             await self._session.rollback()
@@ -47,10 +47,10 @@ class SQLAlchemyUserRepository(UserRepository):
     async def update(self, user: UserEntity) -> UserEntity:
         try:
             model = self._session.get(UserModel, user.id)
-            await self._update_model(model, user)
+            self._update_model(model, user)
             await self._session.commit()
             await self._session.refresh(model)
-            return await self._to_entity(model)
+            return self._to_entity(model)
         except SQLAlchemyError as e:
             error_msg = "Failed to update user"
             await self._session.rollback()
@@ -68,7 +68,7 @@ class SQLAlchemyUserRepository(UserRepository):
             raise SQLAlchemyRepositoryError(error_msg) from e
 
     @staticmethod
-    async def _to_entity(model: UserModel) -> UserEntity:
+    def _to_entity(model: UserModel) -> UserEntity:
         return UserEntity(
             id=model.id,
             email=model.email,
@@ -77,7 +77,7 @@ class SQLAlchemyUserRepository(UserRepository):
         )
 
     @staticmethod
-    async def _to_model(entity: UserEntity) -> UserModel:
+    def _to_model(entity: UserEntity) -> UserModel:
         return UserModel(
             id=entity.id,
             email=entity.email,
@@ -86,7 +86,7 @@ class SQLAlchemyUserRepository(UserRepository):
         )
 
     @staticmethod
-    async def _update_model(model: UserModel, entity: UserEntity) -> None:
+    def _update_model(model: UserModel, entity: UserEntity) -> None:
         model.email = entity.email
         model.password = entity.hashed_password
         model.name = entity.name

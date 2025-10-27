@@ -5,9 +5,9 @@ from src.domain.entities.token import Token
 
 class TokenHandler(ABC):
     @abstractmethod
-    async def create_token(self, subject: str) -> Token:
+    def create_token(self, subject: str) -> Token:
         pass
 
     @abstractmethod
-    async def read_token(self, subject: str) -> str:
+    def read_token(self, subject: str) -> str:
         pass

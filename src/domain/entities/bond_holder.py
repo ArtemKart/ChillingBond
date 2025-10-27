@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, date
-from uuid import UUID
+from typing import Self
+from uuid import UUID, uuid4
 
 from src.domain.exceptions import ValidationError
 
@@ -31,12 +32,41 @@ class BondHolder:
     purchase_date: date
     last_update: datetime | None = None
 
-    async def add_quantity(self, amount: int) -> None:
+    @classmethod
+    def create(
+        cls,
+        bond_id: UUID,
+        user_id: UUID,
+        quantity: int,
+        purchase_date: date,
+        last_update: datetime | None = None,
+    ) -> Self:
+        pass
+        bh = cls(
+            id=uuid4(),
+            bond_id=bond_id,
+            user_id=user_id,
+            quantity=quantity,
+            purchase_date=purchase_date,
+            last_update=last_update
+        )
+        bh.validate()
+        return bh
+
+
+    def add_quantity(self, amount: int) -> None:
         if amount <= 0:
             raise ValidationError("Amount must be positive")
         self.quantity += amount
 
-    async def reduce_quantity(self, amount: int) -> None:
+    def reduce_quantity(self, amount: int) -> None:
         if amount > self.quantity:
             self.quantity = 0
         self.quantity -= amount
+
+    def validate(self) -> None:
+        self._validate_quantity()
+
+    def _validate_quantity(self) -> None:
+        if self.quantity <= 0:
+            raise ValidationError("Quantity must be positive")

@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 from src.domain.ports.services.password_hasher import PasswordHasher
 from src.domain.services.password_policy import PasswordPolicy
+from src.domain.value_objects.email import Email
 
 
 @dataclass
@@ -12,18 +13,18 @@ class User:
 
     Args:
         id (UUID): User identifier.
-        email (str): User email.
+        email (Email): User email.
         hashed_password (str): User hashed password.
         name (str, None): User first name.
     """
 
     id: UUID
-    email: str
+    email: Email
     hashed_password: str
     name: str | None
 
     @classmethod
-    async def create(
+    def create(
         cls,
         email: str,
         plain_password: str,
@@ -31,10 +32,10 @@ class User:
         name: str | None = None,
     ) -> Self:
         PasswordPolicy.validate(plain_password)
-        hashed = await hasher.hash(plain_password)
-        return cls(id=uuid4(), email=email, hashed_password=hashed, name=name)
+        hashed = hasher.hash(plain_password)
+        return cls(id=uuid4(), email=Email(email), hashed_password=hashed, name=name)
 
-    async def verify_password(
+    def verify_password(
         self, hasher: PasswordHasher, plain_password: str
     ) -> bool:
-        return await hasher.verify(plain_password, self.hashed_password)
+        return hasher.verify(plain_password, self.hashed_password)

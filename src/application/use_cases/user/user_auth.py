@@ -13,7 +13,7 @@ class UserAuthUseCase(UserBaseUseCase):
         self.token_handler = token_handler
 
     async def execute(self, token: str) -> UserDTO:
-        user_id_str: str = await self.token_handler.read_token(subject=token)
+        user_id_str: str = self.token_handler.read_token(subject=token)
         if user_id_str is None:
             raise InvalidTokenError("Invalid token")
 
@@ -21,4 +21,4 @@ class UserAuthUseCase(UserBaseUseCase):
         user = await self.user_repo.get_one(user_id=user_id)
         if user is None:
             raise NotFoundError("User not found")
-        return await self.to_dto(user)
+        return self.to_dto(user)
