@@ -1,6 +1,6 @@
 import pytest
 from uuid import uuid4
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest_asyncio
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -12,22 +12,12 @@ from src.domain.entities.user import User as UserEntity
 
 
 @pytest_asyncio.fixture
-def user_entity() -> UserEntity:
-    return UserEntity(
-        id=uuid4(),
-        email="test@example.com",
-        hashed_password="hashed_password_123",
-        name="Test User",
-    )
-
-
-@pytest_asyncio.fixture
-def user_model(user_entity: UserEntity) -> UserModel:
+def user_model(user_entity_mock: Mock) -> UserModel:
     return UserModel(
-        id=user_entity.id,
-        email=user_entity.email,
-        password=user_entity.hashed_password,
-        name=user_entity.name,
+        id=user_entity_mock.id,
+        email=user_entity_mock.email,
+        password=user_entity_mock.hashed_password,
+        name=user_entity_mock.name,
     )
 
 
@@ -53,18 +43,18 @@ async def test_get_one_success(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
     user_model: UserModel,
-    user_entity: UserEntity,
+    user_entity_mock: Mock,
 ) -> None:
     mock_session.get.return_value = user_model
 
-    result = await repository.get_one(user_entity.id)
+    result = await repository.get_one(user_entity_mock.id)
 
-    mock_session.get.assert_called_once_with(UserModel, user_entity.id)
+    mock_session.get.assert_called_once_with(UserModel, user_entity_mock.id)
     assert result is not None
-    assert result.id == user_entity.id
-    assert result.email == user_entity.email
-    assert result.name == user_entity.name
-    assert result.hashed_password == user_entity.hashed_password
+    assert result.id == user_entity_mock.id
+    assert result.email == user_entity_mock.email
+    assert result.name == user_entity_mock.name
+    assert result.hashed_password == user_entity_mock.hashed_password
 
 
 async def test_get_one_not_found(
@@ -83,18 +73,18 @@ async def test_get_by_email_success(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
     user_model: UserModel,
-    user_entity: UserEntity,
+    user_entity_mock: Mock,
 ) -> None:
     mock_result = MagicMock()
     mock_result.scalar_one_or_none.return_value = user_model
     mock_session.execute.return_value = mock_result
 
-    result = await repository.get_by_email(user_entity.email)
+    result = await repository.get_by_email(user_entity_mock.email)
 
     mock_session.execute.assert_called_once()
     assert result is not None
-    assert result.email == user_entity.email
-    assert result.id == user_entity.id
+    assert result.email == user_entity_mock.email
+    assert result.id == user_entity_mock.id
 
 
 async def test_get_by_email_not_found(
@@ -114,55 +104,55 @@ async def test_get_by_email_not_found(
 async def test_write_success(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
-    user_entity: UserEntity,
+    user_entity_mock: Mock,
 ) -> None:
     mock_session.commit.return_value = None
     mock_session.refresh.return_value = None
 
-    result = await repository.write(user_entity)
+    result = await repository.write(user_entity_mock)
 
     mock_session.add.assert_called_once()
     mock_session.commit.assert_called_once()
     mock_session.refresh.assert_called_once()
-    assert result.id == user_entity.id
-    assert result.email == user_entity.email
+    assert result.id == user_entity_mock.id
+    assert result.email == user_entity_mock.email
 
 
 async def test_write_integrity_error_duplicate_email(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
-    user_entity: UserEntity,
+    user_entity_mock: Mock,
 ) -> None:
     mock_session.commit.side_effect = IntegrityError("", "", "")
 
     with pytest.raises(
         SQLAlchemyRepositoryError, match="User already exists or constraint violated"
     ):
-        await repository.write(user_entity)
+        await repository.write(user_entity_mock)
     mock_session.rollback.assert_called_once()
 
 
 async def test_write_sqlalchemy_error(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
-    user_entity: UserEntity,
+    user_entity_mock: Mock,
 ) -> None:
     mock_session.commit.side_effect = SQLAlchemyError("Database connection lost")
 
     with pytest.raises(SQLAlchemyRepositoryError, match="Failed to save user"):
-        await repository.write(user_entity)
+        await repository.write(user_entity_mock)
     mock_session.rollback.assert_called_once()
 
 
 async def test_update_sqlalchemy_error(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
-    user_entity: UserEntity,
+    user_entity_mock: Mock,
 ) -> None:
     mock_session.get.side_effect = SQLAlchemyError("Connection timeout")
 
     with pytest.raises(SQLAlchemyRepositoryError, match="Failed to update user"):
-        await repository.update(user_entity)
+        await repository.update(user_entity_mock)
     mock_session.rollback.assert_called_once()
 
 
@@ -218,32 +208,32 @@ async def test_to_entity_conversion(
 
 
 async def test_to_model_conversion(
-    repository: SQLAlchemyUserRepository, user_entity: UserEntity
+    repository: SQLAlchemyUserRepository, user_entity_mock: Mock
 ) -> None:
-    result = repository._to_model(user_entity)
+    result = repository._to_model(user_entity_mock)
 
     assert isinstance(result, UserModel)
-    assert result.id == user_entity.id
-    assert result.email == user_entity.email
-    assert result.password == user_entity.hashed_password
-    assert result.name == user_entity.name
+    assert result.id == user_entity_mock.id
+    assert result.email == user_entity_mock.email
+    assert result.password == user_entity_mock.hashed_password
+    assert result.name == user_entity_mock.name
 
 
 async def test_update_model(
-    repository: SQLAlchemyUserRepository, user_model: UserModel
+    repository: SQLAlchemyUserRepository, user_model: UserModel, mock_hasher: Mock,
 ) -> None:
-    new_entity = UserEntity(
-        id=user_model.id,
+    new_entity = UserEntity.create(
         email="newemail@example.com",
-        hashed_password="new_hashed_password",
+        plain_password="new_plain_password1",
+        hasher=mock_hasher,
         name="New Name",
     )
 
     repository._update_model(user_model, new_entity)
 
-    assert user_model.email == "newemail@example.com"
-    assert user_model.password == "new_hashed_password"
-    assert user_model.name == "New Name"
+    assert str(user_model.email) == str(new_entity.email)
+    assert user_model.password == new_entity.hashed_password
+    assert user_model.name == new_entity.name
 
 
 async def test_get_by_email_case_sensitivity(

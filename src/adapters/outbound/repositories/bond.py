@@ -48,7 +48,7 @@ class SQLAlchemyBondRepository(BondRepository):
     async def update(self, bond: BondEntity) -> BondEntity:
         try:
             model = await self._session.get(BondModel, bond.id)
-            await self._update_model(model, bond)
+            self._update_model(model, bond)
             await self._session.commit()
             await self._session.refresh(model)
             return self._to_entity(model)
@@ -93,7 +93,7 @@ class SQLAlchemyBondRepository(BondRepository):
         )
 
     @staticmethod
-    async def _update_model(model: BondModel, entity: BondEntity) -> None:
+    def _update_model(model: BondModel, entity: BondEntity) -> None:
         model.nominal_value = entity.nominal_value
         model.series = entity.series
         model.maturity_period = entity.maturity_period

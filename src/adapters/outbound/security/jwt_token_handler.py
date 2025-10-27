@@ -13,8 +13,8 @@ class JWTTokenHandler(TokenHandler):
         self.expire_delta = expire_delta if expire_delta else timedelta(hours=1)
         self._config = config
 
-    async def create_token(self, subject: str) -> Token:
-        to_encode = await self._to_encode(subject)
+    def create_token(self, subject: str) -> Token:
+        to_encode = self._to_encode(subject)
         token = jwt.encode(
             to_encode,
             self._config.SECRET_KEY,
@@ -25,7 +25,7 @@ class JWTTokenHandler(TokenHandler):
             type="bearer",
         )
 
-    async def read_token(self, subject: str) -> str:
+    def read_token(self, subject: str) -> str:
         payload = jwt.decode(
             subject,
             self._config.SECRET_KEY,
@@ -34,7 +34,7 @@ class JWTTokenHandler(TokenHandler):
         )
         return payload.get("sub")
 
-    async def _to_encode(self, subject: str) -> dict[str, Any]:
+    def _to_encode(self, subject: str) -> dict[str, Any]:
         return {
             "exp": datetime.now(timezone.utc) + self.expire_delta,
             "sub": str(subject),

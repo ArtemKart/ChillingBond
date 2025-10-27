@@ -4,7 +4,7 @@ from src.application.dto.user import UserDTO
 
 class UserBaseUseCase:
     @staticmethod
-    async def to_dto(user: UserEntity) -> UserDTO:
+    def to_dto(user: UserEntity) -> UserDTO:
         return UserDTO(
             id=user.id,
             email=user.email,

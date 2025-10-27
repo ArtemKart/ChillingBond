@@ -184,7 +184,7 @@ async def test_update_bond_missing_required_fields(
     client: TestClient,
     valid_bond_id: UUID,
 ) -> None:
-    empty_request = {}
+    empty_request: dict = {}
 
     response = client.put(f"/bonds/{valid_bond_id}/specification", json=empty_request)
 

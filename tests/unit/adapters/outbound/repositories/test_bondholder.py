@@ -1,7 +1,7 @@
 import pytest
-from datetime import datetime, date
+from datetime import datetime
 from uuid import uuid4
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest_asyncio
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -12,27 +12,26 @@ from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRe
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 
 
-@pytest_asyncio.fixture
-def bondholder_entity() -> BondHolderEntity:
-    return BondHolderEntity(
-        id=uuid4(),
-        bond_id=uuid4(),
-        user_id=uuid4(),
-        quantity=100,
-        purchase_date=date.today(),
-        last_update=datetime.now(),
-    )
+# @pytest_asyncio.fixture
+# def bondholder_entity_mock() -> BondHolderEntity:
+#     return BondHolderEntity.create(
+#         bond_id=uuid4(),
+#         user_id=uuid4(),
+#         quantity=100,
+#         purchase_date=date.today(),
+#         last_update=datetime.now(),
+#     )
 
 
 @pytest_asyncio.fixture
-def bondholder_model(bondholder_entity: BondHolderEntity) -> BondHolderModel:
+def bondholder_model(bondholder_entity_mock: Mock) -> BondHolderModel:
     return BondHolderModel(
-        id=bondholder_entity.id,
-        bond_id=bondholder_entity.bond_id,
-        user_id=bondholder_entity.user_id,
-        quantity=bondholder_entity.quantity,
-        purchase_date=bondholder_entity.purchase_date,
-        last_update=bondholder_entity.last_update,
+        id=bondholder_entity_mock.id,
+        bond_id=bondholder_entity_mock.bond_id,
+        user_id=bondholder_entity_mock.user_id,
+        quantity=bondholder_entity_mock.quantity,
+        purchase_date=bondholder_entity_mock.purchase_date,
+        last_update=bondholder_entity_mock.last_update,
     )
 
 
@@ -57,18 +56,18 @@ async def test_get_one_success(
     repository: SQLAlchemyBondHolderRepository,
     mock_session: AsyncMock,
     bondholder_model: BondHolderModel,
-    bondholder_entity: BondHolderEntity,
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_session.get.return_value = bondholder_model
 
-    result = await repository.get_one(bondholder_entity.id)
+    result = await repository.get_one(bondholder_entity_mock.id)
 
-    mock_session.get.assert_called_once_with(BondHolderModel, bondholder_entity.id)
+    mock_session.get.assert_called_once_with(BondHolderModel, bondholder_entity_mock.id)
     assert result is not None
-    assert result.id == bondholder_entity.id
-    assert result.bond_id == bondholder_entity.bond_id
-    assert result.user_id == bondholder_entity.user_id
-    assert result.quantity == bondholder_entity.quantity
+    assert result.id == bondholder_entity_mock.id
+    assert result.bond_id == bondholder_entity_mock.bond_id
+    assert result.user_id == bondholder_entity_mock.user_id
+    assert result.quantity == bondholder_entity_mock.quantity
 
 
 async def test_get_one_not_found(
@@ -133,25 +132,25 @@ async def test_get_all_empty_result(
 async def test_write_success(
     repository: SQLAlchemyBondHolderRepository,
     mock_session: AsyncMock,
-    bondholder_entity: BondHolderEntity,
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_session.commit.return_value = None
     mock_session.refresh.return_value = None
 
-    result = await repository.write(bondholder_entity)
+    result = await repository.write(bondholder_entity_mock)
 
     mock_session.add.assert_called_once()
     mock_session.commit.assert_called_once()
     mock_session.refresh.assert_called_once()
-    assert result.id == bondholder_entity.id
-    assert result.bond_id == bondholder_entity.bond_id
-    assert result.user_id == bondholder_entity.user_id
+    assert result.id == bondholder_entity_mock.id
+    assert result.bond_id == bondholder_entity_mock.bond_id
+    assert result.user_id == bondholder_entity_mock.user_id
 
 
 async def test_write_integrity_error(
     repository: SQLAlchemyBondHolderRepository,
     mock_session: AsyncMock,
-    bondholder_entity: BondHolderEntity,
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_session.commit.side_effect = IntegrityError("", "", "")
 
@@ -159,56 +158,56 @@ async def test_write_integrity_error(
         SQLAlchemyRepositoryError,
         match="BondHolder already exists or constraint violated",
     ):
-        await repository.write(bondholder_entity)
+        await repository.write(bondholder_entity_mock)
     mock_session.rollback.assert_called_once()
 
 
 async def test_write_sqlalchemy_error(
     repository: SQLAlchemyBondHolderRepository,
     mock_session: AsyncMock,
-    bondholder_entity: BondHolderEntity,
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_session.commit.side_effect = SQLAlchemyError("Database error")
 
     with pytest.raises(
         SQLAlchemyRepositoryError, match="Failed to save BondHolder object"
     ):
-        await repository.write(bondholder_entity)
+        await repository.write(bondholder_entity_mock)
     mock_session.rollback.assert_called_once()
 
 
 async def test_update_success(
     repository: SQLAlchemyBondHolderRepository,
     mock_session: AsyncMock,
-    bondholder_entity: BondHolderEntity,
+    bondholder_entity_mock: Mock,
     bondholder_model: BondHolderModel,
 ) -> None:
     mock_session.get.return_value = bondholder_model
     mock_session.commit.return_value = None
     mock_session.refresh.return_value = None
 
-    bondholder_entity.quantity = 200
-    bondholder_entity.last_update = datetime.now()
+    bondholder_entity_mock.quantity = 200
+    bondholder_entity_mock.last_update = datetime.now()
 
-    result = await repository.update(bondholder_entity)
+    result = await repository.update(bondholder_entity_mock)
 
-    mock_session.get.assert_called_once_with(BondHolderModel, bondholder_entity.id)
+    mock_session.get.assert_called_once_with(BondHolderModel, bondholder_entity_mock.id)
     mock_session.commit.assert_called_once()
     mock_session.refresh.assert_called_once()
-    assert result.id == bondholder_entity.id
+    assert result.id == bondholder_entity_mock.id
 
 
 async def test_update_sqlalchemy_error(
     repository: SQLAlchemyBondHolderRepository,
     mock_session: AsyncMock,
-    bondholder_entity: BondHolderEntity,
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_session.get.side_effect = SQLAlchemyError("Database error")
 
     with pytest.raises(
         SQLAlchemyRepositoryError, match="Failed to update BondHolder object"
     ):
-        await repository.update(bondholder_entity)
+        await repository.update(bondholder_entity_mock)
     mock_session.rollback.assert_called_once()
 
 
@@ -227,18 +226,18 @@ async def test_to_entity_conversion(
 
 
 async def test_to_model_conversion(
-    repository: SQLAlchemyBondHolderRepository, bondholder_entity: BondHolderEntity
+    repository: SQLAlchemyBondHolderRepository, bondholder_entity_mock: Mock
 ) -> None:
-    result = repository._to_model(bondholder_entity)
+    result = repository._to_model(bondholder_entity_mock)
 
     # Assert
     assert isinstance(result, BondHolderModel)
-    assert result.id == bondholder_entity.id
-    assert result.bond_id == bondholder_entity.bond_id
-    assert result.user_id == bondholder_entity.user_id
-    assert result.quantity == bondholder_entity.quantity
-    assert result.purchase_date == bondholder_entity.purchase_date
-    assert result.last_update == bondholder_entity.last_update
+    assert result.id == bondholder_entity_mock.id
+    assert result.bond_id == bondholder_entity_mock.bond_id
+    assert result.user_id == bondholder_entity_mock.user_id
+    assert result.quantity == bondholder_entity_mock.quantity
+    assert result.purchase_date == bondholder_entity_mock.purchase_date
+    assert result.last_update == bondholder_entity_mock.last_update
 
 
 async def test_update_model(

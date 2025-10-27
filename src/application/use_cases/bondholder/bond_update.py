@@ -19,10 +19,10 @@ class BondUpdateUseCase:
         for attr, value in update_attr.items():
             setattr(bond, attr, value)
         await self.bond_repo.update(bond)
-        return await self._to_dto(bond)
+        return self._to_dto(bond)
 
     @staticmethod
-    async def _to_dto(bond: BondEntity) -> BondDTO:
+    def _to_dto(bond: BondEntity) -> BondDTO:
         return BondDTO(
             id=bond.id,
             nominal_value=bond.nominal_value,

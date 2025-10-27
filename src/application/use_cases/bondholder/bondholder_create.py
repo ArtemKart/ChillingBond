@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from src.application.dto.bond import BondCreateDTO
 from src.application.dto.bondholder import BondHolderCreateDTO, BondHolderDTO
 from src.application.use_cases.bondholder.bondholder_base import BondHolderBaseUseCase
@@ -26,18 +24,16 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
     ) -> BondHolderDTO:
         bond = await self.bond_repo.get_by_series(b_dto.series)
         if bond:
-            new_bh = BondHolderEntity(
-                id=uuid4(),
+            new_bh = BondHolderEntity.create(
                 bond_id=bond.id,
                 user_id=bh_dto.user_id,
                 quantity=bh_dto.quantity,
                 purchase_date=bh_dto.purchase_date,
             )
             await self.bondholder_repo.write(new_bh)
-            return await self.to_dto(bondholder=new_bh, bond=bond)
+            return self.to_dto(bondholder=new_bh, bond=bond)
 
-        new_bond = BondEntity(
-            id=uuid4(),
+        new_bond = BondEntity.create(
             series=b_dto.series,
             nominal_value=b_dto.nominal_value,
             maturity_period=b_dto.maturity_period,
@@ -47,12 +43,11 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
         )
         new_bond = await self.bond_repo.write(new_bond)
 
-        new_bh = BondHolderEntity(
-            id=uuid4(),
+        new_bh = BondHolderEntity.create(
             bond_id=new_bond.id,
             user_id=bh_dto.user_id,
             quantity=bh_dto.quantity,
             purchase_date=bh_dto.purchase_date,
         )
         new_bh = await self.bondholder_repo.write(new_bh)
-        return await self.to_dto(bondholder=new_bh, bond=new_bond)
+        return self.to_dto(bondholder=new_bh, bond=new_bond)

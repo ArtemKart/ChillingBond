@@ -4,35 +4,34 @@ from uuid import uuid4
 import pytest
 import pytest_asyncio
 
-from src.domain.entities.bondholder import BondHolder
+from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.domain.exceptions import ValidationError
 
 
 @pytest_asyncio.fixture
-def bondholder() -> BondHolder:
-    return BondHolder(
+def local_bondholder() -> BondHolderEntity:
+    return BondHolderEntity(
         id=uuid4(),
         bond_id=uuid4(),
-        user_id=uuid4(),
-        quantity=100,
-        purchase_date=date.today(),
+        user_id = uuid4(),
+        quantity = 100,
+        purchase_date = date.today(),
     )
 
-
-async def test_bondholder_add_quantity_err(bondholder: BondHolder) -> None:
-    negative_quantity = -bondholder.quantity
+async def test_bondholder_add_quantity_err(local_bondholder: BondHolderEntity) -> None:
+    negative_quantity = -local_bondholder.quantity
 
     with pytest.raises(ValidationError, match="Amount must be positive"):
-        await bondholder.add_quantity(negative_quantity)
+        local_bondholder.add_quantity(negative_quantity)
 
-    assert bondholder.quantity != negative_quantity
+    assert local_bondholder.quantity != negative_quantity
 
 
-async def test_bondholder_add_quantity_happy_path(bondholder: BondHolder) -> None:
-    before = bondholder.quantity
+async def test_bondholder_add_quantity_happy_path(local_bondholder: BondHolderEntity) -> None:
+    before = local_bondholder.quantity
     amount = 44
-    await bondholder.add_quantity(amount=amount)
-    assert bondholder.quantity == before + amount
+    local_bondholder.add_quantity(amount=amount)
+    assert local_bondholder.quantity == before + amount
 
 
 @pytest.mark.parametrize(
@@ -44,11 +43,11 @@ async def test_bondholder_add_quantity_happy_path(bondholder: BondHolder) -> Non
     ids=["amount less than quantity", "amount greater than quantity"],
 )
 async def test_bondholder_reduce_quantity(
-    bondholder: BondHolder,
+    local_bondholder: BondHolderEntity,
     quantity: int,
     amount: int,
     expected_result: int,
 ) -> None:
-    bondholder.quantity = quantity
-    await bondholder.reduce_quantity(amount=amount)
-    assert bondholder.quantity == expected_result
+    local_bondholder.quantity = quantity
+    local_bondholder.reduce_quantity(amount=amount)
+    assert local_bondholder.quantity == expected_result

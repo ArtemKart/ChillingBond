@@ -1,13 +1,22 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
+
+
+class BondBase(BaseModel):
+    series: str = Field(..., min_length=1, description="Bond series")
+    nominal_value: float = Field(..., gt=0, description="Nominal value")
+    maturity_period: int = Field(..., gt=0, description="Maturity period in months")
+    initial_interest_rate: float = Field(..., description="Initial interest rate")
+    first_interest_period: int = Field(..., description="First interest period")
+    reference_rate_margin: float = Field(..., description="Reference rate margin")
 
 
 class BondUpdateRequest(BaseModel):
-    nominal_value: float | None = None
-    series: str | None = None
-    maturity_period: int | None = None
-    initial_interest_rate: float | None = None
-    first_interest_period: int | None = None
-    reference_rate_margin: float | None = None
+    series: str | None = Field(None, min_length=1)
+    nominal_value: float | None = Field(None, gt=0)
+    maturity_period: int | None = Field(None, gt=0)
+    initial_interest_rate: float | None = Field(None)
+    first_interest_period: int | None = Field(None)
+    reference_rate_margin: float | None = Field(None)
 
     @model_validator(mode="after")
     def check_any_field_present(self):
@@ -18,10 +27,5 @@ class BondUpdateRequest(BaseModel):
         return self
 
 
-class BondUpdateResponse(BaseModel):
-    nominal_value: float
-    series: str
-    maturity_period: int
-    initial_interest_rate: float
-    first_interest_period: int
-    reference_rate_margin: float
+class BondUpdateResponse(BondBase):
+    pass

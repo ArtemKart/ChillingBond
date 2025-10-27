@@ -23,7 +23,7 @@ class BondHolderGetUseCase(BondHolderBaseUseCase):
         bond = await self.bond_repo.get_one(bond_id=bondholder.bond_id)
         if not bond:
             raise NotFoundError("Bond connected to BondHolder not found")
-        return await self.to_dto(bondholder=bondholder, bond=bond)
+        return self.to_dto(bondholder=bondholder, bond=bond)
 
 
 class BondHolderGetAllUseCase(BondHolderBaseUseCase):
@@ -40,5 +40,5 @@ class BondHolderGetAllUseCase(BondHolderBaseUseCase):
             bond = await self.bond_repo.get_one(bond_id=bh.bond_id)
             if not bond:
                 raise NotFoundError("Bond connected to BondHolder not found")
-            dto_list.append(await self.to_dto(bondholder=bh, bond=bond))
+            dto_list.append(self.to_dto(bondholder=bh, bond=bond))
         return dto_list

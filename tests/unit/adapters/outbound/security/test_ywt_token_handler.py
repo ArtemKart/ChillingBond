@@ -55,7 +55,7 @@ async def test_init_with_custom_expire_delta(mock_config: AsyncMock) -> None:
 async def test_create_token_returns_token_entity(handler: JWTTokenHandler) -> None:
     subject = "user_123"
 
-    token = await handler.create_token(subject)
+    token = handler.create_token(subject)
 
     assert isinstance(token, Token)
     assert token.type == "bearer"
@@ -67,7 +67,7 @@ async def test_create_token_includes_subject_in_payload(
     handler: JWTTokenHandler,
 ) -> None:
     subject = "test_user_id"
-    token = await handler.create_token(subject)
+    token = handler.create_token(subject)
     payload = jwt.decode(
         token.token,
         handler._config.SECRET_KEY,
@@ -81,9 +81,9 @@ async def test_create_token_includes_subject_in_payload(
 async def test_read_token_extracts_subject(handler: JWTTokenHandler) -> None:
     original_subject = "user_original"
 
-    created_token = await handler.create_token(original_subject)
+    created_token = handler.create_token(original_subject)
 
-    extracted_subject = await handler.read_token(created_token.token)
+    extracted_subject = handler.read_token(created_token.token)
 
     assert extracted_subject == original_subject
 
@@ -99,7 +99,7 @@ async def test_read_token_with_expired_token(handler: JWTTokenHandler) -> None:
     )
 
     with pytest.raises(jwt.ExpiredSignatureError):
-        await handler.read_token(expired_token)
+        handler.read_token(expired_token)
 
 
 async def test_read_token_with_invalid_signature(handler: JWTTokenHandler) -> None:
@@ -113,7 +113,7 @@ async def test_read_token_with_invalid_signature(handler: JWTTokenHandler) -> No
     )
 
     with pytest.raises(jwt.InvalidSignatureError):
-        await handler.read_token(invalid_token)
+        handler.read_token(invalid_token)
 
 
 async def test_read_token_with_invalid_algorithm(handler: JWTTokenHandler) -> None:
@@ -125,7 +125,7 @@ async def test_read_token_with_invalid_algorithm(handler: JWTTokenHandler) -> No
     invalid_token = jwt.encode(invalid_payload, handler._config.SECRET_KEY, "HS512")
 
     with pytest.raises(jwt.InvalidTokenError):
-        await handler.read_token(invalid_token)
+        handler.read_token(invalid_token)
 
 
 async def test_read_token_without_subject(handler: JWTTokenHandler) -> None:
@@ -138,7 +138,7 @@ async def test_read_token_without_subject(handler: JWTTokenHandler) -> None:
         payload_without_sub, handler._config.SECRET_KEY, handler._config.ALGORITHM
     )
 
-    result = await handler.read_token(token_without_sub)
+    result = handler.read_token(token_without_sub)
 
     assert result is None
 
@@ -153,7 +153,7 @@ async def test_read_token_with_malformed_token(handler: JWTTokenHandler) -> None
 
     for malformed in malformed_tokens:
         with pytest.raises(jwt.InvalidTokenError):
-            await handler.read_token(malformed)
+            handler.read_token(malformed)
 
 
 async def test_create_token_with_special_characters_subject(
@@ -171,16 +171,16 @@ async def test_create_token_with_special_characters_subject(
     ]
 
     for subject in special_subjects:
-        token = await handler.create_token(subject)
-        extracted = await handler.read_token(token.token)
+        token = handler.create_token(subject)
+        extracted = handler.read_token(token.token)
         assert extracted == subject
 
 
 async def test_create_token_with_numeric_subject(handler: JWTTokenHandler) -> None:
     numeric_subject = "12345"
 
-    token = await handler.create_token(numeric_subject)
-    extracted = await handler.read_token(token.token)
+    token = handler.create_token(numeric_subject)
+    extracted = handler.read_token(token.token)
 
     assert extracted == "12345"
 
@@ -188,8 +188,8 @@ async def test_create_token_with_numeric_subject(handler: JWTTokenHandler) -> No
 async def test_create_token_with_empty_subject(handler: JWTTokenHandler) -> None:
     empty_subject = ""
 
-    token = await handler.create_token(empty_subject)
-    extracted = await handler.read_token(token.token)
+    token = handler.create_token(empty_subject)
+    extracted = handler.read_token(token.token)
 
     assert extracted == ""
 
@@ -198,8 +198,8 @@ async def test_token_roundtrip_consistency(handler: JWTTokenHandler) -> None:
     subjects = ["user1", "user2", "admin", "guest", "service-account"]
 
     for subject in subjects:
-        token = await handler.create_token(subject)
-        extracted = await handler.read_token(token.token)
+        token = handler.create_token(subject)
+        extracted = handler.read_token(token.token)
         assert extracted == subject
 
 
@@ -210,7 +210,7 @@ async def test_create_token_calls_jwt_encode(
     mock_encode.return_value = "mocked_token"
     subject = "test_subject"
 
-    token = await handler.create_token(subject)
+    token = handler.create_token(subject)
 
     mock_encode.assert_called_once()
     call_args = mock_encode.call_args[0]
@@ -232,7 +232,7 @@ async def test_read_token_calls_jwt_decode(
     mock_decode.return_value = {"sub": "decoded_subject"}
     token_string = "test_token"
 
-    result = await handler.read_token(token_string)
+    result = handler.read_token(token_string)
 
     mock_decode.assert_called_once_with(
         token_string,
@@ -251,8 +251,8 @@ async def test_different_handlers_same_config_compatible(
     handler2 = JWTTokenHandler(config=mock_config)
 
     subject = "shared_user"
-    token = await handler1.create_token(subject)
-    extracted = await handler2.read_token(token.token)
+    token = handler1.create_token(subject)
+    extracted = handler2.read_token(token.token)
 
     assert extracted == subject
 
@@ -265,10 +265,10 @@ async def test_different_secrets_incompatible(mock_config: AsyncMock) -> None:
     config2.ALGORITHM = "HS256"
     handler2 = JWTTokenHandler(config=config2)
 
-    token = await handler1.create_token("user")
+    token = handler1.create_token("user")
 
     with pytest.raises(jwt.InvalidSignatureError):
-        await handler2.read_token(token.token)
+        handler2.read_token(token.token)
 
 
 async def test_expiry_delta_none_uses_default(mock_config: AsyncMock) -> None:
@@ -279,7 +279,7 @@ async def test_expiry_delta_none_uses_default(mock_config: AsyncMock) -> None:
 async def test_expiry_delta_negative(mock_config: AsyncMock) -> None:
     handler = JWTTokenHandler(config=mock_config, expire_delta=timedelta(hours=-1))
 
-    token = await handler.create_token("user")
+    token = handler.create_token("user")
 
     with pytest.raises(jwt.ExpiredSignatureError):
-        await handler.read_token(token.token)
+        handler.read_token(token.token)

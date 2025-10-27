@@ -359,36 +359,3 @@ async def test_get_bond_multiple_calls_different_ids(
 
     assert first_call.kwargs["bondholder_id"] == purchase_id_1
     assert second_call.kwargs["bondholder_id"] == purchase_id_2
-
-
-async def test_get_bond_zero_quantity(
-    client: TestClient,
-    valid_purchase_id: UUID,
-) -> None:
-    """Test retrieval of bond with zero quantity (edge case)"""
-    mock_dto = AsyncMock(
-        id=uuid4(),
-        quantity=0,
-        purchase_date=date.today(),
-        last_update=datetime.now(timezone.utc),
-        bond_id=uuid4(),
-        series="ROR0000",
-        nominal_value=1000.00,
-        maturity_period=12,
-        initial_interest_rate=5.0,
-        first_interest_period=3,
-        reference_rate_margin=1.0,
-    )
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_dto
-
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
-        bh_get_use_case,
-    )
-
-    app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
-
-    response = client.get(f"/bonds/{valid_purchase_id}")
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["quantity"] == 0

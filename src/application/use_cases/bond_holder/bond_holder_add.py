@@ -1,8 +1,8 @@
-from src.application.dto.bondholder import BondHolderDTO, BondHolderChangeQuantityDTO
-from src.application.use_cases.bondholder.bondholder_base import BondHolderBaseUseCase
+from src.application.dto.bond_holder import BondHolderDTO, BondHolderChangeQuantityDTO
+from src.application.use_cases.bond_holder.bond_holder_base import BondHolderBaseUseCase
 from src.domain.exceptions import NotFoundError, InvalidTokenError
 from src.domain.ports.repositories.bond import BondRepository
-from src.domain.ports.repositories.bondholder import BondHolderRepository
+from src.domain.ports.repositories.bond_holder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
 
 
@@ -13,24 +13,24 @@ class BondAddToBondHolderUseCase(BondHolderBaseUseCase):
         self,
         bond_repo: BondRepository,
         user_repo: UserRepository,
-        bondholder_repo: BondHolderRepository,
+        bond_holder_repo: BondHolderRepository,
     ) -> None:
         self.bond_repo = bond_repo
         self.user_repo = user_repo
-        self.bondholder_repo = bondholder_repo
+        self.bond_holder_repo = bond_holder_repo
 
     async def execute(self, dto: BondHolderChangeQuantityDTO) -> BondHolderDTO:
-        bondholder = await self.bondholder_repo.get_one(bondholder_id=dto.id)
-        if not bondholder:
+        bond_holder = await self.bond_holder_repo.get_one(bond_holder_id=dto.id)
+        if not bond_holder:
             raise NotFoundError("Bond holder not found")
-        if bondholder.user_id != dto.user_id:
+        if bond_holder.user_id != dto.user_id:
             raise InvalidTokenError("Not authenticated")
         if dto.is_positive:
-            bondholder.add_quantity(dto.quantity)
+            bond_holder.add_quantity(dto.quantity)
         else:
-            bondholder.reduce_quantity(dto.quantity)
-        bondholder = await self.bondholder_repo.update(bondholder)
-        bond = await self.bond_repo.get_one(bondholder.bond_id)
+            bond_holder.reduce_quantity(dto.quantity)
+        bond_holder = await self.bond_holder_repo.update(bond_holder)
+        bond = await self.bond_repo.get_one(bond_holder.bond_id)
         if not bond:
             raise NotFoundError("Bond connected to BondHolder not found")
-        return self.to_dto(bond=bond, bondholder=bondholder)
+        return self.to_dto(bond=bond, bond_holder=bond_holder)

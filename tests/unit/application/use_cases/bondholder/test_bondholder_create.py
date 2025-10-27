@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 from datetime import date
 
+import pytest
 import pytest_asyncio
 
 from src.application.use_cases.bondholder.bondholder_create import (
@@ -11,6 +12,7 @@ from src.application.dto.bond import BondCreateDTO
 from src.application.dto.bondholder import BondHolderCreateDTO, BondHolderDTO
 from src.domain.entities.bond import Bond as BondEntity
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
+from src.domain.exceptions import ValidationError
 
 
 @pytest_asyncio.fixture
@@ -44,19 +46,6 @@ def bond_create_dto() -> BondCreateDTO:
 
 
 @pytest_asyncio.fixture
-def existing_bond() -> BondEntity:
-    return BondEntity(
-        id=uuid4(),
-        series="ROR1602",
-        nominal_value=100.0,
-        maturity_period=12,
-        initial_interest_rate=4.75,
-        first_interest_period=1,
-        reference_rate_margin=0.0,
-    )
-
-
-@pytest_asyncio.fixture
 def sample_bondholder_dto() -> BondHolderDTO:
     return BondHolderDTO(
         id=uuid4(),
@@ -79,12 +68,12 @@ async def test_with_existing_bond(
     mock_bondholder_repo: AsyncMock,
     bondholder_create_dto: BondHolderCreateDTO,
     bond_create_dto: BondCreateDTO,
-    existing_bond: BondEntity,
+    bond_entity_mock: Mock,
     sample_bondholder_dto: BondHolderDTO,
 ) -> None:
-    mock_bond_repo.get_by_series.return_value = existing_bond
+    mock_bond_repo.get_by_series.return_value = bond_entity_mock
     mock_bondholder_repo.write.return_value = Mock(spec=BondHolderEntity)
-    use_case.to_dto = AsyncMock(return_value=sample_bondholder_dto)
+    use_case.to_dto = Mock(return_value=sample_bondholder_dto)
 
     result = await use_case.execute(bondholder_create_dto, bond_create_dto)
 
@@ -93,7 +82,7 @@ async def test_with_existing_bond(
 
     mock_bondholder_repo.write.assert_called_once()
     created_bondholder = mock_bondholder_repo.write.call_args[0][0]
-    assert created_bondholder.bond_id == existing_bond.id
+    assert created_bondholder.bond_id == bond_entity_mock.id
     assert created_bondholder.user_id == bondholder_create_dto.user_id
     assert created_bondholder.quantity == bondholder_create_dto.quantity
     assert created_bondholder.purchase_date == bondholder_create_dto.purchase_date
@@ -112,8 +101,7 @@ async def test_with_new_bond(
 ) -> None:
     mock_bond_repo.get_by_series.return_value = None
 
-    new_bond = BondEntity(
-        id=uuid4(),
+    new_bond = BondEntity.create(
         series=bond_create_dto.series,
         nominal_value=bond_create_dto.nominal_value,
         maturity_period=bond_create_dto.maturity_period,
@@ -125,7 +113,7 @@ async def test_with_new_bond(
 
     new_bondholder = Mock(spec=BondHolderEntity)
     mock_bondholder_repo.write.return_value = new_bondholder
-    use_case.to_dto = AsyncMock(return_value=sample_bondholder_dto)
+    use_case.to_dto = Mock(return_value=sample_bondholder_dto)
 
     result = await use_case.execute(bondholder_create_dto, bond_create_dto)
 
@@ -150,20 +138,17 @@ async def test_with_zero_quantity(
     mock_bond_repo: AsyncMock,
     mock_bondholder_repo: AsyncMock,
     bond_create_dto: BondCreateDTO,
-    existing_bond: BondEntity,
+    bond_entity_mock: Mock,
 ) -> None:
     bondholder_dto = BondHolderCreateDTO(
         user_id=uuid4(),
         quantity=0,
         purchase_date=date.today(),
     )
-    mock_bond_repo.get_by_series.return_value = existing_bond
+    mock_bond_repo.get_by_series.return_value = bond_entity_mock
     mock_bondholder_repo.write.return_value = Mock(spec=BondHolderEntity)
-
-    await use_case.execute(bondholder_dto, bond_create_dto)
-
-    created_bondholder = mock_bondholder_repo.write.call_args[0][0]
-    assert created_bondholder.quantity == 0
+    with pytest.raises(ValidationError, match="Quantity must be positive"):
+        await use_case.execute(bondholder_dto, bond_create_dto)
 
 
 async def test_with_large_quantity(
@@ -171,14 +156,14 @@ async def test_with_large_quantity(
     mock_bond_repo: AsyncMock,
     mock_bondholder_repo: AsyncMock,
     bond_create_dto: BondCreateDTO,
-    existing_bond: BondEntity,
+    bond_entity_mock: Mock,
 ) -> None:
     bondholder_dto = BondHolderCreateDTO(
         user_id=uuid4(),
         quantity=1000000,
         purchase_date=date.today(),
     )
-    mock_bond_repo.get_by_series.return_value = existing_bond
+    mock_bond_repo.get_by_series.return_value = bond_entity_mock
     mock_bondholder_repo.write.return_value = Mock(spec=BondHolderEntity)
 
     await use_case.execute(bondholder_dto, bond_create_dto)
@@ -248,9 +233,9 @@ async def test_preserves_all_bondholder_dto_fields(
     mock_bondholder_repo: AsyncMock,
     bondholder_create_dto: BondHolderCreateDTO,
     bond_create_dto: BondCreateDTO,
-    existing_bond: BondEntity,
+    bond_entity_mock: Mock,
 ) -> None:
-    mock_bond_repo.get_by_series.return_value = existing_bond
+    mock_bond_repo.get_by_series.return_value = bond_entity_mock
     mock_bondholder_repo.write.return_value = Mock(spec=BondHolderEntity)
 
     await use_case.execute(bondholder_create_dto, bond_create_dto)
@@ -259,7 +244,7 @@ async def test_preserves_all_bondholder_dto_fields(
     assert created_bondholder.user_id == bondholder_create_dto.user_id
     assert created_bondholder.quantity == bondholder_create_dto.quantity
     assert created_bondholder.purchase_date == bondholder_create_dto.purchase_date
-    assert created_bondholder.bond_id == existing_bond.id
+    assert created_bondholder.bond_id == bond_entity_mock.id
 
 
 async def test_calls_to_dto_with_correct_params(
@@ -268,9 +253,9 @@ async def test_calls_to_dto_with_correct_params(
     mock_bondholder_repo: AsyncMock,
     bondholder_create_dto: BondHolderCreateDTO,
     bond_create_dto: BondCreateDTO,
-    existing_bond: BondEntity,
+    bond_entity_mock: Mock,
 ) -> None:
-    mock_bond_repo.get_by_series.return_value = existing_bond
+    mock_bond_repo.get_by_series.return_value = bond_entity_mock
     created_bondholder = Mock(spec=BondHolderEntity)
     mock_bondholder_repo.write.return_value = created_bondholder
     use_case.to_dto = AsyncMock()
@@ -278,8 +263,8 @@ async def test_calls_to_dto_with_correct_params(
     await use_case.execute(bondholder_create_dto, bond_create_dto)
 
     call_args = use_case.to_dto.call_args
-    assert call_args[1]["bond"] == existing_bond
+    assert call_args[1]["bond"] == bond_entity_mock
 
     bondholder_arg = call_args[1]["bondholder"]
-    assert bondholder_arg.bond_id == existing_bond.id
+    assert bondholder_arg.bond_id == bond_entity_mock.id
     assert bondholder_arg.user_id == bondholder_create_dto.user_id
