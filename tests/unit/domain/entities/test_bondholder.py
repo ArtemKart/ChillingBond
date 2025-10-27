@@ -2,13 +2,14 @@ from datetime import date
 from uuid import uuid4
 
 import pytest
+import pytest_asyncio
 
 from src.domain.entities.bondholder import BondHolder
 from src.domain.exceptions import ValidationError
 
 
-@pytest.fixture
-async def bondholder() -> BondHolder:
+@pytest_asyncio.fixture
+def bondholder() -> BondHolder:
     return BondHolder(
         id=uuid4(),
         bond_id=uuid4(),

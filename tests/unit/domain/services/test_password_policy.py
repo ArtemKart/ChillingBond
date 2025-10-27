@@ -1,10 +1,11 @@
 import pytest
+import pytest_asyncio
 
 from src.domain.exceptions import ValidationError
 from src.domain.services.password_policy import PasswordPolicy
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def password_policy() -> PasswordPolicy:
     return PasswordPolicy()
 

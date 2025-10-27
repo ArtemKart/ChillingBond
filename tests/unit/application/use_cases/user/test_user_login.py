@@ -3,20 +3,22 @@ from uuid import uuid4
 import pytest
 from unittest.mock import AsyncMock, Mock
 
+import pytest_asyncio
+
 from src.application.dto.token import TokenDTO
 from src.application.use_cases.user.user_login import UserLoginUseCase
 from src.domain.exceptions import ValidationError
 from src.domain.ports.services.password_hasher import PasswordHasher
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def use_case(
     mock_user_repo: AsyncMock, mock_hasher: AsyncMock, mock_token_handler: AsyncMock
 ) -> UserLoginUseCase:
     return UserLoginUseCase(mock_user_repo, mock_hasher, mock_token_handler)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def sample_form_data() -> Mock:
     form_data = Mock()
     form_data.username = "test@example.com"
@@ -24,7 +26,7 @@ def sample_form_data() -> Mock:
     return form_data
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def sample_user() -> Mock:
     user = Mock()
     user.id = uuid4()
@@ -32,7 +34,7 @@ def sample_user() -> Mock:
     return user
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def sample_token() -> Mock:
     token = Mock()
     token.token = "test_jwt_token"

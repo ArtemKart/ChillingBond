@@ -1,7 +1,8 @@
-import pytest
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 from datetime import date
+
+import pytest_asyncio
 
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
@@ -12,8 +13,8 @@ from src.domain.entities.bond import Bond as BondEntity
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 
 
-@pytest.fixture
-async def use_case(
+@pytest_asyncio.fixture
+def use_case(
     mock_bond_repo: AsyncMock, mock_bondholder_repo: AsyncMock
 ) -> BondHolderCreateUseCase:
     return BondHolderCreateUseCase(
@@ -21,8 +22,8 @@ async def use_case(
     )
 
 
-@pytest.fixture
-async def bondholder_create_dto() -> BondHolderCreateDTO:
+@pytest_asyncio.fixture
+def bondholder_create_dto() -> BondHolderCreateDTO:
     return BondHolderCreateDTO(
         user_id=uuid4(),
         quantity=50,
@@ -30,8 +31,8 @@ async def bondholder_create_dto() -> BondHolderCreateDTO:
     )
 
 
-@pytest.fixture
-async def bond_create_dto() -> BondCreateDTO:
+@pytest_asyncio.fixture
+def bond_create_dto() -> BondCreateDTO:
     return BondCreateDTO(
         series="ROR1602",
         nominal_value=100.0,
@@ -42,8 +43,8 @@ async def bond_create_dto() -> BondCreateDTO:
     )
 
 
-@pytest.fixture
-async def existing_bond() -> BondEntity:
+@pytest_asyncio.fixture
+def existing_bond() -> BondEntity:
     return BondEntity(
         id=uuid4(),
         series="ROR1602",
@@ -55,8 +56,8 @@ async def existing_bond() -> BondEntity:
     )
 
 
-@pytest.fixture
-async def sample_bondholder_dto() -> BondHolderDTO:
+@pytest_asyncio.fixture
+def sample_bondholder_dto() -> BondHolderDTO:
     return BondHolderDTO(
         id=uuid4(),
         bond_id=uuid4(),

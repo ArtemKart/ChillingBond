@@ -1,13 +1,13 @@
 from unittest.mock import Mock
 
-import pytest
+import pytest_asyncio
 
 from src.domain.entities.user import User
 from src.domain.ports.services.password_hasher import PasswordHasher
 
 
-@pytest.fixture
-async def hasher() -> PasswordHasher:
+@pytest_asyncio.fixture
+def hasher() -> PasswordHasher:
     return Mock(PasswordHasher)
 
 

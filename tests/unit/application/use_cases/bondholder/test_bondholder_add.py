@@ -4,6 +4,8 @@ import pytest
 from unittest.mock import AsyncMock, Mock
 from datetime import date
 
+import pytest_asyncio
+
 from src.application.dto.bondholder import BondHolderChangeQuantityDTO, BondHolderDTO
 from src.application.use_cases.bondholder.bondholder_add import (
     BondAddToBondHolderUseCase,
@@ -13,8 +15,8 @@ from src.domain.entities.bondholder import BondHolder
 from src.domain.exceptions import NotFoundError, InvalidTokenError
 
 
-@pytest.fixture
-async def use_case(
+@pytest_asyncio.fixture
+def use_case(
     mock_bond_repo: AsyncMock,
     mock_user_repo: AsyncMock,
     mock_bondholder_repo: AsyncMock,
@@ -26,8 +28,8 @@ async def use_case(
     )
 
 
-@pytest.fixture
-async def sample_dto() -> BondHolderChangeQuantityDTO:
+@pytest_asyncio.fixture
+def sample_dto() -> BondHolderChangeQuantityDTO:
     return BondHolderChangeQuantityDTO(
         id=uuid4(),
         user_id=uuid4(),
@@ -36,8 +38,8 @@ async def sample_dto() -> BondHolderChangeQuantityDTO:
     )
 
 
-@pytest.fixture
-async def sample_bondholder() -> Mock:
+@pytest_asyncio.fixture
+def sample_bondholder() -> Mock:
     bondholder = Mock(spec=BondHolder)
     bondholder.id = uuid4()
     bondholder.bond_id = uuid4()
@@ -49,8 +51,8 @@ async def sample_bondholder() -> Mock:
     return bondholder
 
 
-@pytest.fixture
-async def sample_bond() -> Mock:
+@pytest_asyncio.fixture
+def sample_bond() -> Mock:
     bond = Mock(spec=Bond)
     bond.id = uuid4()
     bond.series = "ROR1602"

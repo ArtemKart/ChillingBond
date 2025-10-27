@@ -3,6 +3,7 @@ from unittest.mock import patch, AsyncMock
 
 import jwt
 import pytest
+import pytest_asyncio
 
 from src.adapters.config import Config
 from src.adapters.outbound.security.jwt_token_handler import JWTTokenHandler
@@ -10,8 +11,7 @@ from src.domain.entities.token import Token
 from src.domain.ports.services.token_handler import TokenHandler
 
 
-
-@pytest.fixture
+@pytest_asyncio.fixture
 def mock_config() -> AsyncMock:
     config = AsyncMock(spec=Config)
     config.SECRET_KEY = "test_secret_key_for_testing_only"
@@ -19,20 +19,22 @@ def mock_config() -> AsyncMock:
     return config
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def handler(mock_config: AsyncMock) -> JWTTokenHandler:
     return JWTTokenHandler(config=mock_config)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def handler_with_custom_expiry(mock_config: AsyncMock) -> JWTTokenHandler:
     return JWTTokenHandler(config=mock_config, expire_delta=timedelta(minutes=30))
 
 
-async def test_handler_implements_token_handler_interface(handler: JWTTokenHandler) -> None:
+async def test_handler_implements_token_handler_interface(
+    handler: JWTTokenHandler,
+) -> None:
     assert isinstance(handler, TokenHandler)
-    assert hasattr(handler, 'create_token')
-    assert hasattr(handler, 'read_token')
+    assert hasattr(handler, "create_token")
+    assert hasattr(handler, "read_token")
 
 
 async def test_init_with_default_expire_delta(mock_config: AsyncMock) -> None:
@@ -61,14 +63,16 @@ async def test_create_token_returns_token_entity(handler: JWTTokenHandler) -> No
     assert len(token.token) > 0
 
 
-async def test_create_token_includes_subject_in_payload(handler: JWTTokenHandler) -> None:
+async def test_create_token_includes_subject_in_payload(
+    handler: JWTTokenHandler,
+) -> None:
     subject = "test_user_id"
     token = await handler.create_token(subject)
     payload = jwt.decode(
         token.token,
         handler._config.SECRET_KEY,
         algorithms=[handler._config.ALGORITHM],
-        options={"verify_exp": False}
+        options={"verify_exp": False},
     )
 
     assert payload["sub"] == subject
@@ -87,13 +91,11 @@ async def test_read_token_extracts_subject(handler: JWTTokenHandler) -> None:
 async def test_read_token_with_expired_token(handler: JWTTokenHandler) -> None:
     expired_payload = {
         "exp": datetime.now(timezone.utc) - timedelta(hours=1),
-        "sub": "expired_user"
+        "sub": "expired_user",
     }
 
     expired_token = jwt.encode(
-        expired_payload,
-        handler._config.SECRET_KEY,
-        handler._config.ALGORITHM
+        expired_payload, handler._config.SECRET_KEY, handler._config.ALGORITHM
     )
 
     with pytest.raises(jwt.ExpiredSignatureError):
@@ -103,13 +105,11 @@ async def test_read_token_with_expired_token(handler: JWTTokenHandler) -> None:
 async def test_read_token_with_invalid_signature(handler: JWTTokenHandler) -> None:
     invalid_payload = {
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
-        "sub": "invalid_user"
+        "sub": "invalid_user",
     }
 
     invalid_token = jwt.encode(
-        invalid_payload,
-        "wrong_secret_key",
-        handler._config.ALGORITHM
+        invalid_payload, "wrong_secret_key", handler._config.ALGORITHM
     )
 
     with pytest.raises(jwt.InvalidSignatureError):
@@ -119,14 +119,10 @@ async def test_read_token_with_invalid_signature(handler: JWTTokenHandler) -> No
 async def test_read_token_with_invalid_algorithm(handler: JWTTokenHandler) -> None:
     invalid_payload = {
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
-        "sub": "user_123"
+        "sub": "user_123",
     }
 
-    invalid_token = jwt.encode(
-        invalid_payload,
-        handler._config.SECRET_KEY,
-        "HS512"
-    )
+    invalid_token = jwt.encode(invalid_payload, handler._config.SECRET_KEY, "HS512")
 
     with pytest.raises(jwt.InvalidTokenError):
         await handler.read_token(invalid_token)
@@ -135,13 +131,11 @@ async def test_read_token_with_invalid_algorithm(handler: JWTTokenHandler) -> No
 async def test_read_token_without_subject(handler: JWTTokenHandler) -> None:
     payload_without_sub = {
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
-        "user_id": "123"
+        "user_id": "123",
     }
 
     token_without_sub = jwt.encode(
-        payload_without_sub,
-        handler._config.SECRET_KEY,
-        handler._config.ALGORITHM
+        payload_without_sub, handler._config.SECRET_KEY, handler._config.ALGORITHM
     )
 
     result = await handler.read_token(token_without_sub)
@@ -162,7 +156,9 @@ async def test_read_token_with_malformed_token(handler: JWTTokenHandler) -> None
             await handler.read_token(malformed)
 
 
-async def test_create_token_with_special_characters_subject(handler: JWTTokenHandler) -> None:
+async def test_create_token_with_special_characters_subject(
+    handler: JWTTokenHandler,
+) -> None:
     special_subjects = [
         "user@example.com",
         "user-with-dashes",
@@ -207,8 +203,10 @@ async def test_token_roundtrip_consistency(handler: JWTTokenHandler) -> None:
         assert extracted == subject
 
 
-@patch('jwt.encode')
-async def test_create_token_calls_jwt_encode(mock_encode: AsyncMock, handler: JWTTokenHandler) -> None:
+@patch("jwt.encode")
+async def test_create_token_calls_jwt_encode(
+    mock_encode: AsyncMock, handler: JWTTokenHandler
+) -> None:
     mock_encode.return_value = "mocked_token"
     subject = "test_subject"
 
@@ -227,8 +225,10 @@ async def test_create_token_calls_jwt_encode(mock_encode: AsyncMock, handler: JW
     assert token.token == "mocked_token"
 
 
-@patch('jwt.decode')
-async def test_read_token_calls_jwt_decode(mock_decode: AsyncMock, handler: JWTTokenHandler) -> None:
+@patch("jwt.decode")
+async def test_read_token_calls_jwt_decode(
+    mock_decode: AsyncMock, handler: JWTTokenHandler
+) -> None:
     mock_decode.return_value = {"sub": "decoded_subject"}
     token_string = "test_token"
 
@@ -238,13 +238,15 @@ async def test_read_token_calls_jwt_decode(mock_decode: AsyncMock, handler: JWTT
         token_string,
         handler._config.SECRET_KEY,
         algorithms=[handler._config.ALGORITHM],
-        options={"verify_exp": True}
+        options={"verify_exp": True},
     )
 
     assert result == "decoded_subject"
 
 
-async def test_different_handlers_same_config_compatible(mock_config: AsyncMock) -> None:
+async def test_different_handlers_same_config_compatible(
+    mock_config: AsyncMock,
+) -> None:
     handler1 = JWTTokenHandler(config=mock_config)
     handler2 = JWTTokenHandler(config=mock_config)
 

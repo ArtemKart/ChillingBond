@@ -2,6 +2,7 @@ from unittest.mock import Mock, AsyncMock
 from uuid import uuid4
 
 import pytest
+import pytest_asyncio
 
 from src.application.dto.user import UserDTO
 from src.application.use_cases.user.user_auth import UserAuthUseCase
@@ -9,13 +10,13 @@ from src.domain.exceptions import InvalidTokenError, NotFoundError
 from src.domain.entities.user import User as UserEntity
 
 
-@pytest.fixture
-async def use_case(mock_user_repo: Mock, mock_token_handler: Mock) -> UserAuthUseCase:
+@pytest_asyncio.fixture
+def use_case(mock_user_repo: Mock, mock_token_handler: Mock) -> UserAuthUseCase:
     return UserAuthUseCase(user_repo=mock_user_repo, token_handler=mock_token_handler)
 
 
-@pytest.fixture
-async def user() -> UserEntity:
+@pytest_asyncio.fixture
+def user() -> UserEntity:
     return UserEntity(
         id=uuid4(),
         email="test_email@email.com",
@@ -24,8 +25,8 @@ async def user() -> UserEntity:
     )
 
 
-@pytest.fixture
-async def dto_from_user(user: UserEntity) -> UserDTO:
+@pytest_asyncio.fixture
+def dto_from_user(user: UserEntity) -> UserDTO:
     return UserDTO(
         id=user.id,
         email=user.email,

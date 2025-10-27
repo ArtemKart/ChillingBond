@@ -2,6 +2,8 @@ import pytest
 from datetime import datetime, date
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest_asyncio
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from src.adapters.exceptions import SQLAlchemyRepositoryError
@@ -10,7 +12,7 @@ from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRe
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def bondholder_entity() -> BondHolderEntity:
     return BondHolderEntity(
         id=uuid4(),
@@ -22,7 +24,7 @@ def bondholder_entity() -> BondHolderEntity:
     )
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def bondholder_model(bondholder_entity: BondHolderEntity) -> BondHolderModel:
     return BondHolderModel(
         id=bondholder_entity.id,
@@ -34,7 +36,7 @@ def bondholder_model(bondholder_entity: BondHolderEntity) -> BondHolderModel:
     )
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def mock_session() -> AsyncMock:
     session = AsyncMock()
     session.get = AsyncMock()
@@ -46,7 +48,7 @@ def mock_session() -> AsyncMock:
     return session
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def repository(mock_session: AsyncMock) -> SQLAlchemyBondHolderRepository:
     return SQLAlchemyBondHolderRepository(mock_session)
 

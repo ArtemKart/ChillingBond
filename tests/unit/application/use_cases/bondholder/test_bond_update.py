@@ -2,19 +2,21 @@ import pytest
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
+import pytest_asyncio
+
 from src.application.dto.bond import BondUpdateDTO, BondDTO
 from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
 from src.domain.entities.bond import Bond as BondEntity
 from src.domain.exceptions import NotFoundError
 
 
-@pytest.fixture
-async def use_case(mock_bond_repo: AsyncMock) -> BondUpdateUseCase:
+@pytest_asyncio.fixture
+def use_case(mock_bond_repo: AsyncMock) -> BondUpdateUseCase:
     return BondUpdateUseCase(mock_bond_repo)
 
 
-@pytest.fixture
-async def sample_bond_entity() -> Mock:
+@pytest_asyncio.fixture
+def sample_bond_entity() -> Mock:
     bond = Mock(spec=BondEntity)
     bond.id = uuid4()
     bond.nominal_value = 100.0
@@ -26,8 +28,8 @@ async def sample_bond_entity() -> Mock:
     return bond
 
 
-@pytest.fixture
-async def sample_bond_update_dto() -> Mock:
+@pytest_asyncio.fixture
+def sample_bond_update_dto() -> Mock:
     dto = Mock(spec=BondUpdateDTO)
     dto.nominal_value = 200.0
     dto.series = None

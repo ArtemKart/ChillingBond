@@ -1,6 +1,8 @@
 import pytest
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest_asyncio
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from src.adapters.exceptions import SQLAlchemyRepositoryError
@@ -9,7 +11,7 @@ from src.adapters.outbound.repositories.user import SQLAlchemyUserRepository
 from src.domain.entities.user import User as UserEntity
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def user_entity() -> UserEntity:
     return UserEntity(
         id=uuid4(),
@@ -19,7 +21,7 @@ def user_entity() -> UserEntity:
     )
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def user_model(user_entity: UserEntity) -> UserModel:
     return UserModel(
         id=user_entity.id,
@@ -29,7 +31,7 @@ def user_model(user_entity: UserEntity) -> UserModel:
     )
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def mock_session() -> AsyncMock:
     session = AsyncMock()
     session.get = AsyncMock()
@@ -42,7 +44,7 @@ def mock_session() -> AsyncMock:
     return session
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def repository(mock_session: AsyncMock) -> SQLAlchemyUserRepository:
     return SQLAlchemyUserRepository(mock_session)
 
