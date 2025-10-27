@@ -19,11 +19,11 @@ class UserLoginUseCase(UserBaseUseCase):
 
     async def execute(self, form_data) -> TokenDTO:
         user = await self.user_repo.get_by_email(form_data.username)
-        if not user or not await user.verify_password(
+        if not user or not user.verify_password(
             hasher=self.hasher, plain_password=form_data.password
         ):
             raise ValidationError("Incorrect username or password")
-        token = await self.token_handler.create_token(
+        token = self.token_handler.create_token(
             subject=str(user.id),
         )
         return TokenDTO(

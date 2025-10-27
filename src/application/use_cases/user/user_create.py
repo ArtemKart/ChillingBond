@@ -17,11 +17,11 @@ class UserCreateUseCase(UserBaseUseCase):
             error_msg = "User already exists"
             raise ValidationError(error_msg)
 
-        user = await UserEntity.create(
+        user = UserEntity.create(
             email=user_dto.email,
             plain_password=user_dto.password,
             hasher=self.hasher,
             name=user_dto.name,
         )
         user_entity = await self.user_repo.write(user)
-        return await self.to_dto(user_entity)
+        return self.to_dto(user_entity)

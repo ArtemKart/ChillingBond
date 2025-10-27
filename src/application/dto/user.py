@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from src.domain.value_objects.email import Email
+
 
 @dataclass
 class UserDTO:
     id: UUID
-    email: str
+    email: Email
     name: str | None
 
 
