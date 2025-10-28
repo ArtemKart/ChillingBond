@@ -126,6 +126,7 @@ async def test_update_bond_success_partial_update(
     assert dto.nominal_value == 2000.00
     assert dto.initial_interest_rate == 7.0
 
+
 # TODO: uncomment when exception handler will implemented
 # async def test_update_bond_not_found(
 #     client: TestClient,
@@ -527,6 +528,7 @@ async def test_update_bond_extra_fields_ignored(
     data = response.json()
     assert "extra_field" not in data
     assert "another_extra" not in data
+
 
 # TODO: uncomment when exception handler will be implemented
 # async def test_update_bond_use_case_exception(

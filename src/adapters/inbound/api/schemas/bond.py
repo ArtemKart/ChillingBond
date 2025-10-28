@@ -7,7 +7,7 @@ class BondBase(BaseModel):
     maturity_period: int = Field(..., gt=0, description="Maturity period in months")
     initial_interest_rate: float = Field(..., gt=0, description="Initial interest rate")
     first_interest_period: int = Field(..., gt=0, description="First interest period")
-    reference_rate_margin: float = Field(...,description="Reference rate margin")
+    reference_rate_margin: float = Field(..., description="Reference rate margin")
 
 
 class BondUpdateRequest(BaseModel):
@@ -20,9 +20,7 @@ class BondUpdateRequest(BaseModel):
 
     @model_validator(mode="after")
     def check_any_field_present(self):
-        if not any(
-                value is not None for value in self.model_dump().values()
-        ):
+        if not any(value is not None for value in self.model_dump().values()):
             raise ValueError("At least one field must be provided for update.")
         return self
 

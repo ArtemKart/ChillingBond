@@ -220,7 +220,9 @@ async def test_to_model_conversion(
 
 
 async def test_update_model(
-    repository: SQLAlchemyUserRepository, user_model: UserModel, mock_hasher: Mock,
+    repository: SQLAlchemyUserRepository,
+    user_model: UserModel,
+    mock_hasher: Mock,
 ) -> None:
     new_entity = UserEntity.create(
         email="newemail@example.com",

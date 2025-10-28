@@ -94,13 +94,13 @@ async def test_create_bond_purchase_missing_required_fields(client: TestClient) 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-# async def test_create_bond_purchase_invalid_quantity(
-#     client: TestClient, valid_bond_data: dict[str, Any]
-# ) -> None:
-#
-#     valid_bond_data["quantity"] = -5
-#     response = client.post("/bonds", json=valid_bond_data)
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+async def test_create_bond_purchase_invalid_quantity(
+    client: TestClient, valid_bond_data: dict[str, Any]
+) -> None:
+
+    valid_bond_data["quantity"] = -5
+    response = client.post("/bonds", json=valid_bond_data)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_create_bond_purchase_invalid_date_format(
@@ -111,20 +111,20 @@ async def test_create_bond_purchase_invalid_date_format(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-# async def test_create_bond_purchase_invalid_nominal_value(
-#     client: TestClient, valid_bond_data: dict[str, Any]
-# ) -> None:
-#     valid_bond_data["nominal_value"] = -1000
-#     response = client.post("/bonds", json=valid_bond_data)
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+async def test_create_bond_purchase_invalid_nominal_value(
+    client: TestClient, valid_bond_data: dict[str, Any]
+) -> None:
+    valid_bond_data["nominal_value"] = -1000
+    response = client.post("/bonds", json=valid_bond_data)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-# async def test_create_bond_purchase_invalid_maturity_period(
-#     client: TestClient, valid_bond_data: dict[str, Any]
-# ) -> None:
-#     valid_bond_data["maturity_period"] = 0
-#     response = client.post("/bonds", json=valid_bond_data)
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+async def test_create_bond_purchase_invalid_maturity_period(
+    client: TestClient, valid_bond_data: dict[str, Any]
+) -> None:
+    valid_bond_data["maturity_period"] = 0
+    response = client.post("/bonds", json=valid_bond_data)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_create_bond_purchase_unauthorized(
@@ -140,6 +140,7 @@ async def test_create_bond_purchase_unauthorized(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
+# TODO: uncomment when exception handler will be implemented
 # async def test_create_bond_purchase_use_case_exception(
 #     client: TestClient, valid_bond_data: dict[str, Any]
 # ) -> None:

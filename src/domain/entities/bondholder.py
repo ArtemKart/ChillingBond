@@ -48,11 +48,10 @@ class BondHolder:
             user_id=user_id,
             quantity=quantity,
             purchase_date=purchase_date,
-            last_update=last_update
+            last_update=last_update,
         )
         bh.validate()
         return bh
-
 
     def add_quantity(self, amount: int) -> None:
         if amount <= 0:

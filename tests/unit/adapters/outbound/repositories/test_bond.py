@@ -11,9 +11,6 @@ from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
 from src.domain.entities.bond import Bond as BondEntity
 
 
-
-
-
 @pytest_asyncio.fixture
 def bond_model(bond_entity_mock: Mock) -> BondModel:
     return BondModel(

@@ -13,10 +13,11 @@ def local_bondholder() -> BondHolderEntity:
     return BondHolderEntity(
         id=uuid4(),
         bond_id=uuid4(),
-        user_id = uuid4(),
-        quantity = 100,
-        purchase_date = date.today(),
+        user_id=uuid4(),
+        quantity=100,
+        purchase_date=date.today(),
     )
+
 
 async def test_bondholder_add_quantity_err(local_bondholder: BondHolderEntity) -> None:
     negative_quantity = -local_bondholder.quantity
@@ -27,7 +28,9 @@ async def test_bondholder_add_quantity_err(local_bondholder: BondHolderEntity) -
     assert local_bondholder.quantity != negative_quantity
 
 
-async def test_bondholder_add_quantity_happy_path(local_bondholder: BondHolderEntity) -> None:
+async def test_bondholder_add_quantity_happy_path(
+    local_bondholder: BondHolderEntity,
+) -> None:
     before = local_bondholder.quantity
     amount = 44
     local_bondholder.add_quantity(amount=amount)

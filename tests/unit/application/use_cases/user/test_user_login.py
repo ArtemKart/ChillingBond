@@ -55,7 +55,9 @@ async def test_success_returns_token(
         hasher=mock_hasher,
         plain_password=sample_form_data.password,
     )
-    mock_token_handler.create_token.assert_called_once_with(subject=str(user_entity_mock.id))
+    mock_token_handler.create_token.assert_called_once_with(
+        subject=str(user_entity_mock.id)
+    )
 
 
 async def test_user_not_found_raises_validation_error(
