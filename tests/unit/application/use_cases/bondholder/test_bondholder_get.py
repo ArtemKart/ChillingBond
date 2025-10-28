@@ -35,7 +35,7 @@ async def test_happy_path(
 
     mock_bondholder_repo.get_one.return_value = mock_bondholder
     mock_bond_repo.get_one.return_value = mock_bond
-    use_case.to_dto = AsyncMock(return_value=expected_dto)
+    use_case.to_dto = Mock(return_value=expected_dto)
 
     result = await use_case.execute(bondholder_id, user_id)
 

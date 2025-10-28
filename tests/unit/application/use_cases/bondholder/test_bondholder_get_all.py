@@ -39,7 +39,7 @@ async def test_success_with_multiple_bondholders(
 
     mock_bondholder_repo.get_all.return_value = mock_bondholders
     mock_bond_repo.get_one.side_effect = mock_bonds
-    use_case.to_dto = AsyncMock(side_effect=expected_dtos)
+    use_case.to_dto = Mock(side_effect=expected_dtos)
 
     result = await use_case.execute(user_id)
 
@@ -83,7 +83,7 @@ async def test_success_with_single_bondholder(
 
     mock_bondholder_repo.get_all.return_value = [mock_bondholder]
     mock_bond_repo.get_one.return_value = mock_bond
-    use_case.to_dto = AsyncMock(return_value=expected_dto)
+    use_case.to_dto = Mock(return_value=expected_dto)
 
     result = await use_case.execute(user_id)
 
@@ -168,7 +168,7 @@ async def test_preserves_order(
 
     mock_bondholder_repo.get_all.return_value = mock_bondholders
     mock_bond_repo.get_one.side_effect = mock_bonds
-    use_case.to_dto = AsyncMock(side_effect=expected_dtos)
+    use_case.to_dto = Mock(side_effect=expected_dtos)
 
     result = await use_case.execute(user_id)
 

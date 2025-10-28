@@ -199,7 +199,7 @@ async def test_calls_to_dto_method(
         reference_rate_margin=0,
     )
 
-    use_case.to_dto = AsyncMock(return_value=expected_dto)
+    use_case.to_dto = Mock(return_value=expected_dto)
 
     result = await use_case.execute(sample_dto)
 

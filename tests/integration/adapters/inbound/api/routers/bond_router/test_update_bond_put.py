@@ -191,47 +191,46 @@ async def test_update_bond_missing_required_fields(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-# TODO: uncomment when nominal_value validation will be implemented
-# async def test_update_bond_invalid_nominal_value(
-#     client: TestClient,
-#     valid_bond_id: UUID,
-# ) -> None:
-#     invalid_request = {
-#         "nominal_value": -1000.00,
-#         "series": "ROR5555",
-#     }
-#
-#     response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
-#
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+async def test_update_bond_invalid_nominal_value(
+    client: TestClient,
+    valid_bond_id: UUID,
+) -> None:
+    invalid_request = {
+        "nominal_value": -1000.00,
+        "series": "ROR5555",
+    }
 
-# TODO: uncomment when maturity_period validation will be implemented
-# async def test_update_bond_invalid_maturity_period(
-#     client: TestClient,
-#     valid_bond_id: UUID,
-# ) -> None:
-#     invalid_request = {
-#         "nominal_value": 1000.00,
-#         "maturity_period": -12,
-#     }
-#
-#     response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
-#
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
 
-# TODO: uncomment when initial_interest_rate validation will be implemented
-# async def test_update_bond_invalid_interest_rate(
-#     client: TestClient,
-#     valid_bond_id: UUID,
-# ) -> None:
-#     invalid_request = {
-#         "nominal_value": 1000.00,
-#         "initial_interest_rate": -5.5,
-#     }
-#
-#     response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
-#
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_update_bond_invalid_maturity_period(
+    client: TestClient,
+    valid_bond_id: UUID,
+) -> None:
+    invalid_request = {
+        "nominal_value": 1000.00,
+        "maturity_period": -12,
+    }
+
+    response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+async def test_update_bond_invalid_interest_rate(
+    client: TestClient,
+    valid_bond_id: UUID,
+) -> None:
+    invalid_request = {
+        "nominal_value": 1000.00,
+        "initial_interest_rate": -5.5,
+    }
+
+    response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_update_bond_response_structure(
