@@ -34,7 +34,7 @@ from src.application.use_cases.bondholder.bondholder_get import (
     BondHolderGetAllUseCase,
 )
 from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
-from src.domain.exceptions import NotFoundError, InvalidTokenError
+from src.domain.exceptions import NotFoundError, AuthenticationError
 
 bond_router = APIRouter(prefix="/bonds", tags=["bondholder"])
 
@@ -123,7 +123,7 @@ async def get_bond(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="BondHolder not found",
         )
-    except InvalidTokenError:
+    except AuthenticationError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",

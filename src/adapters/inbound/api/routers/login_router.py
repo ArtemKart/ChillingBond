@@ -11,7 +11,7 @@ from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
 )
 from src.adapters.inbound.api.schemas.auth import TokenResponse, UUIDResponse
 from src.application.use_cases.user.user_login import UserLoginUseCase
-from src.domain.exceptions import ValidationError
+from src.domain.exceptions import AuthenticationError
 
 login_router = APIRouter(prefix="/login", tags=["login"])
 
@@ -28,7 +28,7 @@ async def login(
 ):
     try:
         return await use_case.execute(form_data)
-    except ValidationError:
+    except AuthenticationError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",

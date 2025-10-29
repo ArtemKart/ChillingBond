@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from jwt import PyJWTError
+
 from src.application.dto.user import UserDTO
 from src.application.use_cases.user.user_base import UserBaseUseCase
 from src.domain.exceptions import InvalidTokenError, NotFoundError
@@ -13,9 +15,12 @@ class UserAuthUseCase(UserBaseUseCase):
         self.token_handler = token_handler
 
     async def execute(self, token: str) -> UserDTO:
-        user_id_str = self.token_handler.read_token(subject=token)
-        if user_id_str is None:
+        try:
+            user_id_str = self.token_handler.read_token(subject=token)
+        except PyJWTError:
             raise InvalidTokenError("Invalid token")
+        if user_id_str is None:
+            raise InvalidTokenError("Token does not contain user information")
 
         user_id = UUID(user_id_str)
         user = await self.user_repo.get_one(user_id=user_id)
