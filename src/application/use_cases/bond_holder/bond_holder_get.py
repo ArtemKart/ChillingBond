@@ -2,7 +2,7 @@ from uuid import UUID
 
 from src.application.dto.bond_holder import BondHolderDTO
 from src.application.use_cases.bond_holder.bond_holder_base import BondHolderBaseUseCase
-from src.domain.exceptions import NotFoundError, InvalidTokenError
+from src.domain.exceptions import NotFoundError, AuthorizationError
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bond_holder import BondHolderRepository
 
@@ -19,7 +19,7 @@ class BondHolderGetUseCase(BondHolderBaseUseCase):
         if not bond_holder:
             raise NotFoundError("BondHolder not found")
         if not bond_holder.user_id == user_id:
-            raise InvalidTokenError("User not found")
+            raise AuthorizationError("Access denied")
         bond = await self.bond_repo.get_one(bond_id=bond_holder.bond_id)
         if not bond:
             raise NotFoundError("Bond connected to BondHolder not found")

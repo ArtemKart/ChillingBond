@@ -35,7 +35,5 @@ class User:
         hashed = hasher.hash(plain_password)
         return cls(id=uuid4(), email=Email(email), hashed_password=hashed, name=name)
 
-    def verify_password(
-        self, hasher: PasswordHasher, plain_password: str
-    ) -> bool:
+    def verify_password(self, hasher: PasswordHasher, plain_password: str) -> bool:
         return hasher.verify(plain_password, self.hashed_password)

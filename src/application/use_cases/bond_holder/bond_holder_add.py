@@ -1,6 +1,6 @@
 from src.application.dto.bond_holder import BondHolderDTO, BondHolderChangeQuantityDTO
 from src.application.use_cases.bond_holder.bond_holder_base import BondHolderBaseUseCase
-from src.domain.exceptions import NotFoundError, InvalidTokenError
+from src.domain.exceptions import NotFoundError, AuthorizationError
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bond_holder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
@@ -24,7 +24,7 @@ class BondAddToBondHolderUseCase(BondHolderBaseUseCase):
         if not bond_holder:
             raise NotFoundError("Bond holder not found")
         if bond_holder.user_id != dto.user_id:
-            raise InvalidTokenError("Not authenticated")
+            raise AuthorizationError("Access denied")
         if dto.is_positive:
             bond_holder.add_quantity(dto.quantity)
         else:

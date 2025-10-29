@@ -16,3 +16,13 @@ class ValidationError(DomainError):
 
 class InvalidTokenError(DomainError):
     pass
+
+
+class AuthenticationError(DomainError):
+    pass
+
+
+class AuthorizationError(DomainError):
+    """Raised when user doesn't have permission to access resource"""
+
+    pass
