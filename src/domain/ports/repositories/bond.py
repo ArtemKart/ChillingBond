@@ -5,7 +5,7 @@ from src.domain.entities.bond import Bond
 
 
 class BondRepository(ABC):
-    """Abstract repository for managing bondholder entities.
+    """Abstract repository for managing bond entities.
 
     This interface defines the contract for implementing the Repository pattern.
     Concrete implementations must provide persistence for Bond entities
@@ -14,10 +14,10 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def get_one(self, bond_id: UUID) -> Bond | None:
-        """Retrieves a bondholder by its identifier.
+        """Retrieves a bond by its identifier.
 
         Args:
-            bond_id: The unique identifier of the bondholder.
+            bond_id: The unique identifier of the bond.
 
         Returns:
             A Bond object if found, None otherwise.
@@ -26,7 +26,7 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def get_by_series(self, series: str) -> Bond | None:
-        """Retrieves a bondholder by series.
+        """Retrieves a bond by series.
         Args:
             series: The unique series identifier.
 
@@ -37,7 +37,7 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def write(self, bond: Bond) -> Bond:
-        """Creates a new bondholder in the repository.
+        """Creates a new bond in the repository.
 
         Args:
             bond: The Bond object to persist.
@@ -49,7 +49,7 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def update(self, bond: Bond) -> Bond:
-        """Updates an existing bondholder in the repository.
+        """Updates an existing bond in the repository.
 
         Args:
             bond: The Bond object with updated data.
@@ -61,7 +61,7 @@ class BondRepository(ABC):
 
     @abstractmethod
     async def delete(self, bond_id: UUID) -> None:
-        """Deletes a bondholder from the repository.
+        """Deletes a bond from the repository.
 
         Args:
             bond_id: The unique identifier of the bondholder to delete.

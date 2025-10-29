@@ -7,6 +7,7 @@ import pytest_asyncio
 from fastapi import status
 from fastapi.testclient import TestClient
 
+from src.adapters.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.main import app
 
 
@@ -127,28 +128,27 @@ async def test_update_bond_success_partial_update(
     assert dto.initial_interest_rate == 7.0
 
 
-# TODO: uncomment when exception handler will implemented
-# async def test_update_bond_not_found(
-#     client: TestClient,
-#     valid_bond_id: UUID,
-#     valid_update_request: dict,
-# ) -> None:
-#     from src.domain.exceptions import NotFoundError
-#
-#     mock_use_case = AsyncMock()
-#     mock_use_case.execute.side_effect = NotFoundError("Bond not found")
-#
-#     from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
-#         bond_update_use_case,
-#     )
-#
-#     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-#
-#     response = client.put(
-#         f"/bonds/{valid_bond_id}/specification", json=valid_update_request
-#     )
-#
-#     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+async def test_update_bond_not_found(
+    client: TestClient,
+    valid_bond_id: UUID,
+    valid_update_request: dict,
+) -> None:
+    from src.domain.exceptions import NotFoundError
+
+    mock_use_case = AsyncMock()
+    mock_use_case.execute.side_effect = NotFoundError("Bond not found")
+
+    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+        bond_update_use_case,
+    )
+
+    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
+
+    response = client.put(
+        f"/bonds/{valid_bond_id}/specification", json=valid_update_request
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 async def test_update_bond_invalid_uuid(
@@ -530,22 +530,21 @@ async def test_update_bond_extra_fields_ignored(
     assert "another_extra" not in data
 
 
-# TODO: uncomment when exception handler will be implemented
-# async def test_update_bond_use_case_exception(
-#     client: TestClient,
-#     valid_bond_id: UUID,
-#     valid_update_request: dict,
-# ) -> None:
-#     mock_use_case = AsyncMock()
-#     mock_use_case.execute.side_effect = Exception("Database error")
-#
-#     from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
-#         bond_update_use_case,
-#     )
-#
-#     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-#
-#     response = client.put(
-#         f"/bonds/{valid_bond_id}/specification", json=valid_update_request
-#     )
-#     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+async def test_update_bond_use_case_exception(
+    client: TestClient,
+    valid_bond_id: UUID,
+    valid_update_request: dict,
+) -> None:
+    mock_use_case = AsyncMock()
+    mock_use_case.execute.side_effect = SQLAlchemyRepositoryError("Failed to update bond")
+
+    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+        bond_update_use_case,
+    )
+
+    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
+
+    response = client.put(
+        f"/bonds/{valid_bond_id}/specification", json=valid_update_request
+    )
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

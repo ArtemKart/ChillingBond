@@ -5,7 +5,7 @@ from src.domain.entities.bondholder import BondHolder
 
 
 class BondHolderRepository(ABC):
-    """Abstract repository for managing holding bonds.
+    """Abstract repository for managing BondHolders.
 
     This interface defines the contract for implementing the Repository pattern.
     Concrete implementations must provide persistence for BondHolder entities

@@ -64,20 +64,19 @@ async def test_create_user_success(
     assert r.json()["name"] == user_entity_mock.name
 
 
-# TODO: uncomment when implement exception handler
-# async def test_create_user_user_already_exists(
-#     client: TestClient,
-#     user_create_valid_data: dict[str, Any],
-#     use_case: UserCreateUseCase,
-#     user_entity_mock: Mock,
-# ) -> None:
-#     use_case.user_repo.get_by_email.return_value = user_entity_mock
-#     app.dependency_overrides[user_create_use_case] = lambda: use_case
-#
-#     r = client.post("/users", json=user_create_valid_data)
-#
-#     assert r.status_code == 409
-#     assert r.json()["detail"] == "User already exists"
+async def test_create_user_user_already_exists(
+    client: TestClient,
+    user_create_valid_data: dict[str, Any],
+    use_case: UserCreateUseCase,
+    user_entity_mock: Mock,
+) -> None:
+    use_case.user_repo.get_by_email.return_value = user_entity_mock  # type: ignore[attr-defined]
+    app.dependency_overrides[user_create_use_case] = lambda: use_case
+
+    r = client.post("/users", json=user_create_valid_data)
+
+    assert r.status_code == status.HTTP_409_CONFLICT
+    assert r.json()["detail"] == "User already exists"
 
 
 async def test_create_user_email_normalization(

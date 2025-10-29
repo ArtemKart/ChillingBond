@@ -190,25 +190,24 @@ async def test_add_to_bond_purchase_unauthorized(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-# TODO: uncomment when add exception handler
-# async def test_add_to_bond_purchase_not_found(
-#         client: TestClient,
-#         valid_purchase_id: UUID,
-#         valid_add_request: dict,
-# ) -> None:
-#     from src.domain.exceptions import NotFoundError
-#
-#     mock_use_case = AsyncMock()
-#     mock_use_case.execute.side_effect = NotFoundError("BondHolder not found")
-#
-#     from src.adapters.inbound.api.dependencies.bond_use_cases_deps import bond_add_to_bh_use_case
-#     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
-#
-#     response = client.patch(
-#         f"/bonds/{valid_purchase_id}/add",
-#         json=valid_add_request
-#     )
-#     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+async def test_add_to_bond_purchase_not_found(
+    client: TestClient,
+    valid_purchase_id: UUID,
+    valid_add_request: dict,
+) -> None:
+    from src.domain.exceptions import NotFoundError
+
+    mock_use_case = AsyncMock()
+    mock_use_case.execute.side_effect = NotFoundError("BondHolder not found")
+
+    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import bond_add_to_bh_use_case
+    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
+
+    response = client.patch(
+        f"/bonds/{valid_purchase_id}/add",
+        json=valid_add_request
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 async def test_add_to_bond_purchase_user_id_from_authentication(

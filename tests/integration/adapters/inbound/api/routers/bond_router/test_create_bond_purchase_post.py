@@ -8,6 +8,7 @@ import pytest_asyncio
 from fastapi import status
 from starlette.testclient import TestClient
 
+from src.adapters.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.main import app
 
 
@@ -140,19 +141,20 @@ async def test_create_bond_purchase_unauthorized(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-# TODO: uncomment when exception handler will be implemented
-# async def test_create_bond_purchase_use_case_exception(
-#     client: TestClient, valid_bond_data: dict[str, Any]
-# ) -> None:
-#     mock_use_case = AsyncMock()
-#     mock_use_case.execute.side_effect = Exception("Database error")
-#
-#     from src.adapters.inbound.api.dependencies.bond_use_cases_deps import create_bondholder_use_case
-#     app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
-#
-#     response = client.post("/bonds", json=valid_bond_data)
-#
-#     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+async def test_create_bond_purchase_use_case_exception(
+    client: TestClient, valid_bond_data: dict[str, Any]
+) -> None:
+    mock_use_case = AsyncMock()
+    mock_use_case.execute.side_effect = SQLAlchemyRepositoryError(
+        "Failed to save BondHolder object"
+    )
+
+    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import create_bondholder_use_case
+    app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
+
+    response = client.post("/bonds", json=valid_bond_data)
+
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 async def test_create_bond_purchase_with_decimal_values(

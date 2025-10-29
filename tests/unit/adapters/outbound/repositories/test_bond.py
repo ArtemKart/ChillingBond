@@ -139,7 +139,7 @@ async def test_write_sqlalchemy_error(
 ) -> None:
     mock_session.commit.side_effect = SQLAlchemyError("Database error")
 
-    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to save bondholder"):
+    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to save bond"):
         await repository.write(bond_entity_mock)
     mock_session.rollback.assert_called_once()
 
@@ -172,7 +172,7 @@ async def test_update_sqlalchemy_error(
 ) -> None:
     mock_session.get.side_effect = SQLAlchemyError("Database error")
 
-    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to update bondholder"):
+    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to update bond"):
         await repository.update(bond_entity_mock)
     mock_session.rollback.assert_called_once()
 
@@ -211,7 +211,7 @@ async def test_delete_sqlalchemy_error(
     bond_id = uuid4()
     mock_session.get.side_effect = SQLAlchemyError("Database error")
 
-    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to delete bondholder"):
+    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to delete bond"):
         await repository.delete(bond_id)
     mock_session.rollback.assert_called_once()
 

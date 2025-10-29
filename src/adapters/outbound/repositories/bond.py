@@ -41,7 +41,7 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
         except SQLAlchemyError as e:
-            error_msg = "Failed to save bondholder"
+            error_msg = "Failed to save bond"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
@@ -53,7 +53,7 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.refresh(model)
             return self._to_entity(model)
         except SQLAlchemyError as e:
-            error_msg = "Failed to update bondholder"
+            error_msg = "Failed to update bond"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
@@ -64,7 +64,7 @@ class SQLAlchemyBondRepository(BondRepository):
                 await self._session.delete(model)
                 await self._session.commit()
         except SQLAlchemyError as e:
-            error_msg = "Failed to delete bondholder"
+            error_msg = "Failed to delete bond"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 

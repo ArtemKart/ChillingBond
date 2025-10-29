@@ -41,7 +41,7 @@ async def test_invalid_token(use_case: UserAuthUseCase) -> None:
     use_case.token_handler.read_token = Mock(return_value=None)
 
     token = "test_token"
-    with pytest.raises(InvalidTokenError, match="Invalid token"):
+    with pytest.raises(InvalidTokenError, match="Token does not contain user information"):
         await use_case.execute(token=token)
 
 

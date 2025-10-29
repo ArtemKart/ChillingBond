@@ -5,7 +5,7 @@ import pytest_asyncio
 
 from src.application.dto.user import UserCreateDTO, UserDTO
 from src.application.use_cases.user.user_create import UserCreateUseCase
-from src.domain.exceptions import ValidationError
+from src.domain.exceptions import ConflictError
 from src.domain.entities.user import User as UserEntity
 
 
@@ -70,7 +70,7 @@ async def test_user_already_exists_raises_validation_error(
 ) -> None:
     mock_user_repo.get_by_email.return_value = user_entity_mock
 
-    with pytest.raises(ValidationError, match="User already exists"):
+    with pytest.raises(ConflictError, match="User already exists"):
         await use_case.execute(sample_user_create_dto)
 
     mock_user_repo.get_by_email.assert_called_once_with(sample_user_create_dto.email)
@@ -194,7 +194,7 @@ async def test_handles_email_case_sensitivity(
     sample_user_create_dto.email = "TEST@EXAMPLE.COM"
     mock_user_repo.get_by_email.return_value = user_entity_mock
 
-    with pytest.raises(ValidationError, match="User already exists"):
+    with pytest.raises(ConflictError, match="User already exists"):
         await use_case.execute(sample_user_create_dto)
 
     mock_user_repo.get_by_email.assert_called_once_with("TEST@EXAMPLE.COM")

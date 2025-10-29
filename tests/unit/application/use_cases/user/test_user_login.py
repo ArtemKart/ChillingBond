@@ -5,7 +5,7 @@ import pytest_asyncio
 
 from src.application.dto.token import TokenDTO
 from src.application.use_cases.user.user_login import UserLoginUseCase
-from src.domain.exceptions import ValidationError
+from src.domain.exceptions import AuthenticationError
 from src.domain.ports.services.password_hasher import PasswordHasher
 
 
@@ -65,7 +65,7 @@ async def test_user_not_found_raises_validation_error(
 ) -> None:
     mock_user_repo.get_by_email.return_value = None
 
-    with pytest.raises(ValidationError, match="Incorrect username or password"):
+    with pytest.raises(AuthenticationError, match="Incorrect username or password"):
         await use_case.execute(sample_form_data)
 
     mock_user_repo.get_by_email.assert_called_once_with(sample_form_data.username)
@@ -81,7 +81,7 @@ async def test_incorrect_password_raises_validation_error(
     mock_user_repo.get_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = False
 
-    with pytest.raises(ValidationError, match="Incorrect username or password"):
+    with pytest.raises(AuthenticationError, match="Incorrect username or password"):
         await use_case.execute(sample_form_data)
 
     mock_user_repo.get_by_email.assert_called_once_with(sample_form_data.username)
@@ -171,7 +171,7 @@ async def test_does_not_create_token_on_failed_auth(
     mock_user_repo.get_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = False
 
-    with pytest.raises(ValidationError, match="Incorrect username or password"):
+    with pytest.raises(AuthenticationError, match="Incorrect username or password"):
         await use_case.execute(sample_form_data)
 
     mock_token_handler.create_token.assert_not_called()
