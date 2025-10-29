@@ -5,8 +5,8 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.adapters.exceptions import SQLAlchemyRepositoryError
-from src.domain.ports.repositories.bond_holder import BondHolderRepository
-from src.domain.entities.bond_holder import BondHolder as BondHolderEntity
+from src.domain.ports.repositories.bondholder import BondHolderRepository
+from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.adapters.outbound.database.models import BondHolder as BondHolderModel
 
 
@@ -14,8 +14,8 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_one(self, bond_holder_id: UUID) -> BondHolderEntity | None:
-        model = await self._session.get(BondHolderModel, bond_holder_id)
+    async def get_one(self, bondholder_id: UUID) -> BondHolderEntity | None:
+        model = await self._session.get(BondHolderModel, bondholder_id)
         if model:
             return self._to_entity(model)
         return None
@@ -25,9 +25,9 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         result = await self._session.execute(stmt)
         return [self._to_entity(model) for model in result.scalars().all()]
 
-    async def write(self, bond_holder: BondHolderEntity) -> BondHolderEntity:
+    async def write(self, bondholder: BondHolderEntity) -> BondHolderEntity:
         try:
-            model = self._to_model(bond_holder)
+            model = self._to_model(bondholder)
             self._session.add(model)
             await self._session.commit()
             await self._session.refresh(model)
@@ -41,10 +41,10 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def update(self, bond_holder: BondHolderEntity) -> BondHolderEntity:
+    async def update(self, bondholder: BondHolderEntity) -> BondHolderEntity:
         try:
-            model = await self._session.get(BondHolderModel, bond_holder.id)
-            self._update_model(model, bond_holder)
+            model = await self._session.get(BondHolderModel, bondholder.id)
+            self._update_model(model, bondholder)
             await self._session.commit()
             await self._session.refresh(model)
             return self._to_entity(model)

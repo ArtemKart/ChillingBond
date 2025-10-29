@@ -6,16 +6,16 @@ from src.domain.exceptions import ValidationError
 
 @dataclass
 class Bond:
-    """Represents the bond_holder
+    """Represents the bondholder
 
     Args:
         id (UUID): Bond identifier.
-        nominal_value (float): Nominal value of a single bond_holder unit.
-        series (str): Identifier or code representing the bond_holder series.
-        maturity_period (int): Total lifetime of the bond_holder, typically expressed
+        nominal_value (float): Nominal value of a single bondholder unit.
+        series (str): Identifier or code representing the bondholder series.
+        maturity_period (int): Total lifetime of the bondholder, typically expressed
             in months.
         initial_interest_rate (float): Interest rate applied during the initial
-            period of the bond_holder.
+            period of the bondholder.
         first_interest_period (int): Duration of the initial interest rate period,
             typically expressed in months.
         reference_rate_margin (float): Additional percentage added to the reference rate (spread).

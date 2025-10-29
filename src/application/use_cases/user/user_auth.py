@@ -16,13 +16,13 @@ class UserAuthUseCase(UserBaseUseCase):
 
     async def execute(self, token: str) -> UserDTO:
         try:
-            user_id_str: str = self.token_handler.read_token(subject=token)
+            user_id_str = self.token_handler.read_token(subject=token)
         except PyJWTError:
             raise InvalidTokenError("Invalid token")
         if user_id_str is None:
             raise InvalidTokenError("Token does not contain user information")
 
-        user_id: UUID = UUID(user_id_str)
+        user_id = UUID(user_id_str)
         user = await self.user_repo.get_one(user_id=user_id)
         if user is None:
             raise NotFoundError("User not found")

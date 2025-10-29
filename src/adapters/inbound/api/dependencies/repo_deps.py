@@ -4,7 +4,7 @@ from fastapi import Depends
 
 from src.adapters.inbound.api.dependencies import SessionDep
 from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
-from src.adapters.outbound.repositories.bond_holder import (
+from src.adapters.outbound.repositories.bondholder import (
     SQLAlchemyBondHolderRepository,
 )
 from src.adapters.outbound.repositories.user import SQLAlchemyUserRepository
@@ -18,12 +18,12 @@ def bond_repository(session: SessionDep) -> SQLAlchemyBondRepository:
     return SQLAlchemyBondRepository(session)
 
 
-def bond_holder_repository(session: SessionDep) -> SQLAlchemyBondHolderRepository:
+def bondholder_repository(session: SessionDep) -> SQLAlchemyBondHolderRepository:
     return SQLAlchemyBondHolderRepository(session)
 
 
 UserRepoDep = Annotated[SQLAlchemyUserRepository, Depends(user_repository)]
 BondRepoDep = Annotated[SQLAlchemyBondRepository, Depends(bond_repository)]
 BondHolderRepoDep = Annotated[
-    SQLAlchemyBondHolderRepository, Depends(bond_holder_repository)
+    SQLAlchemyBondHolderRepository, Depends(bondholder_repository)
 ]

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from src.domain.entities.bond_holder import BondHolder
+from src.domain.entities.bondholder import BondHolder
 
 
 class BondHolderRepository(ABC):
-    """Abstract repository for managing holding bonds.
+    """Abstract repository for managing BondHolders.
 
     This interface defines the contract for implementing the Repository pattern.
     Concrete implementations must provide persistence for BondHolder entities
@@ -13,7 +13,7 @@ class BondHolderRepository(ABC):
     """
 
     @abstractmethod
-    async def get_one(self, bond_holder_id: UUID) -> BondHolder | None:
+    async def get_one(self, bondholder_id: UUID) -> BondHolder | None:
         pass
 
     @abstractmethod

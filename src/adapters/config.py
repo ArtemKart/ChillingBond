@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
@@ -44,6 +42,39 @@ class Config(BaseSettings):
         )
 
 
-@lru_cache
+_config_instance: Config | None = None
+
+
 def get_config() -> Config:
-    return Config()
+    """
+    Retrieve the configuration instance.
+
+    In production, creates a single instance on first call.
+    In tests, can be overridden using set_config().
+
+    Returns:
+        Config: The application configuration instance
+    """
+    global _config_instance
+    if _config_instance is None:
+        _config_instance = Config()
+    return _config_instance
+
+
+def set_config(config: Config) -> None:
+    """
+    Manually set the configuration instance (used in tests).
+
+    Args:
+        config: Config instance (can be a mock object)
+    """
+    global _config_instance
+    _config_instance = config
+
+
+def reset_config() -> None:
+    """
+    Reset the configuration instance (used for test cleanup).
+    """
+    global _config_instance
+    _config_instance = None

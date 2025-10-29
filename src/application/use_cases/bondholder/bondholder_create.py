@@ -1,18 +1,23 @@
 from src.application.dto.bond import BondCreateDTO
-from src.application.dto.bond_holder import BondHolderCreateDTO, BondHolderDTO
-from src.application.use_cases.bond_holder.bond_holder_base import BondHolderBaseUseCase
-from src.domain.entities.bond_holder import BondHolder as BondHolderEntity
+from src.application.dto.bondholder import BondHolderCreateDTO, BondHolderDTO
+from src.application.use_cases.bondholder.bondholder_base import BondHolderBaseUseCase
+from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.domain.ports.repositories.bond import BondRepository
-from src.domain.ports.repositories.bond_holder import BondHolderRepository
+from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.entities.bond import Bond as BondEntity
 
 
 class BondHolderCreateUseCase(BondHolderBaseUseCase):
+    """
+    Create BondHolder. Connect BondHolder to the existing Bond
+    if Bond is not exist, otherwise create Bond.
+    """
+
     def __init__(
-        self, bond_repo: BondRepository, bond_holder_repo: BondHolderRepository
+        self, bond_repo: BondRepository, bondholder_repo: BondHolderRepository
     ) -> None:
         self.bond_repo = bond_repo
-        self.bond_holder_repo = bond_holder_repo
+        self.bondholder_repo = bondholder_repo
 
     async def execute(
         self, bh_dto: BondHolderCreateDTO, b_dto: BondCreateDTO
@@ -25,8 +30,8 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
                 quantity=bh_dto.quantity,
                 purchase_date=bh_dto.purchase_date,
             )
-            await self.bond_holder_repo.write(new_bh)
-            return self.to_dto(bond_holder=new_bh, bond=bond)
+            await self.bondholder_repo.write(new_bh)
+            return self.to_dto(bondholder=new_bh, bond=bond)
 
         new_bond = BondEntity.create(
             series=b_dto.series,
@@ -44,5 +49,5 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
             quantity=bh_dto.quantity,
             purchase_date=bh_dto.purchase_date,
         )
-        new_bh = await self.bond_holder_repo.write(new_bh)
-        return self.to_dto(bond_holder=new_bh, bond=new_bond)
+        new_bh = await self.bondholder_repo.write(new_bh)
+        return self.to_dto(bondholder=new_bh, bond=new_bond)

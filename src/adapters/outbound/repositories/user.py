@@ -46,7 +46,7 @@ class SQLAlchemyUserRepository(UserRepository):
 
     async def update(self, user: UserEntity) -> UserEntity:
         try:
-            model = self._session.get(UserModel, user.id)
+            model = await self._session.get(UserModel, user.id)
             self._update_model(model, user)
             await self._session.commit()
             await self._session.refresh(model)
