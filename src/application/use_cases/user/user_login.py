@@ -1,6 +1,6 @@
 from src.application.dto.token import TokenDTO
 from src.application.use_cases.user.user_base import UserBaseUseCase
-from src.domain.exceptions import ValidationError
+from src.domain.exceptions import AuthenticationError
 from src.domain.ports.repositories.user import UserRepository
 from src.domain.ports.services.password_hasher import PasswordHasher
 from src.domain.ports.services.token_handler import TokenHandler
@@ -22,7 +22,7 @@ class UserLoginUseCase(UserBaseUseCase):
         if not user or not user.verify_password(
             hasher=self.hasher, plain_password=form_data.password
         ):
-            raise ValidationError("Incorrect username or password")
+            raise AuthenticationError("Incorrect username or password")
         token = self.token_handler.create_token(
             subject=str(user.id),
         )
