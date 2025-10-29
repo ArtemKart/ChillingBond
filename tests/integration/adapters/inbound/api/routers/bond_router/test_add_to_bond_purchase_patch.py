@@ -176,15 +176,15 @@ async def test_add_to_bond_purchase_invalid_uuid(
 
 
 async def test_add_to_bond_purchase_unauthorized(
+    client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
 ) -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 
     app.dependency_overrides.pop(current_user, None)
-    test_client = TestClient(app)
 
-    response = test_client.patch(
+    response = client.patch(
         f"/bonds/{valid_purchase_id}/add", json=valid_add_request
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
