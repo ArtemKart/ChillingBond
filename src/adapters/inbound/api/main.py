@@ -1,6 +1,7 @@
 from typing import Final
 
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from src.adapters.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.exception_handlers import (
@@ -13,6 +14,14 @@ from src.adapters.inbound.api.routers.user_router import user_router
 from src.domain.exceptions import DomainError
 
 app: Final = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(user_router)

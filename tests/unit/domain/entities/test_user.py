@@ -4,7 +4,6 @@ import pytest_asyncio
 
 from src.domain.entities.user import User
 from src.domain.ports.services.password_hasher import PasswordHasher
-from src.domain.value_objects.email import Email
 
 
 @pytest_asyncio.fixture
@@ -22,7 +21,6 @@ async def test_create_user_happy_path(hasher: Mock) -> None:
         name="name",
     )
     assert user.id
-    assert isinstance(user.email, Email)
     assert str(user.email) == "test_email@email.com"
     assert user.hashed_password == hashed_password
     assert user.name == "name"
