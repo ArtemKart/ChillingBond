@@ -40,6 +40,9 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile_backend
     container_name: backend
+    depends_on:
+      database:
+        condition: service_healthy
     networks:
       - app_net
     restart: always
