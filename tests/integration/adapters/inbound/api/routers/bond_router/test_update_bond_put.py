@@ -536,7 +536,9 @@ async def test_update_bond_use_case_exception(
     valid_update_request: dict,
 ) -> None:
     mock_use_case = AsyncMock()
-    mock_use_case.execute.side_effect = SQLAlchemyRepositoryError("Failed to update bond")
+    mock_use_case.execute.side_effect = SQLAlchemyRepositoryError(
+        "Failed to update bond"
+    )
 
     from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
         bond_update_use_case,

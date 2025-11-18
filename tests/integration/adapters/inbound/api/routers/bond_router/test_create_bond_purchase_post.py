@@ -149,7 +149,10 @@ async def test_create_bond_purchase_use_case_exception(
         "Failed to save BondHolder object"
     )
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import create_bondholder_use_case
+    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+        create_bondholder_use_case,
+    )
+
     app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
 
     response = client.post("/bonds", json=valid_bond_data)

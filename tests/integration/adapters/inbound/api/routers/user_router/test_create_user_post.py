@@ -6,7 +6,9 @@ import pytest_asyncio
 from starlette import status
 from starlette.testclient import TestClient
 
-from src.adapters.inbound.api.dependencies.user_use_cases_deps import user_create_use_case
+from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+    user_create_use_case,
+)
 from src.adapters.inbound.api.main import app
 from src.application.dto.user import UserDTO
 from src.application.use_cases.user.user_create import UserCreateUseCase
@@ -20,6 +22,7 @@ def user_create_valid_data(user_entity_mock: Mock) -> dict[str, Any]:
         "name": user_entity_mock.name,
         "password": user_entity_mock.hashed_password,
     }
+
 
 @pytest_asyncio.fixture
 def use_case(mock_hasher: Mock, mock_user_repo: AsyncMock) -> UserCreateUseCase:
@@ -87,7 +90,7 @@ async def test_create_user_email_normalization(
     data_with_uppercase_email = {
         "email": "  TEST@EXAMPLE.COM  ",
         "password": "SecurePass123!",
-        "name": "Test User"
+        "name": "Test User",
     }
     use_case.user_repo.get_by_email.return_value = None  # type: ignore[attr-defined]
     use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
@@ -102,8 +105,7 @@ async def test_create_user_email_normalization(
 
 
 async def test_create_user_invalid_email(
-    client: TestClient,
-    user_create_valid_data: dict[str, str]
+    client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     invalid_data = {**user_create_valid_data, "email": "invalid-email"}
     response = client.post("/users", json=invalid_data)
@@ -111,24 +113,22 @@ async def test_create_user_invalid_email(
 
 
 async def test_create_user_missing_email(
-    client: TestClient,
-    user_create_valid_data: dict[str, str]
+    client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     data_without_email = {
         "password": user_create_valid_data["password"],
-        "name": user_create_valid_data["name"]
+        "name": user_create_valid_data["name"],
     }
     response = client.post("/users", json=data_without_email)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_create_user_missing_password(
-    client: TestClient,
-    user_create_valid_data: dict[str, str]
+    client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     data_without_password = {
         "email": user_create_valid_data["email"],
-        "name": user_create_valid_data["name"]
+        "name": user_create_valid_data["name"],
     }
     response = client.post("/users", json=data_without_password)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -139,10 +139,7 @@ async def test_create_user_without_name(
     use_case: UserCreateUseCase,
     user_entity_mock: Mock,
 ) -> None:
-    data_without_name = {
-        "email": "test@example.com",
-        "password": "SecurePass123!"
-    }
+    data_without_name = {"email": "test@example.com", "password": "SecurePass123!"}
     user_entity_mock.name = None
     use_case.user_repo.get_by_email.return_value = None  # type: ignore[attr-defined]
     use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
@@ -157,8 +154,7 @@ async def test_create_user_without_name(
 
 
 async def test_create_user_empty_password(
-    client: TestClient,
-    user_create_valid_data: dict[str, str]
+    client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     invalid_data = {**user_create_valid_data, "password": ""}
     response = client.post("/users", json=invalid_data)

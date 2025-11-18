@@ -15,6 +15,7 @@ from src.adapters.inbound.api.dependencies.repo_deps import (
 )
 from src.adapters.inbound.api.main import app
 
+
 @pytest_asyncio.fixture
 async def mock_database_session() -> AsyncGenerator[AsyncMock, None]:
     yield AsyncMock()
@@ -24,8 +25,6 @@ async def mock_database_session() -> AsyncGenerator[AsyncMock, None]:
 async def mock_current_user() -> UUID:
     user = AsyncMock()
     user.id = uuid4()
-    user.email = "mock_current_user@email.com"
-    user.password = "password"
     return user.id
 
 
@@ -52,12 +51,12 @@ def mock_config_globally() -> Generator[Mock, None, None]:
 
 @pytest_asyncio.fixture
 async def client(
-        mock_database_session: AsyncMock,
-        mock_current_user: UUID,
-        mock_user_repo: AsyncMock,
-        mock_bondholder_repo: AsyncMock,
-        mock_bond_repo: AsyncMock,
-        mock_config_globally: Mock,
+    mock_database_session: AsyncMock,
+    mock_current_user: UUID,
+    mock_user_repo: AsyncMock,
+    mock_bondholder_repo: AsyncMock,
+    mock_bond_repo: AsyncMock,
+    mock_config_globally: Mock,
 ) -> TestClient:
     app.dependency_overrides[SessionDep] = lambda: mock_database_session
     app.dependency_overrides[ConfigDep] = lambda: mock_config_globally
