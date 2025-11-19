@@ -29,7 +29,7 @@ class BondHolderDeletionService:
         """
         bondholder = await self._bondholder_repo.get_one(bondholder_id=bondholder_id)
         if not bondholder:
-            raise NotFoundError(bondholder_id)
+            raise NotFoundError("Bondholder not found")
 
         if bondholder.user_id != user_id:
             raise AuthorizationError("Permission denied")
