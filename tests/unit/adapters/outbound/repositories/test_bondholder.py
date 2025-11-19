@@ -12,17 +12,6 @@ from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRe
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 
 
-# @pytest_asyncio.fixture
-# def bondholder_entity_mock() -> BondHolderEntity:
-#     return BondHolderEntity.create(
-#         bond_id=uuid4(),
-#         user_id=uuid4(),
-#         quantity=100,
-#         purchase_date=date.today(),
-#         last_update=datetime.now(),
-#     )
-
-
 @pytest_asyncio.fixture
 def bondholder_model(bondholder_entity_mock: Mock) -> BondHolderModel:
     return BondHolderModel(
@@ -295,3 +284,133 @@ async def test_get_all_with_multiple_users(
 
     assert len(result) == 2
     assert all(holder.user_id == target_user_id for holder in result)
+
+
+async def test_delete_existing_bondholder(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+    bondholder_model: BondHolderModel,
+) -> None:
+    bondholder_id = uuid4()
+    mock_session.get.return_value = bondholder_model
+
+    await repository.delete(bondholder_id)
+
+    mock_session.get.assert_called_once_with(BondHolderModel, bondholder_id)
+    mock_session.delete.assert_called_once_with(bondholder_model)
+    mock_session.commit.assert_called_once()
+    mock_session.rollback.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_delete_nonexistent_bondholder(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+) -> None:
+    bondholder_id = uuid4()
+    mock_session.get.return_value = None
+
+    await repository.delete(bondholder_id)
+
+    mock_session.get.assert_called_once_with(BondHolderModel, bondholder_id)
+    mock_session.delete.assert_not_called()
+    mock_session.commit.assert_not_called()
+    mock_session.rollback.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_delete_sqlalchemy_error_on_get(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+) -> None:
+    bondholder_id = uuid4()
+    mock_session.get.side_effect = SQLAlchemyError("Database error")
+
+    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to delete bondholder"):
+        await repository.delete(bondholder_id)
+
+    mock_session.rollback.assert_called_once()
+    mock_session.commit.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_delete_sqlalchemy_error_on_delete(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+    bondholder_model: BondHolderModel,
+) -> None:
+    bondholder_id = uuid4()
+    mock_session.get.return_value = bondholder_model
+    mock_session.delete.side_effect = SQLAlchemyError("Delete failed")
+
+    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to delete bondholder"):
+        await repository.delete(bondholder_id)
+
+    mock_session.rollback.assert_called_once()
+    mock_session.commit.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_delete_sqlalchemy_error_on_commit(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+    bondholder_model: BondHolderModel,
+) -> None:
+    bondholder_id = uuid4()
+    mock_session.get.return_value = bondholder_model
+    mock_session.commit.side_effect = SQLAlchemyError("Commit failed")
+
+    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to delete bondholder"):
+        await repository.delete(bondholder_id)
+
+    mock_session.rollback.assert_called_once()
+
+
+async def test_count_by_bond_id_returns_count(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+) -> None:
+    bond_id = uuid4()
+    expected_count = 5
+
+    mock_result = Mock()
+    mock_result.scalar_one.return_value = expected_count
+    mock_session.execute.return_value = mock_result
+
+    result = await repository.count_by_bond_id(bond_id)
+
+    assert result == expected_count
+    mock_session.execute.assert_called_once()
+    mock_result.scalar_one.assert_called_once()
+
+
+async def test_count_by_bond_id_returns_zero(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+) -> None :
+    bond_id = uuid4()
+
+    mock_result = Mock()
+    mock_result.scalar_one.return_value = 0
+    mock_session.execute.return_value = mock_result
+
+    result = await repository.count_by_bond_id(bond_id)
+
+    assert result == 0
+    mock_session.execute.assert_called_once()
+
+
+async def test_count_by_bond_id_verifies_query_structure(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+) -> None:
+    bond_id = uuid4()
+
+    mock_result = Mock()
+    mock_result.scalar_one.return_value = 3
+    mock_session.execute.return_value = mock_result
+
+    await repository.count_by_bond_id(bond_id)
+
+    call_args = mock_session.execute.call_args[0][0]
+    assert "count" in str(call_args).lower()
