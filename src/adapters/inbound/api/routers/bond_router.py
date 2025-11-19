@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from starlette import status
 
 from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
@@ -12,6 +12,7 @@ from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
     bh_get_all_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
+from src.adapters.inbound.api.dependencies.service_deps import get_bh_deletion_service
 from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse
 from src.adapters.inbound.api.schemas.bondholder import (
     BondHolderResponse,
@@ -34,7 +35,8 @@ from src.application.use_cases.bondholder.bondholder_get import (
     BondHolderGetAllUseCase,
 )
 from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
-from src.domain.exceptions import NotFoundError, AuthenticationError
+from src.domain.exceptions import NotFoundError
+from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
 
 bond_router = APIRouter(prefix="/bonds", tags=["bondholder"])
 
@@ -103,31 +105,20 @@ async def get_bond(
     purchase_id: UUID,
     use_case: Annotated[BondHolderGetUseCase, Depends(bh_get_use_case)],
 ):
-    try:
-        dto = await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
-        return BondHolderResponse(
-            id=dto.id,
-            quantity=dto.quantity,
-            purchase_date=dto.purchase_date,
-            last_update=dto.last_update,
-            bond_id=dto.bond_id,
-            series=dto.series,
-            nominal_value=dto.nominal_value,
-            maturity_period=dto.maturity_period,
-            initial_interest_rate=dto.initial_interest_rate,
-            first_interest_period=dto.first_interest_period,
-            reference_rate_margin=dto.reference_rate_margin,
-        )
-    except NotFoundError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="BondHolder not found",
-        )
-    except AuthenticationError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
-        )
+    dto = await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
+    return BondHolderResponse(
+        id=dto.id,
+        quantity=dto.quantity,
+        purchase_date=dto.purchase_date,
+        last_update=dto.last_update,
+        bond_id=dto.bond_id,
+        series=dto.series,
+        nominal_value=dto.nominal_value,
+        maturity_period=dto.maturity_period,
+        initial_interest_rate=dto.initial_interest_rate,
+        first_interest_period=dto.first_interest_period,
+        reference_rate_margin=dto.reference_rate_margin,
+    )
 
 
 @bond_router.patch(
@@ -152,14 +143,14 @@ async def add_to_bond_purchase(
 
 
 @bond_router.put(
-    "/{bond_id}/specification",
+    "/{purchase_id}/specification",
     response_model=BondUpdateResponse,
     dependencies=[Depends(current_user)],
     status_code=status.HTTP_200_OK,
     description="Update bond specification data",
 )
 async def update_bond(
-    bond_id: UUID,
+    purchase_id: UUID,
     bond_data: BondUpdateRequest,
     use_case: Annotated[BondUpdateUseCase, Depends(bond_update_use_case)],
 ):
@@ -171,4 +162,22 @@ async def update_bond(
         first_interest_period=bond_data.first_interest_period,
         reference_rate_margin=bond_data.reference_rate_margin,
     )
-    return await use_case.execute(dto=dto, bond_id=bond_id)
+    return await use_case.execute(dto=dto, bond_id=purchase_id)
+
+
+@bond_router.delete(
+    "/{purchase_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    description="Delete bond data",
+)
+async def delete_bond(
+    purchase_id: UUID,
+    user_id: Annotated[UUID, Depends(current_user)],
+    bh_del_service: Annotated[
+        BondHolderDeletionService, Depends(get_bh_deletion_service)
+    ],
+):
+    try:
+        await bh_del_service.delete_with_cleanup(bondholder_id=purchase_id, user_id=user_id)
+    except NotFoundError as _:
+        pass # Method is idempotent

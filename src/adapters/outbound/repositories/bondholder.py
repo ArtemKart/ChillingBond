@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -52,6 +52,26 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             error_msg = "Failed to update BondHolder object"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
+
+    async def delete(self, bondholder_id: UUID) -> None:
+        try:
+            model = await self._session.get(BondHolderModel, bondholder_id)
+            if model:
+                await self._session.delete(model)
+                await self._session.commit()
+        except SQLAlchemyError as e:
+            error_msg = "Failed to delete bondholder"
+            await self._session.rollback()
+            raise SQLAlchemyRepositoryError(error_msg) from e
+
+    async def count_by_bond_id(self, bond_id: UUID) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(BondHolderModel)
+            .where(BondHolderModel.bond_id == bond_id)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one()
 
     @staticmethod
     def _to_entity(model: BondHolderModel) -> BondHolderEntity:

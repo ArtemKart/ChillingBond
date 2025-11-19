@@ -27,6 +27,7 @@ def setup_login_use_case_override(mock_user_login_use_case: UserLoginUseCase) ->
     from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
         user_login_use_case,
     )
+
     app.dependency_overrides[user_login_use_case] = lambda: mock_user_login_use_case
 
 
@@ -77,7 +78,10 @@ def test_login_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> 
 
 
 def test_login_incorrect_password(
-    client: TestClient, mock_user_repo: AsyncMock, user_entity_mock: Mock, mock_hasher: Mock
+    client: TestClient,
+    mock_user_repo: AsyncMock,
+    user_entity_mock: Mock,
+    mock_hasher: Mock,
 ) -> None:
     mock_user_repo.get_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = False

@@ -6,7 +6,7 @@ import pytest_asyncio
 
 from src.application.dto.bondholder import BondHolderDTO
 from src.application.use_cases.bondholder.bondholder_get import BondHolderGetUseCase
-from src.domain.exceptions import NotFoundError, InvalidTokenError
+from src.domain.exceptions import NotFoundError, AuthorizationError
 
 
 @pytest_asyncio.fixture
@@ -71,7 +71,7 @@ async def test_user_not_owner(
 
     mock_bondholder_repo.get_one.return_value = mock_bondholder
 
-    with pytest.raises(InvalidTokenError, match="User not found"):
+    with pytest.raises(AuthorizationError, match="Permission denied"):
         await use_case.execute(bondholder_id, user_id)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id)
