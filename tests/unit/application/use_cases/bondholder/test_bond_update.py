@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest_asyncio
 
 from src.application.dto.bond import BondUpdateDTO, BondDTO
-from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
+from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.domain.exceptions import NotFoundError
 
 

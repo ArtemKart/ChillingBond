@@ -1,8 +1,9 @@
-from dataclasses import dataclass
-from datetime import datetime, date
+from dataclasses import dataclass, field
+from datetime import datetime, date, timezone
 from typing import Self
 from uuid import UUID, uuid4
 
+from src.domain.events.bondholder_events import BondHolderDeleted
 from src.domain.exceptions import ValidationError
 
 
@@ -32,6 +33,8 @@ class BondHolder:
     purchase_date: date
     last_update: datetime | None = None
 
+    _events: list = field(default_factory=list, init=False, repr=False)
+
     @classmethod
     def create(
         cls,
@@ -53,6 +56,22 @@ class BondHolder:
         bh.validate()
         return bh
 
+    def collect_events(self) -> list:
+        events = self._events.copy()
+        self._events.clear()
+        return events
+
+    def mark_as_deleted(self, user_email: str) -> None:
+        self._events.append(
+            BondHolderDeleted(
+                bondholder_id=self.id,
+                bond_id=self.bond_id,
+                user_id=self.user_id,
+                email=user_email,
+                occurred_at=datetime.now(timezone.utc),
+            )
+        )
+
     def add_quantity(self, amount: int) -> None:
         if amount <= 0:
             raise ValidationError("Amount must be positive")
@@ -63,6 +82,7 @@ class BondHolder:
             self.quantity = 0
             return None
         self.quantity -= amount
+
 
     def validate(self) -> None:
         self._validate_quantity()

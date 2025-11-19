@@ -3,6 +3,7 @@ from typing import Final
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from src.adapters.di_container import setup_event_publisher
 from src.adapters.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.exception_handlers import (
     domain_exception_handler,
@@ -23,6 +24,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("startup")
+async def startup_event():
+    event_publisher = setup_event_publisher()
+    app.state.event_publisher = event_publisher
+
+    # logging.info("✅ Event Publisher initialized")
 
 app.include_router(user_router)
 app.include_router(bond_router)

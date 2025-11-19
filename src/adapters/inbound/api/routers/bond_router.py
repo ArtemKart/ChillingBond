@@ -9,10 +9,9 @@ from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
     create_bondholder_use_case,
     bond_update_use_case,
     bh_get_use_case,
-    bh_get_all_use_case,
+    bh_get_all_use_case, bh_delete_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
-from src.adapters.inbound.api.dependencies.service_deps import get_bh_deletion_service
 from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse
 from src.adapters.inbound.api.schemas.bondholder import (
     BondHolderResponse,
@@ -30,13 +29,13 @@ from src.application.use_cases.bondholder.bondholder_add import (
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
 )
+from src.application.use_cases.bondholder.bondholder_delete import BondHolderDeleteUseCase
 from src.application.use_cases.bondholder.bondholder_get import (
     BondHolderGetUseCase,
     BondHolderGetAllUseCase,
 )
-from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
+from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.domain.exceptions import NotFoundError
-from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
 
 bond_router = APIRouter(prefix="/bonds", tags=["bondholder"])
 
@@ -173,11 +172,9 @@ async def update_bond(
 async def delete_bond(
     purchase_id: UUID,
     user_id: Annotated[UUID, Depends(current_user)],
-    bh_del_service: Annotated[
-        BondHolderDeletionService, Depends(get_bh_deletion_service)
-    ],
+    use_case: Annotated[BondHolderDeleteUseCase, Depends(bh_delete_use_case)],
 ):
     try:
-        await bh_del_service.delete_with_cleanup(bondholder_id=purchase_id, user_id=user_id)
+        await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
     except NotFoundError as _:
         pass # Method is idempotent

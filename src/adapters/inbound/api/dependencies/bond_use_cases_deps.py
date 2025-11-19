@@ -1,3 +1,4 @@
+from src.adapters.inbound.api.dependencies.event_publisher_deps import EventPublisherDep
 from src.adapters.inbound.api.dependencies.repo_deps import (
     BondRepoDep,
     UserRepoDep,
@@ -9,11 +10,12 @@ from src.application.use_cases.bondholder.bondholder_add import (
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
 )
+from src.application.use_cases.bondholder.bondholder_delete import BondHolderDeleteUseCase
 from src.application.use_cases.bondholder.bondholder_get import (
     BondHolderGetUseCase,
     BondHolderGetAllUseCase,
 )
-from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
+from src.application.use_cases.bond_update import BondUpdateUseCase
 
 
 def bond_add_to_bh_use_case(
@@ -57,4 +59,15 @@ def bh_get_all_use_case(
     return BondHolderGetAllUseCase(
         bond_repo=bond_repo,
         bondholder_repo=bondholder_repo,
+    )
+
+def bh_delete_use_case(
+    bondholder_repo: BondHolderRepoDep,
+    event_publisher: EventPublisherDep,
+    user_repo: UserRepoDep,
+) -> BondHolderDeleteUseCase:
+    return BondHolderDeleteUseCase(
+        bondholder_repo=bondholder_repo,
+        event_publisher=event_publisher,
+        user_repo=user_repo,
     )
