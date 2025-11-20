@@ -13,7 +13,7 @@ class EventPublisher:
         self._handlers: dict[Type[DomainEvent], list[Callable]] = {}
 
     def subscribe(
-        self, event_type: Type[T], handler: Callable[[T],  Coroutine[Any, Any, None]]
+        self, event_type: Type[T], handler: Callable[[T], Coroutine[Any, Any, None]]
     ) -> None:
         if event_type not in self._handlers:
             self._handlers[event_type] = []

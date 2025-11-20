@@ -5,7 +5,7 @@ from src.domain.events import DomainEvent
 
 
 @dataclass
-class BondHolderDeleted(DomainEvent):
+class BondHolderDeletedEvent(DomainEvent):
     """Event: Bondholder was deleted"""
 
     bondholder_id: UUID

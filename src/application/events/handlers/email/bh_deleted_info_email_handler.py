@@ -1,6 +1,6 @@
 import logging
 
-from src.domain.events.bondholder_events import BondHolderDeleted
+from src.domain.events.bondholder_events import BondHolderDeletedEvent
 from src.domain.services.email_sender import EmailSender
 
 
@@ -16,7 +16,7 @@ class BondHolderDeletedEmailHandler:
     ) -> None:
         self._email_sender = email_sender
 
-    async def handle(self, event: BondHolderDeleted) -> None:
+    async def handle(self, event: BondHolderDeletedEvent) -> None:
         logger.info(
             "Sending notification email",
             extra={"user_id": event.user_id, "email": event.email},

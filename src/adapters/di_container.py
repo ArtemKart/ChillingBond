@@ -10,7 +10,7 @@ from src.application.events.handlers.email.welcome_email_handler import (
 )
 from src.application.events.event_publisher import EventPublisher
 from src.domain.events import UserCreated
-from src.domain.events.bondholder_events import BondHolderDeleted
+from src.domain.events.bondholder_events import BondHolderDeletedEvent
 from src.domain.services.email_sender import EmailSender
 
 
@@ -26,7 +26,7 @@ def get_email_sender() -> EmailSender:
     if env == "production":
         return SMTPEmailSender(
             smtp_host=os.getenv("SMTP_HOST", "smtp.gmail.com"),
-            smtp_port=int(os.getenv("SMTP_PORT", "587")),
+            smtp_port=os.getenv("SMTP_PORT", "587"),
             smtp_user=os.getenv("SMTP_USER", ""),
             smtp_password=os.getenv("SMTP_PASSWORD", ""),
             from_email=os.getenv("SMTP_FROM_EMAIL", "noreply@chillingbond.com"),
@@ -42,7 +42,7 @@ def setup_event_publisher() -> EventPublisher:
     bh_deleted_email_handler = BondHolderDeletedEmailHandler(email_sender)
 
     publisher.subscribe(UserCreated, welcome_email_handler.handle)
-    publisher.subscribe(BondHolderDeleted, bh_deleted_email_handler.handle)
+    publisher.subscribe(BondHolderDeletedEvent, bh_deleted_email_handler.handle)
 
     return publisher
 

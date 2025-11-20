@@ -3,7 +3,7 @@ from datetime import datetime, date, timezone
 from typing import Self
 from uuid import UUID, uuid4
 
-from src.domain.events.bondholder_events import BondHolderDeleted
+from src.domain.events.bondholder_events import BondHolderDeletedEvent
 from src.domain.exceptions import ValidationError
 
 
@@ -63,7 +63,7 @@ class BondHolder:
 
     def mark_as_deleted(self, user_email: str) -> None:
         self._events.append(
-            BondHolderDeleted(
+            BondHolderDeletedEvent(
                 bondholder_id=self.id,
                 bond_id=self.bond_id,
                 user_id=self.user_id,

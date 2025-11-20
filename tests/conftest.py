@@ -75,6 +75,7 @@ def mock_bondholder_repo() -> AsyncMock:
 def mock_user_repo() -> AsyncMock:
     return AsyncMock(spec=UserRepository)
 
+
 @pytest_asyncio.fixture
 def mock_event_publisher() -> AsyncMock:
     return AsyncMock(spec=EventPublisher)

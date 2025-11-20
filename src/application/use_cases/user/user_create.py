@@ -31,15 +31,7 @@ class UserCreateUseCase(UserBaseUseCase):
         )
 
         events = user.collect_events()
-
         user_entity = await self.user_repo.write(user)
-
         await self._event_publisher.publish_all(events)
-
-        # logger.info(
-        #     "User created successfully",
-        #     user_id=user_entity.id,
-        #     events_published=len(events),
-        # )
 
         return self.to_dto(user_entity)
