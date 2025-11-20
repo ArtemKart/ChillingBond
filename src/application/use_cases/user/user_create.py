@@ -8,7 +8,12 @@ from src.domain.ports.services.password_hasher import PasswordHasher
 
 
 class UserCreateUseCase(UserBaseUseCase):
-    def __init__(self, user_repo: UserRepository, hasher: PasswordHasher, event_publisher: EventPublisher) -> None:
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        hasher: PasswordHasher,
+        event_publisher: EventPublisher,
+    ) -> None:
         self.hasher = hasher
         self.user_repo = user_repo
         self._event_publisher = event_publisher

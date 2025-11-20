@@ -2,8 +2,12 @@ import os
 
 from src.adapters.outbound.email_sender.console_email_sender import ConsoleEmailSender
 from src.adapters.outbound.email_sender.smtp_email_sender import SMTPEmailSender
-from src.application.events.handlers.email.bh_deleted_info_email_handler import BondHolderDeletedEmailHandler
-from src.application.events.handlers.email.welcome_email_handler import SendWelcomeEmailHandler
+from src.application.events.handlers.email.bh_deleted_info_email_handler import (
+    BondHolderDeletedEmailHandler,
+)
+from src.application.events.handlers.email.welcome_email_handler import (
+    SendWelcomeEmailHandler,
+)
 from src.application.events.event_publisher import EventPublisher
 from src.domain.events import UserCreated
 from src.domain.events.bondholder_events import BondHolderDeleted

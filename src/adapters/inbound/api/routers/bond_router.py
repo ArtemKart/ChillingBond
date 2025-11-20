@@ -9,7 +9,8 @@ from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
     create_bondholder_use_case,
     bond_update_use_case,
     bh_get_use_case,
-    bh_get_all_use_case, bh_delete_use_case,
+    bh_get_all_use_case,
+    bh_delete_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse
@@ -29,7 +30,9 @@ from src.application.use_cases.bondholder.bondholder_add import (
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_delete import BondHolderDeleteUseCase
+from src.application.use_cases.bondholder.bondholder_delete import (
+    BondHolderDeleteUseCase,
+)
 from src.application.use_cases.bondholder.bondholder_get import (
     BondHolderGetUseCase,
     BondHolderGetAllUseCase,
@@ -172,9 +175,9 @@ async def update_bond(
 async def delete_bond(
     purchase_id: UUID,
     user_id: Annotated[UUID, Depends(current_user)],
-    use_case: Annotated[BondHolderDeleteUseCase, Depends(bh_delete_use_case)]
+    use_case: Annotated[BondHolderDeleteUseCase, Depends(bh_delete_use_case)],
 ):
     try:
         await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
     except NotFoundError as _:
-        pass # Method is idempotent
+        pass  # Method is idempotent

@@ -83,7 +83,6 @@ class BondHolder:
             return None
         self.quantity -= amount
 
-
     def validate(self) -> None:
         self._validate_quantity()
 

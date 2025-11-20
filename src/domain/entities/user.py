@@ -51,7 +51,6 @@ class User:
     def verify_password(self, hasher: PasswordHasher, plain_password: str) -> bool:
         return hasher.verify(plain_password, self.hashed_password)
 
-
     def collect_events(self) -> list:
         events = self._events.copy()
         self._events.clear()

@@ -1,6 +1,7 @@
 from datetime import datetime
 from abc import ABC, abstractmethod
 
+
 class EmailSender(ABC):
 
     @abstractmethod
@@ -14,7 +15,9 @@ class EmailSender(ABC):
         pass
 
     @abstractmethod
-    async def send_bondholder_deleted_info_email(self, email: str, occurred_at: datetime) -> None:
+    async def send_bondholder_deleted_info_email(
+        self, email: str, occurred_at: datetime
+    ) -> None:
         """
         Send informational email when bondholder deleted.
 

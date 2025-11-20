@@ -15,7 +15,9 @@ from src.application.use_cases.bondholder.bondholder_add import (
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_delete import BondHolderDeleteUseCase
+from src.application.use_cases.bondholder.bondholder_delete import (
+    BondHolderDeleteUseCase,
+)
 from src.application.use_cases.bondholder.bondholder_get import (
     BondHolderGetUseCase,
     BondHolderGetAllUseCase,
@@ -67,13 +69,14 @@ def bh_get_all_use_case(
         bondholder_repo=bondholder_repo,
     )
 
+
 def bh_delete_use_case(
     bondholder_repo: BondHolderRepoDep,
     event_publisher: EventPublisherDep,
     user_repo: UserRepoDep,
     bh_del_service: Annotated[
-            BondHolderDeletionService, Depends(get_bh_deletion_service)
-        ],
+        BondHolderDeletionService, Depends(get_bh_deletion_service)
+    ],
 ) -> BondHolderDeleteUseCase:
     return BondHolderDeleteUseCase(
         bondholder_repo=bondholder_repo,

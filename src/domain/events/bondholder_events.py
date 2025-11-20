@@ -3,6 +3,7 @@ from uuid import UUID
 
 from src.domain.events import DomainEvent
 
+
 @dataclass
 class BondHolderDeleted(DomainEvent):
     """Event: Bondholder was deleted"""

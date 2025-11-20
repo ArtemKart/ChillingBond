@@ -25,8 +25,16 @@ def user_create_valid_data(user_entity_mock: Mock) -> dict[str, Any]:
 
 
 @pytest_asyncio.fixture
-def use_case(mock_hasher: Mock, mock_user_repo: AsyncMock) -> UserCreateUseCase:
-    return UserCreateUseCase(hasher=mock_hasher, user_repo=mock_user_repo)
+def use_case(
+    mock_hasher: Mock,
+    mock_user_repo: AsyncMock,
+    mock_event_publisher: AsyncMock,
+) -> UserCreateUseCase:
+    return UserCreateUseCase(
+        hasher=mock_hasher,
+        user_repo=mock_user_repo,
+        event_publisher=mock_event_publisher,
+    )
 
 
 @pytest_asyncio.fixture

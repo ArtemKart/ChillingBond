@@ -1,3 +1,4 @@
+import logging
 from typing import Final
 
 from fastapi import FastAPI
@@ -13,12 +14,13 @@ from src.adapters.inbound.api.routers.bond_router import bond_router
 from src.adapters.inbound.api.routers.login_router import login_router
 from src.adapters.inbound.api.routers.user_router import user_router
 from src.domain.exceptions import DomainError
+from src.setup_logging import setup_logging
 
 app: Final = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,10 +29,15 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    logger.info("Application started")
+
     event_publisher = setup_event_publisher()
     app.state.event_publisher = event_publisher
 
-    # logging.info("✅ Event Publisher initialized")
+    logging.info("✅ Event Publisher initialized")
+
 
 app.include_router(user_router)
 app.include_router(bond_router)

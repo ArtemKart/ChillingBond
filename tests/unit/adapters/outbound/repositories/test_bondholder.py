@@ -387,7 +387,7 @@ async def test_count_by_bond_id_returns_count(
 async def test_count_by_bond_id_returns_zero(
     repository: SQLAlchemyBondHolderRepository,
     mock_session: AsyncMock,
-) -> None :
+) -> None:
     bond_id = uuid4()
 
     mock_result = Mock()

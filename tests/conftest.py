@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import pytest_asyncio
 
+from src.application.events.event_publisher import EventPublisher
 from src.domain.entities.bond import Bond as BondEntity
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.domain.entities.user import User as UserEntity
@@ -73,3 +74,7 @@ def mock_bondholder_repo() -> AsyncMock:
 @pytest_asyncio.fixture
 def mock_user_repo() -> AsyncMock:
     return AsyncMock(spec=UserRepository)
+
+@pytest_asyncio.fixture
+def mock_event_publisher() -> AsyncMock:
+    return AsyncMock(spec=EventPublisher)

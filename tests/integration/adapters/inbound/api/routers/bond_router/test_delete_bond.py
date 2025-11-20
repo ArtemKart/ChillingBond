@@ -20,9 +20,15 @@ async def test_delete_bondholder_delete_bond(
     response = client.delete(f"/bonds/{bondholder_entity_mock.id}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    mock_bondholder_repo.delete.assert_called_once_with(bondholder_id=bondholder_entity_mock.id)
-    mock_bondholder_repo.count_by_bond_id.assert_called_once_with(bond_id=bondholder_entity_mock.bond_id)
-    mock_bond_repo.delete.assert_called_once_with(bond_id=bondholder_entity_mock.bond_id)
+    mock_bondholder_repo.delete.assert_called_once_with(
+        bondholder_id=bondholder_entity_mock.id
+    )
+    mock_bondholder_repo.count_by_bond_id.assert_called_once_with(
+        bond_id=bondholder_entity_mock.bond_id
+    )
+    mock_bond_repo.delete.assert_called_once_with(
+        bond_id=bondholder_entity_mock.bond_id
+    )
 
 
 async def test_delete_bondholder_keep_bond(
@@ -39,8 +45,12 @@ async def test_delete_bondholder_keep_bond(
     response = client.delete(f"/bonds/{bondholder_entity_mock.id}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    mock_bondholder_repo.delete.assert_called_once_with(bondholder_id=bondholder_entity_mock.id)
-    mock_bondholder_repo.count_by_bond_id.assert_called_once_with(bond_id=bondholder_entity_mock.bond_id)
+    mock_bondholder_repo.delete.assert_called_once_with(
+        bondholder_id=bondholder_entity_mock.id
+    )
+    mock_bondholder_repo.count_by_bond_id.assert_called_once_with(
+        bond_id=bondholder_entity_mock.bond_id
+    )
     mock_bond_repo.delete.assert_not_called()
 
 
