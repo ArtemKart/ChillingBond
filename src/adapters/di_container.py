@@ -2,9 +2,8 @@ import os
 
 from src.adapters.outbound.email_sender.console_email_sender import ConsoleEmailSender
 from src.adapters.outbound.email_sender.smtp_email_sender import SMTPEmailSender
-from src.application.event_handlers.bondholder_deleted_handler import BondHolderDeletedHandler
-from src.application.event_handlers.email.bh_deleted_info_email_handler import BondHolderDeletedEmailHandler
-from src.application.event_handlers.email.welcome_email_handler import SendWelcomeEmailHandler
+from src.application.events.handlers.email.bh_deleted_info_email_handler import BondHolderDeletedEmailHandler
+from src.application.events.handlers.email.welcome_email_handler import SendWelcomeEmailHandler
 from src.application.events.event_publisher import EventPublisher
 from src.domain.events import UserCreated
 from src.domain.events.bondholder_events import BondHolderDeleted
@@ -37,10 +36,8 @@ def setup_event_publisher() -> EventPublisher:
     email_sender = get_email_sender()
     welcome_email_handler = SendWelcomeEmailHandler(email_sender)
     bh_deleted_email_handler = BondHolderDeletedEmailHandler(email_sender)
-    bh_deleted_handler = BondHolderDeletedHandler()
 
     publisher.subscribe(UserCreated, welcome_email_handler.handle)
-    publisher.subscribe(BondHolderDeleted, bh_deleted_handler.handle)
     publisher.subscribe(BondHolderDeleted, bh_deleted_email_handler.handle)
 
     return publisher

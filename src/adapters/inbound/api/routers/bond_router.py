@@ -172,7 +172,7 @@ async def update_bond(
 async def delete_bond(
     purchase_id: UUID,
     user_id: Annotated[UUID, Depends(current_user)],
-    use_case: Annotated[BondHolderDeleteUseCase, Depends(bh_delete_use_case)],
+    use_case: Annotated[BondHolderDeleteUseCase, Depends(bh_delete_use_case)]
 ):
     try:
         await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
