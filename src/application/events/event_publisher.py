@@ -19,12 +19,10 @@ class EventPublisher:
             self._handlers[event_type] = []
         self._handlers[event_type].append(handler)
 
-        handlers = [h.__self__.__class__.__name__ for h in self._handlers[event_type]]  # type: ignore[attr-defined]
         logger.debug(
             "Event handler subscribed",
             extra={
                 "event_type": event_type.__name__,
-                "handlers": handlers,
             },
         )
 
