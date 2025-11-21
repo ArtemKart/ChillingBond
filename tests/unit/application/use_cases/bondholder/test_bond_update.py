@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest_asyncio
 
 from src.application.dto.bond import BondUpdateDTO, BondDTO
-from src.application.use_cases.bondholder.bond_update import BondUpdateUseCase
+from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.domain.exceptions import NotFoundError
 
 
@@ -35,9 +35,7 @@ async def test_success_with_partial_update(
     bond_id = uuid4()
     mock_bond_repo.get_one.return_value = bond_entity_mock
 
-    with patch(
-        "src.application.use_cases.bondholder.bond_update.asdict"
-    ) as mock_asdict:
+    with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
             "nominal_value": sample_bond_update_dto.nominal_value,
             "series": sample_bond_update_dto.series,
@@ -70,9 +68,7 @@ async def test_success_with_all_fields_update(
 
     mock_bond_repo.get_one.return_value = bond_entity_mock
 
-    with patch(
-        "src.application.use_cases.bondholder.bond_update.asdict"
-    ) as mock_asdict:
+    with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
             "nominal_value": update_dto.nominal_value,
             "series": update_dto.series,
@@ -103,9 +99,7 @@ async def test_success_with_no_updates(
 
     mock_bond_repo.get_one.return_value = bond_entity_mock
 
-    with patch(
-        "src.application.use_cases.bondholder.bond_update.asdict"
-    ) as mock_asdict:
+    with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
             "nominal_value": None,
             "series": None,
@@ -147,9 +141,7 @@ async def test_filters_out_none_values(
 
     mock_bond_repo.get_one.return_value = bond_entity_mock
 
-    with patch(
-        "src.application.use_cases.bondholder.bond_update.asdict"
-    ) as mock_asdict:
+    with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
             "nominal_value": 5000.0,
             "series": None,
@@ -176,9 +168,7 @@ async def test_preserves_unchanged_fields(
 
     mock_bond_repo.get_one.return_value = bond_entity_mock
 
-    with patch(
-        "src.application.use_cases.bondholder.bond_update.asdict"
-    ) as mock_asdict:
+    with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
             "nominal_value": 4000.0,
             "series": None,

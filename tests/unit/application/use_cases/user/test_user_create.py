@@ -10,8 +10,10 @@ from src.domain.entities.user import User as UserEntity
 
 
 @pytest_asyncio.fixture
-def use_case(mock_user_repo: AsyncMock, mock_hasher: AsyncMock) -> UserCreateUseCase:
-    return UserCreateUseCase(mock_user_repo, mock_hasher)
+def use_case(
+    mock_user_repo: AsyncMock, mock_hasher: AsyncMock, mock_event_publisher: AsyncMock
+) -> UserCreateUseCase:
+    return UserCreateUseCase(mock_user_repo, mock_hasher, mock_event_publisher)
 
 
 @pytest_asyncio.fixture
@@ -94,7 +96,7 @@ async def test_with_different_user_data(
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=AsyncMock()
+        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = user_entity_mock
         result = await use_case.execute(user_dto)
@@ -121,7 +123,7 @@ async def test_hasher_is_passed_correctly(
     use_case.to_dto = AsyncMock(return_value=Mock(spec=UserDTO))
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=AsyncMock()
+        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = user_entity_mock
         await use_case.execute(sample_user_create_dto)
@@ -145,7 +147,7 @@ async def test_returns_dto_from_written_entity(
     use_case.to_dto = Mock(return_value=expected_dto)
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=AsyncMock()
+        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = created_entity
         result = await use_case.execute(sample_user_create_dto)
@@ -171,7 +173,7 @@ async def test_with_minimal_user_data(
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=AsyncMock()
+        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = user_entity_mock
         result = await use_case.execute(minimal_dto)

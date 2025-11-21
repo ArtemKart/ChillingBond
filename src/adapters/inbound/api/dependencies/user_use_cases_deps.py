@@ -1,3 +1,4 @@
+from src.adapters.inbound.api.dependencies.event_publisher_deps import EventPublisherDep
 from src.adapters.inbound.api.dependencies.repo_deps import UserRepoDep
 from src.adapters.inbound.api.dependencies.security_deps import (
     HasherDep,
@@ -11,8 +12,13 @@ from src.application.use_cases.user.user_login import UserLoginUseCase
 def user_create_use_case(
     user_repo: UserRepoDep,
     hasher: HasherDep,
+    event_publisher: EventPublisherDep,
 ) -> UserCreateUseCase:
-    return UserCreateUseCase(user_repo=user_repo, hasher=hasher)
+    return UserCreateUseCase(
+        user_repo=user_repo,
+        hasher=hasher,
+        event_publisher=event_publisher,
+    )
 
 
 def user_login_use_case(
