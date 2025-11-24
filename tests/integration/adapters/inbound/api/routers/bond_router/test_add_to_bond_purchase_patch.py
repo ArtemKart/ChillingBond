@@ -137,7 +137,7 @@ async def test_add_to_bond_purchase_missing_quantity(
     invalid_request = {"is_positive": True}
 
     response = client.patch(f"/bonds/{valid_purchase_id}/add", json=invalid_request)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_add_to_bond_purchase_missing_is_positive(
@@ -147,7 +147,8 @@ async def test_add_to_bond_purchase_missing_is_positive(
     invalid_request = {"quantity": 5}
 
     response = client.patch(f"/bonds/{valid_purchase_id}/add", json=invalid_request)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
 
 
 async def test_add_to_bond_purchase_invalid_uuid(
@@ -157,7 +158,7 @@ async def test_add_to_bond_purchase_invalid_uuid(
     invalid_id = "not-a-valid-uuid"
 
     response = client.patch(f"/bonds/{invalid_id}/add", json=valid_add_request)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_add_to_bond_purchase_unauthorized(
@@ -356,7 +357,7 @@ async def test_add_to_bond_purchase_invalid_json(
         headers={"Content-Type": "application/json"},
     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_add_to_bond_purchase_wrong_data_types(
@@ -370,7 +371,7 @@ async def test_add_to_bond_purchase_wrong_data_types(
 
     response = client.patch(f"/bonds/{valid_purchase_id}/add", json=invalid_request)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_add_to_bond_purchase_multiple_operations(

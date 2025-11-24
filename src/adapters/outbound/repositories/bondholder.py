@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.adapters.exceptions import SQLAlchemyRepositoryError
+from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.adapters.outbound.database.models import BondHolder as BondHolderModel

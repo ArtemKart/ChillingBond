@@ -54,7 +54,7 @@ class Bond:
     def validate(self) -> None:
         self._validate_nominal_value()
         self._validate_maturity_period()
-        self._validate_maturity_period()
+        self._validate_initial_interest_rate()
 
     def _validate_nominal_value(self) -> None:
         if self.nominal_value <= 0:

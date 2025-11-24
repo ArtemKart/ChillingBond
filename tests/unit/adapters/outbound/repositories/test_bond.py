@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest_asyncio
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from src.adapters.exceptions import SQLAlchemyRepositoryError
+from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.database.models import Bond as BondModel
 from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
 from src.domain.entities.bond import Bond as BondEntity
