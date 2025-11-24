@@ -139,7 +139,6 @@ async def test_get_bond_different_user_cannot_access(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
-
     from src.domain.exceptions import NotFoundError
 
     mock_use_case = AsyncMock()
@@ -278,21 +277,6 @@ async def test_get_bond_user_id_from_authentication(
     mock_use_case.execute.assert_called_once_with(
         bondholder_id=valid_purchase_id, user_id=expected_user_id
     )
-
-
-# async def test_get_bond_generic_exception(
-#         client: TestClient,
-#         valid_purchase_id: UUID,
-# ) -> None:
-#     mock_use_case = AsyncMock()
-#     mock_use_case.execute.side_effect = Exception("Unexpected database error")
-#
-#     from src.adapters.inbound.api.dependencies.bond_use_cases_deps import bh_get_use_case
-#     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
-#
-#     response = client.get(f"/bonds/{valid_purchase_id}")
-#
-#     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 async def test_get_bond_with_different_series(
