@@ -35,33 +35,6 @@ def sample_dto() -> BondHolderChangeQuantityDTO:
         is_positive=True,
     )
 
-
-# @pytest_asyncio.fixture
-# def bondholder_entity_mock() -> Mock:
-#     bondholder = Mock(spec=BondHolder)
-#     bondholder.id = uuid4()
-#     bondholder.bond_id = uuid4()
-#     bondholder.user_id = uuid4()
-#     bondholder.quantity = 50
-#     bondholder.purchase_date = date.today()
-#     bondholder.add_quantity = AsyncMock()
-#     bondholder.reduce_quantity = AsyncMock()
-#     return bondholder
-
-
-# @pytest_asyncio.fixture
-# def bond_entity_mock() -> Mock:
-#     bond = Mock(spec=Bond)
-#     bond.id = uuid4()
-#     bond.series = "ROR1602"
-#     bond.nominal_value = 100
-#     bond.maturity_period = 12
-#     bond.initial_interest_rate = 4.75
-#     bond.first_interest_period = 1
-#     bond.reference_rate_margin = 0
-#     return bond
-
-
 async def test_add_quantity_success(
     use_case: BondAddToBondHolderUseCase,
     mock_bondholder_repo: AsyncMock,

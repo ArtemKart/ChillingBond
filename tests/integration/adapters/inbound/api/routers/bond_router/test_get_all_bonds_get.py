@@ -167,21 +167,6 @@ async def test_get_all_bonds_unauthorized() -> None:
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-# async def test_get_all_bonds_use_case_exception(
-#     client: TestClient,
-#     mock_current_user: UUID,
-# ) -> None:
-#     mock_use_case = AsyncMock()
-#     mock_use_case.execute.side_effect = Exception("Database connection error")
-#
-#     from src.adapters.inbound.api.dependencies.bond_use_cases_deps import bh_get_all_use_case
-#     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-#
-#     response = client.get("/bonds")
-#
-#     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-
-
 async def test_get_all_bonds_user_id_from_authentication(
     client: TestClient,
     mock_bondholder_response: AsyncMock,
