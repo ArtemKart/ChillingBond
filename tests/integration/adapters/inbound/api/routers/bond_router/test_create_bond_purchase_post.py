@@ -8,7 +8,7 @@ import pytest_asyncio
 from fastapi import status
 from starlette.testclient import TestClient
 
-from src.adapters.exceptions import SQLAlchemyRepositoryError
+from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.main import app
 
 
