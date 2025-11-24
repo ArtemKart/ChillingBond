@@ -15,15 +15,16 @@ from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse
 from src.adapters.inbound.api.schemas.bondholder import (
-    BondHolderResponse,
     BondHolderChangeRequest,
     BondHolderCreateRequest,
+    BondHolderResponse,
 )
 from src.application.dto.bond import BondCreateDTO, BondUpdateDTO
 from src.application.dto.bondholder import (
-    BondHolderCreateDTO,
     BondHolderChangeQuantityDTO,
+    BondHolderCreateDTO,
 )
+from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.application.use_cases.bondholder.bondholder_add import (
     BondAddToBondHolderUseCase,
 )
@@ -34,10 +35,9 @@ from src.application.use_cases.bondholder.bondholder_delete import (
     BondHolderDeleteUseCase,
 )
 from src.application.use_cases.bondholder.bondholder_get import (
-    BondHolderGetUseCase,
     BondHolderGetAllUseCase,
+    BondHolderGetUseCase,
 )
-from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.domain.exceptions import NotFoundError
 
 bond_router = APIRouter(prefix="/bonds", tags=["bondholder"])
