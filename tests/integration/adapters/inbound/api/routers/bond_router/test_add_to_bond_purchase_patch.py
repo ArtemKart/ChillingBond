@@ -12,12 +12,12 @@ from src.adapters.inbound.api.main import app
 
 
 @pytest_asyncio.fixture
-def valid_purchase_id() -> UUID:
+async def valid_purchase_id() -> UUID:
     return uuid4()
 
 
 @pytest_asyncio.fixture
-def valid_add_request() -> dict[str, Any]:
+async def valid_add_request() -> dict[str, Any]:
     return {
         "quantity": 5,
         "is_positive": True,
@@ -25,7 +25,7 @@ def valid_add_request() -> dict[str, Any]:
 
 
 @pytest_asyncio.fixture
-def valid_subtract_request() -> dict[str, Any]:
+async def valid_subtract_request() -> dict[str, Any]:
     return {
         "quantity": 3,
         "is_positive": False,
@@ -148,21 +148,6 @@ async def test_add_to_bond_purchase_missing_is_positive(
 
     response = client.patch(f"/bonds/{valid_purchase_id}/add", json=invalid_request)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-
-# async def test_add_to_bond_purchase_negative_quantity(
-#     client: TestClient,
-#     valid_purchase_id: UUID,
-# ) -> None:
-#     invalid_request = {
-#         "quantity": -5,
-#         "is_positive": True,
-#     }
-#     response = client.patch(
-#         f"/bonds/{valid_purchase_id}/add",
-#         json=invalid_request
-#     )
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def test_add_to_bond_purchase_invalid_uuid(
@@ -367,7 +352,7 @@ async def test_add_to_bond_purchase_invalid_json(
 ) -> None:
     response = client.patch(
         f"/bonds/{valid_purchase_id}/add",
-        data="invalid json",
+        content="invalid json",  # type: ignor
         headers={"Content-Type": "application/json"},
     )
 

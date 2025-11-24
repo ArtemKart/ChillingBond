@@ -218,8 +218,7 @@ async def test_to_model_conversion(
     repository: SQLAlchemyBondHolderRepository, bondholder_entity_mock: Mock
 ) -> None:
     result = repository._to_model(bondholder_entity_mock)
-
-    # Assert
+    
     assert isinstance(result, BondHolderModel)
     assert result.id == bondholder_entity_mock.id
     assert result.bond_id == bondholder_entity_mock.bond_id
