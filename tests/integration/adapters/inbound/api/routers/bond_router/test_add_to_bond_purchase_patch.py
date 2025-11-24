@@ -352,7 +352,7 @@ async def test_add_to_bond_purchase_invalid_json(
 ) -> None:
     response = client.patch(
         f"/bonds/{valid_purchase_id}/add",
-        content="invalid json",  # type: ignor
+        content="invalid json",
         headers={"Content-Type": "application/json"},
     )
 
