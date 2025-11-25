@@ -41,4 +41,4 @@ class BondHolderGetAllUseCase(BondHolderBaseUseCase):
             if not bond:
                 raise NotFoundError("Bond connected to BondHolder not found")
             dto_list.append(self.to_dto(bondholder=bh, bond=bond))
-        return dto_list
+        return sorted(dto_list, key=lambda h: h.purchase_date, reverse=True)

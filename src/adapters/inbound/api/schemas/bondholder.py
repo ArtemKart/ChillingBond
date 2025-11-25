@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from .bond import BondBase
+from src.adapters.inbound.api.schemas.bond import BondBase
 
 
 class BondHolderResponse(BondBase):
