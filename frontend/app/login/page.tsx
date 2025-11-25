@@ -16,7 +16,6 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // OAuth2 требует FormData, не JSON
       const formData = new URLSearchParams();
       formData.append('username', username);
       formData.append('password', password);
@@ -31,16 +30,17 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Неверный логин или пароль');
+        if (errorData.detail == 'Incorrect username or password') {
+            throw new Error('Неверный логин или пароль');
+        }
+         throw new Error(errorData.detail);
       }
 
       const data = await response.json();
 
-      // Сохраняем токен
       localStorage.setItem('token', data.token);
       localStorage.setItem('token_type', data.type);
 
-      // Перенаправляем на дашборд
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка входа');
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="username"
               />
             </div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="••••••••"
               />
             </div>

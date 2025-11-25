@@ -1,4 +1,4 @@
-from typing import Any
+from uuid import UUID
 
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, declared_attr
@@ -17,7 +17,7 @@ meta = MetaData(
 class Base(DeclarativeBase):
     metadata = meta
 
-    id: Any
+    id: UUID | None
     __name__: str
 
     @declared_attr.directive
