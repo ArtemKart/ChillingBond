@@ -8,7 +8,7 @@ import pytest_asyncio
 
 from src.application.dto.bondholder import BondHolderChangeQuantityDTO, BondHolderDTO
 from src.application.use_cases.bondholder.bondholder_add import (
-    BondAddToBondHolderUseCase,
+    ChangeBondHolderQuantityUseCase,
 )
 from src.domain.exceptions import NotFoundError, InvalidTokenError
 
@@ -18,8 +18,8 @@ def use_case(
     mock_bond_repo: AsyncMock,
     mock_user_repo: AsyncMock,
     mock_bondholder_repo: AsyncMock,
-) -> BondAddToBondHolderUseCase:
-    return BondAddToBondHolderUseCase(
+) -> ChangeBondHolderQuantityUseCase:
+    return ChangeBondHolderQuantityUseCase(
         bond_repo=mock_bond_repo,
         user_repo=mock_user_repo,
         bondholder_repo=mock_bondholder_repo,
@@ -36,7 +36,7 @@ def sample_dto() -> BondHolderChangeQuantityDTO:
 
 
 async def test_change_quantity_success(
-    use_case: BondAddToBondHolderUseCase,
+    use_case: ChangeBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
     bondholder_entity_mock: Mock,
@@ -61,7 +61,7 @@ async def test_change_quantity_success(
 
 
 async def test_bondholder_not_found(
-    use_case: BondAddToBondHolderUseCase,
+    use_case: ChangeBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     sample_dto: BondHolderChangeQuantityDTO,
 ) -> None:
@@ -74,12 +74,14 @@ async def test_bondholder_not_found(
 
 
 async def test_user_not_authenticated(
-    use_case: BondAddToBondHolderUseCase,
+    use_case: ChangeBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     bondholder_entity_mock: Mock,
 ) -> None:
     dto = BondHolderChangeQuantityDTO(
-        id=uuid4(), user_id=uuid4(), new_quantity=10,
+        id=uuid4(),
+        user_id=uuid4(),
+        new_quantity=10,
     )
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
 
@@ -91,7 +93,7 @@ async def test_user_not_authenticated(
 
 
 async def test_bond_not_found(
-    use_case: BondAddToBondHolderUseCase,
+    use_case: ChangeBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
     sample_dto: BondHolderChangeQuantityDTO,
@@ -109,13 +111,15 @@ async def test_bond_not_found(
         await use_case.execute(sample_dto)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id=sample_dto.id)
-    bondholder_entity_mock.change_quantity.assert_called_once_with(sample_dto.new_quantity)
+    bondholder_entity_mock.change_quantity.assert_called_once_with(
+        sample_dto.new_quantity
+    )
     mock_bondholder_repo.update.assert_called_once_with(bondholder_entity_mock)
     mock_bond_repo.get_one.assert_called_once_with(bondholder_entity_mock.bond_id)
 
 
 async def test_calls_to_dto_method(
-    use_case: BondAddToBondHolderUseCase,
+    use_case: ChangeBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
     sample_dto: BondHolderChangeQuantityDTO,
@@ -155,7 +159,7 @@ async def test_calls_to_dto_method(
 
 
 async def test_with_zero_quantity(
-    use_case: BondAddToBondHolderUseCase,
+    use_case: ChangeBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
     bondholder_entity_mock: Mock,
@@ -177,7 +181,7 @@ async def test_with_zero_quantity(
 
 
 async def test_with_large_quantity(
-    use_case: BondAddToBondHolderUseCase,
+    use_case: ChangeBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
     bondholder_entity_mock: Mock,

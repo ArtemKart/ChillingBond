@@ -1,0 +1,59 @@
+interface BondBasicInfoProps {
+    series: string;
+    quantity: number;
+    isEditing: boolean;
+    onSeriesChange: (value: string) => void;
+    onQuantityChange: (value: number) => void;
+}
+
+export default function BondBasicInfo({
+    series,
+    quantity,
+    isEditing,
+    onSeriesChange,
+    onQuantityChange,
+}: BondBasicInfoProps) {
+    return (
+        <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                Основная информация
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-500 mb-1">Серия</p>
+                    {isEditing ? (
+                        <input
+                            type="text"
+                            value={series}
+                            onChange={(e) => onSeriesChange(e.target.value)}
+                            className="text-xl font-bold text-gray-900 w-full bg-white border border-gray-300 rounded px-2 py-1"
+                        />
+                    ) : (
+                        <p className="text-xl font-bold text-gray-900">
+                            {series}
+                        </p>
+                    )}
+                </div>
+
+                <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-500 mb-1">Количество</p>
+                    {isEditing ? (
+                        <input
+                            type="number"
+                            min="1"
+                            value={quantity}
+                            onChange={(e) =>
+                                onQuantityChange(parseInt(e.target.value) || 1)
+                            }
+                            className="text-xl font-bold text-blue-600 w-full bg-white border border-gray-300 rounded px-2 py-1"
+                        />
+                    ) : (
+                        <p className="text-xl font-bold text-blue-600">
+                            {quantity} шт.
+                        </p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

@@ -13,7 +13,9 @@ from src.domain.exceptions import NotFoundError
 
 
 @pytest_asyncio.fixture
-async def use_case(mock_bondholder_repo: AsyncMock, mock_bond_repo: AsyncMock) -> BondHolderGetAllUseCase:
+async def use_case(
+    mock_bondholder_repo: AsyncMock, mock_bond_repo: AsyncMock
+) -> BondHolderGetAllUseCase:
     return BondHolderGetAllUseCase(mock_bondholder_repo, mock_bond_repo)
 
 

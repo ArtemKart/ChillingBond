@@ -3,13 +3,11 @@
 import { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import type { BondHolderResponse } from "@/types/bond";
-import BondModal from "@/components/BondModal";
-import AddBondModal from "@/components/AddBondModal";
-import Link from "next/link";
 import { DashboardHeader } from "./components/DashboardHeader";
-import { SortControls } from "./components/SortControls";
 import { BondsList } from "./components/BondsList";
 import { Sidebar } from "@/components/Sidebar";
+import BondModal from "@/components/BondModal";
+import AddBondModal from "@/components/AddBondModal"; // Добавь импорт, если его нет
 
 export default function Dashboard() {
     const [bonds, setBonds] = useState<BondHolderResponse[]>([]);
@@ -85,6 +83,14 @@ export default function Dashboard() {
         window.location.href = "/login";
     };
 
+    const handleClose = () => {
+        setSelectedBond(null);
+    };
+
+    const refetch = async () => {
+        await loadBonds();
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -104,20 +110,20 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-gray-50 flex">
           <div className="flex-1 p-8">
-            <DashboardHeader 
+            <DashboardHeader
               onAddClick={() => setIsAddModalOpen(true)}
               onLogout={handleLogout}
             />
-            
+
             <BondsList
               bonds={sortedBonds}
               groupedBonds={groupedBonds}
               onBondClick={setSelectedBond}
             />
           </div>
-  
-          <Sidebar 
-            isOpen={isSidebarOpen} 
+
+          <Sidebar
+            isOpen={isSidebarOpen}
             onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -128,12 +134,12 @@ export default function Dashboard() {
             groupByDate={groupByDate}
             onGroupByDateChange={setGroupByDate}
           />
-    
+
           {selectedBond && (
             <BondModal
               bond={selectedBond}
-              onClose={() => setSelectedBond(null)}
-              onUpdate={loadBonds}
+              onClose={handleClose}
+              onUpdate={refetch}
             />
           )}
           {isAddModalOpen && (
@@ -143,5 +149,8 @@ export default function Dashboard() {
             />
           )}
         </div>
-      );
-    }
+
+
+
+    );
+}

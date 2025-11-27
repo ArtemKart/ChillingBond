@@ -6,8 +6,8 @@ from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
 
 
-class BondAddToBondHolderUseCase(BondHolderBaseUseCase):
-    """Adds new bonds to existing BondHolder"""
+class ChangeBondHolderQuantityUseCase(BondHolderBaseUseCase):
+    """Change bond quantity in existing bondholder"""
 
     def __init__(
         self,
