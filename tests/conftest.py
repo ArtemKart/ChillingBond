@@ -13,6 +13,7 @@ from src.domain.ports.services.token_handler import TokenHandler
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
+from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
 
 
 @pytest_asyncio.fixture
@@ -79,3 +80,8 @@ def mock_user_repo() -> AsyncMock:
 @pytest_asyncio.fixture
 def mock_event_publisher() -> AsyncMock:
     return AsyncMock(spec=EventPublisher)
+
+
+@pytest_asyncio.fixture
+def bh_del_service_mock():
+    return AsyncMock(spec=BondHolderDeletionService)
