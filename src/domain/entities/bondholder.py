@@ -3,6 +3,7 @@ from datetime import datetime, date, timezone
 from typing import Self
 from uuid import UUID, uuid4
 
+from src.domain.events.base import DomainEvent
 from src.domain.events.bondholder_events import BondHolderDeletedEvent
 from src.domain.exceptions import ValidationError
 
@@ -33,7 +34,7 @@ class BondHolder:
     purchase_date: date
     last_update: datetime | None = None
 
-    _events: list = field(default_factory=list, init=False, repr=False)
+    _events: list[DomainEvent] = field(default_factory=list, init=False, repr=False)
 
     @classmethod
     def create(
@@ -56,7 +57,7 @@ class BondHolder:
         bh.validate()
         return bh
 
-    def collect_events(self) -> list:
+    def collect_events(self) -> list[DomainEvent]:
         events = self._events.copy()
         self._events.clear()
         return events

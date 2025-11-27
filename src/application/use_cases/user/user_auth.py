@@ -4,7 +4,7 @@ from jwt import PyJWTError
 
 from src.application.dto.user import UserDTO
 from src.application.use_cases.user.user_base import UserBaseUseCase
-from src.domain.exceptions import InvalidTokenError, NotFoundError
+from src.domain.exceptions import AuthenticationError, InvalidTokenError
 from src.domain.ports.repositories.user import UserRepository
 from src.domain.ports.services.token_handler import TokenHandler
 
@@ -19,11 +19,11 @@ class UserAuthUseCase(UserBaseUseCase):
             user_id_str = self.token_handler.read_token(subject=token)
         except PyJWTError:
             raise InvalidTokenError("Invalid token")
-        if user_id_str is None:
+        if not user_id_str:
             raise InvalidTokenError("Token does not contain user information")
 
         user_id = UUID(user_id_str)
         user = await self.user_repo.get_one(user_id=user_id)
         if user is None:
-            raise NotFoundError("User not found")
+            raise AuthenticationError("User not found")
         return self.to_dto(user)
