@@ -13,7 +13,7 @@ from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
     bh_delete_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
-from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse
+from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse, EmptyBondUpdateResponse
 from src.adapters.inbound.api.schemas.bondholder import (
     BondHolderChangeRequest,
     BondHolderCreateRequest,
@@ -146,7 +146,6 @@ async def add_to_bond_purchase(
 
 @bond_router.put(
     "/{purchase_id}/specification",
-    response_model=BondUpdateResponse,
     dependencies=[Depends(current_user)],
     status_code=status.HTTP_200_OK,
     description="Update bond specification data",
@@ -155,7 +154,9 @@ async def update_bond(
     purchase_id: UUID,
     bond_data: BondUpdateRequest,
     use_case: Annotated[BondUpdateUseCase, Depends(bond_update_use_case)],
-):
+) -> BondUpdateResponse | EmptyBondUpdateResponse:
+    if not bond_data.model_dump(exclude_none=True):
+        return EmptyBondUpdateResponse()
     dto = BondUpdateDTO(
         nominal_value=bond_data.nominal_value,
         series=bond_data.series,
@@ -164,7 +165,7 @@ async def update_bond(
         first_interest_period=bond_data.first_interest_period,
         reference_rate_margin=bond_data.reference_rate_margin,
     )
-    return await use_case.execute(dto=dto, bond_id=purchase_id)
+    return await use_case.execute(dto=dto, bond_id=purchase_id)  # type: ignore [return-value]
 
 
 @bond_router.delete(
