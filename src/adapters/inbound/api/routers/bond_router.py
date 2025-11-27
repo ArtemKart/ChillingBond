@@ -124,12 +124,12 @@ async def get_bond(
 
 
 @bond_router.patch(
-    "/{purchase_id}/add",
+    "/{purchase_id}/quantity",
     response_model=BondHolderResponse,
     status_code=status.HTTP_200_OK,
     description="Change bond quantity in bond holder",
 )
-async def add_to_bond_purchase(
+async def change_purchase_quantity(
     purchase_id: UUID,
     bond_data: BondHolderChangeRequest,
     use_case: Annotated[BondAddToBondHolderUseCase, Depends(bond_add_to_bh_use_case)],
@@ -138,8 +138,7 @@ async def add_to_bond_purchase(
     dto = BondHolderChangeQuantityDTO(
         id=purchase_id,
         user_id=user_id,
-        quantity=bond_data.quantity,
-        is_positive=bond_data.is_positive,
+        new_quantity=bond_data.new_quantity,
     )
     return await use_case.execute(dto=dto)
 

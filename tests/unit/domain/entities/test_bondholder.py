@@ -19,43 +19,18 @@ def local_bondholder() -> BondHolderEntity:
         purchase_date=date.today(),
     )
 
+async def test_bondholder_change_quantity_success(local_bondholder: BondHolderEntity) -> None:
+    new_quantity = 300
+    local_bondholder.change_quantity(new_quantity)
+    assert local_bondholder.quantity == new_quantity
 
-async def test_bondholder_add_quantity_err(local_bondholder: BondHolderEntity) -> None:
-    negative_quantity = -local_bondholder.quantity
+async def test_bondholder_change_quantity_type_error(local_bondholder: BondHolderEntity) -> None:
+    with pytest.raises(ValidationError, match="Quantity must be an integer"):
+        local_bondholder.change_quantity("one")  # type: ignore [arg-type]
 
-    with pytest.raises(ValidationError, match="Amount must be positive"):
-        local_bondholder.add_quantity(negative_quantity)
-
-    assert local_bondholder.quantity != negative_quantity
-
-
-async def test_bondholder_add_quantity_happy_path(
-    local_bondholder: BondHolderEntity,
-) -> None:
-    before = local_bondholder.quantity
-    amount = 44
-    local_bondholder.add_quantity(amount=amount)
-    assert local_bondholder.quantity == before + amount
-
-
-@pytest.mark.parametrize(
-    "quantity, amount, expected_result",
-    [
-        (100, 44, 56),
-        (100, 101, 0),
-    ],
-    ids=["amount less than quantity", "amount greater than quantity"],
-)
-async def test_bondholder_reduce_quantity(
-    local_bondholder: BondHolderEntity,
-    quantity: int,
-    amount: int,
-    expected_result: int,
-) -> None:
-    local_bondholder.quantity = quantity
-    local_bondholder.reduce_quantity(amount=amount)
-    assert local_bondholder.quantity == expected_result
-
+async def test_bondholder_change_quantity_quantity_error(local_bondholder: BondHolderEntity) -> None:
+    with pytest.raises(ValidationError, match="Quantity must be positive"):
+        local_bondholder.change_quantity(-1)
 
 async def test_bondholder_mark_as_deleted(
     local_bondholder: BondHolderEntity,

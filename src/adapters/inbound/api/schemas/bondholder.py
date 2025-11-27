@@ -15,8 +15,7 @@ class BondHolderResponse(BondBase):
 
 
 class BondHolderChangeRequest(BaseModel):
-    quantity: int = Field(..., gt=0, description="Quantity to change")
-    is_positive: bool
+    new_quantity: int = Field(..., gt=0, description="New quantity")
 
 
 class BondHolderCreateRequest(BondBase):
