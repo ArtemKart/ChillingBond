@@ -13,7 +13,11 @@ from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
     bh_delete_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
-from src.adapters.inbound.api.schemas.bond import BondUpdateRequest, BondUpdateResponse, EmptyBondUpdateResponse
+from src.adapters.inbound.api.schemas.bond import (
+    BondUpdateRequest,
+    BondUpdateResponse,
+    EmptyBondUpdateResponse,
+)
 from src.adapters.inbound.api.schemas.bondholder import (
     BondHolderChangeRequest,
     BondHolderCreateRequest,
@@ -26,7 +30,7 @@ from src.application.dto.bondholder import (
 )
 from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.application.use_cases.bondholder.bondholder_add import (
-    BondAddToBondHolderUseCase,
+    ChangeBondHolderQuantityUseCase,
 )
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
@@ -132,7 +136,9 @@ async def get_bond(
 async def change_purchase_quantity(
     purchase_id: UUID,
     bond_data: BondHolderChangeRequest,
-    use_case: Annotated[BondAddToBondHolderUseCase, Depends(bond_add_to_bh_use_case)],
+    use_case: Annotated[
+        ChangeBondHolderQuantityUseCase, Depends(bond_add_to_bh_use_case)
+    ],
     user_id: Annotated[UUID, Depends(current_user)],
 ):
     dto = BondHolderChangeQuantityDTO(

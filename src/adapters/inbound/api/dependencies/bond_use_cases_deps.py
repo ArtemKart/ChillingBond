@@ -10,7 +10,7 @@ from src.adapters.inbound.api.dependencies.repo_deps import (
 )
 from src.adapters.inbound.api.dependencies.service_deps import get_bh_deletion_service
 from src.application.use_cases.bondholder.bondholder_add import (
-    BondAddToBondHolderUseCase,
+    ChangeBondHolderQuantityUseCase,
 )
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
@@ -30,8 +30,8 @@ def bond_add_to_bh_use_case(
     bond_repo: BondRepoDep,
     user_repo: UserRepoDep,
     bondholder_repo: BondHolderRepoDep,
-) -> BondAddToBondHolderUseCase:
-    return BondAddToBondHolderUseCase(
+) -> ChangeBondHolderQuantityUseCase:
+    return ChangeBondHolderQuantityUseCase(
         bond_repo=bond_repo, user_repo=user_repo, bondholder_repo=bondholder_repo
     )
 

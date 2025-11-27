@@ -4,7 +4,9 @@ from uuid import uuid4
 import pytest
 import pytest_asyncio
 
-from src.application.use_cases.bondholder.bondholder_delete import BondHolderDeleteUseCase
+from src.application.use_cases.bondholder.bondholder_delete import (
+    BondHolderDeleteUseCase,
+)
 from src.domain.entities.bondholder import BondHolder
 from src.domain.entities.user import User
 from src.domain.exceptions import AuthorizationError, NotFoundError
@@ -63,7 +65,9 @@ async def test_delete_bondholder_success(
 
 
 @pytest.mark.asyncio
-async def test_delete_bondholder_not_found(use_case: BondHolderDeleteUseCase, mock_bondholder_repo: AsyncMock) -> None:
+async def test_delete_bondholder_not_found(
+    use_case: BondHolderDeleteUseCase, mock_bondholder_repo: AsyncMock
+) -> None:
     bondholder_id = uuid4()
     user_id = uuid4()
     mock_bondholder_repo.get_one.return_value = None

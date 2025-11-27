@@ -135,7 +135,11 @@ async def test_request_validation_exception_handler_logs_with_body(
     mock_logger: Mock, mock_request: Mock
 ) -> None:
     pydantic_errors = [
-        {"loc": ("body", "name"), "msg": "field required", "type": "value_error.missing"}
+        {
+            "loc": ("body", "name"),
+            "msg": "field required",
+            "type": "value_error.missing",
+        }
     ]
 
     exc = RequestValidationError(pydantic_errors)

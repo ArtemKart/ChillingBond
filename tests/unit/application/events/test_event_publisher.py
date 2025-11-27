@@ -34,14 +34,18 @@ def mock_handler():
     return AsyncMock()
 
 
-async def test_subscribe_single_handler(publisher: EventPublisher, mock_handler: AsyncMock) -> None:
+async def test_subscribe_single_handler(
+    publisher: EventPublisher, mock_handler: AsyncMock
+) -> None:
     publisher.subscribe(UserCreatedEvent, mock_handler)
 
     assert UserCreatedEvent in publisher._handlers
     assert mock_handler in publisher._handlers[UserCreatedEvent]
 
 
-async def test_subscribe_multiple_handlers_same_event(publisher: EventPublisher) -> None:
+async def test_subscribe_multiple_handlers_same_event(
+    publisher: EventPublisher,
+) -> None:
     handler1 = AsyncMock()
     handler2 = AsyncMock()
 
@@ -66,7 +70,9 @@ async def test_subscribe_multiple_event_types(publisher: EventPublisher) -> None
     assert handler2 in publisher._handlers[OrderPlacedEvent]
 
 
-async def test_publish_calls_handler(publisher: EventPublisher, mock_handler: AsyncMock) -> None:
+async def test_publish_calls_handler(
+    publisher: EventPublisher, mock_handler: AsyncMock
+) -> None:
     event = UserCreatedEvent(user_id=uuid4(), email="test@example.com")
     publisher.subscribe(UserCreatedEvent, mock_handler)
 
@@ -89,7 +95,9 @@ async def test_publish_calls_multiple_handlers(publisher: EventPublisher) -> Non
     handler2.assert_awaited_once_with(event)
 
 
-async def test_publish_handler_exception_continues_execution(publisher: EventPublisher) -> None:
+async def test_publish_handler_exception_continues_execution(
+    publisher: EventPublisher,
+) -> None:
     failing_handler = AsyncMock(side_effect=ValueError("Test error"))
     success_handler = AsyncMock()
     event = UserCreatedEvent(user_id=uuid4(), email="test@example.com")
@@ -141,7 +149,9 @@ async def test_publish_all_different_event_types(publisher: EventPublisher) -> N
     order_handler.assert_awaited_once_with(order_event)
 
 
-async def test_publish_all_handler_exception_continues(publisher: EventPublisher, caplog: LogCaptureFixture) -> None:
+async def test_publish_all_handler_exception_continues(
+    publisher: EventPublisher, caplog: LogCaptureFixture
+) -> None:
     failing_handler = AsyncMock(side_effect=ValueError("First event failed"))
     success_handler = AsyncMock()
 
@@ -158,7 +168,9 @@ async def test_publish_all_handler_exception_continues(publisher: EventPublisher
     assert caplog.text.count("Event handler failed") == 2
 
 
-async def test_publish_only_calls_handlers_for_specific_event_type(publisher: EventPublisher) -> None:
+async def test_publish_only_calls_handlers_for_specific_event_type(
+    publisher: EventPublisher,
+) -> None:
     user_handler = AsyncMock()
     order_handler = AsyncMock()
 

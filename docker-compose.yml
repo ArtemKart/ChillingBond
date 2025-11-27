@@ -40,6 +40,8 @@ services:
       context: .
       dockerfile: dockerfiles/Dockerfile_backend
     container_name: backend
+    environment:
+      POSTGRES_HOST: database
     depends_on:
       database:
         condition: service_healthy

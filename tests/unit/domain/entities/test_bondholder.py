@@ -19,18 +19,28 @@ def local_bondholder() -> BondHolderEntity:
         purchase_date=date.today(),
     )
 
-async def test_bondholder_change_quantity_success(local_bondholder: BondHolderEntity) -> None:
+
+async def test_bondholder_change_quantity_success(
+    local_bondholder: BondHolderEntity,
+) -> None:
     new_quantity = 300
     local_bondholder.change_quantity(new_quantity)
     assert local_bondholder.quantity == new_quantity
 
-async def test_bondholder_change_quantity_type_error(local_bondholder: BondHolderEntity) -> None:
+
+async def test_bondholder_change_quantity_type_error(
+    local_bondholder: BondHolderEntity,
+) -> None:
     with pytest.raises(ValidationError, match="Quantity must be an integer"):
         local_bondholder.change_quantity("one")  # type: ignore [arg-type]
 
-async def test_bondholder_change_quantity_quantity_error(local_bondholder: BondHolderEntity) -> None:
+
+async def test_bondholder_change_quantity_quantity_error(
+    local_bondholder: BondHolderEntity,
+) -> None:
     with pytest.raises(ValidationError, match="Quantity must be positive"):
         local_bondholder.change_quantity(-1)
+
 
 async def test_bondholder_mark_as_deleted(
     local_bondholder: BondHolderEntity,
