@@ -24,6 +24,7 @@ export default function Dashboard() {
     );
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [groupByDate, setGroupByDate] = useState(true);
 
     const sortedBonds = [...bonds].sort((a, b) => {
         let compareValue = 0;
@@ -41,19 +42,21 @@ export default function Dashboard() {
         return sortOrder === "asc" ? compareValue : -compareValue;
     });
 
-    const groupedBonds = sortedBonds.reduce(
-        (acc, bond) => {
-            const dateKey = new Date(bond.purchase_date).toLocaleDateString(
-                "ru-RU",
-            );
-            if (!acc[dateKey]) {
-                acc[dateKey] = [];
-            }
-            acc[dateKey].push(bond);
-            return acc;
-        },
-        {} as Record<string, BondHolderResponse[]>,
-    );
+    const groupedBonds = groupByDate
+        ? sortedBonds.reduce(
+              (acc, bond) => {
+                  const dateKey = new Date(
+                      bond.purchase_date,
+                  ).toLocaleDateString("ru-RU");
+                  if (!acc[dateKey]) {
+                      acc[dateKey] = [];
+                  }
+                  acc[dateKey].push(bond);
+                  return acc;
+              },
+              {} as Record<string, BondHolderResponse[]>,
+          )
+        : { "Все облигации": sortedBonds };
 
     const loadBonds = async () => {
         try {
@@ -100,43 +103,45 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            <div className="flex-1 p-8">
-                <DashboardHeader
-                    onAddClick={() => setIsAddModalOpen(true)}
-                    onLogout={handleLogout}
-                />
-
-                <BondsList
-                    bonds={sortedBonds}
-                    groupedBonds={groupedBonds}
-                    onBondClick={setSelectedBond}
-                />
-            </div>
-
-            <Sidebar
-                isOpen={isSidebarOpen}
-                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={(newSortBy, newSortOrder) => {
-                    setSortBy(newSortBy);
-                    setSortOrder(newSortOrder);
-                }}
+          <div className="flex-1 p-8">
+            <DashboardHeader 
+              onAddClick={() => setIsAddModalOpen(true)}
+              onLogout={handleLogout}
             />
-
-            {selectedBond && (
-                <BondModal
-                    bond={selectedBond}
-                    onClose={() => setSelectedBond(null)}
-                    onUpdate={loadBonds}
-                />
-            )}
-            {isAddModalOpen && (
-                <AddBondModal
-                    onClose={() => setIsAddModalOpen(false)}
-                    onUpdate={loadBonds}
-                />
-            )}
+            
+            <BondsList
+              bonds={sortedBonds}
+              groupedBonds={groupedBonds}
+              onBondClick={setSelectedBond}
+            />
+          </div>
+  
+          <Sidebar 
+            isOpen={isSidebarOpen} 
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={(newSortBy, newSortOrder) => {
+              setSortBy(newSortBy);
+              setSortOrder(newSortOrder);
+            }}
+            groupByDate={groupByDate}
+            onGroupByDateChange={setGroupByDate}
+          />
+    
+          {selectedBond && (
+            <BondModal
+              bond={selectedBond}
+              onClose={() => setSelectedBond(null)}
+              onUpdate={loadBonds}
+            />
+          )}
+          {isAddModalOpen && (
+            <AddBondModal
+              onClose={() => setIsAddModalOpen(false)}
+              onUpdate={loadBonds}
+            />
+          )}
         </div>
-    );
-}
+      );
+    }

@@ -2,7 +2,7 @@ from uuid import UUID
 
 from src.application.events.event_publisher import EventPublisher
 from src.application.use_cases.bondholder.bondholder_base import BondHolderBaseUseCase
-from src.domain.exceptions import NotFoundError, AuthorizationError
+from src.domain.exceptions import AuthorizationError, NotFoundError
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
 from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
@@ -30,7 +30,7 @@ class BondHolderDeleteUseCase(BondHolderBaseUseCase):
             raise AuthorizationError("Permission denied")
         user = await self._user_repo.get_one(user_id=user_id)
         if not user:
-            raise NotFoundError("User not found")
+            raise AuthorizationError("User not found")
 
         bondholder.mark_as_deleted(user_email=user.email)
         events = bondholder.collect_events()

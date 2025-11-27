@@ -11,6 +11,8 @@ interface SidebarProps {
         sortBy: "purchase_date" | "current_value",
         sortOrder: "asc" | "desc",
     ) => void;
+    groupByDate: boolean;
+    onGroupByDateChange: (value: boolean) => void;
 }
 
 export function Sidebar({
@@ -19,13 +21,15 @@ export function Sidebar({
     sortBy,
     sortOrder,
     onSortChange,
+    groupByDate,
+    onGroupByDateChange,
 }: SidebarProps) {
     return (
         <>
             {!isOpen && (
                 <button
                     onClick={onToggle}
-                    className="fixed right-8 top-24 w-11 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center z-50"
+                    className="fixed right-8 top-32 w-14 h-14 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center z-50"
                     aria-label="Открыть меню"
                 >
                     <svg
@@ -56,7 +60,7 @@ export function Sidebar({
                         </h2>
                         <button
                             onClick={onToggle}
-                            className="text-gray-600 hover:text-gray-700 transition-colors"
+                            className="text-gray-500 hover:text-gray-700 transition-colors"
                             aria-label="Закрыть панель"
                         >
                             <svg
@@ -84,6 +88,22 @@ export function Sidebar({
                             sortOrder={sortOrder}
                             onSortChange={onSortChange}
                         />
+                    </div>
+
+                    <div className="mb-6 pb-6 border-b border-gray-200">
+                        <label className="flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={groupByDate}
+                                onChange={(e) =>
+                                    onGroupByDateChange(e.target.checked)
+                                }
+                                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                            />
+                            <span className="ml-3 text-sm font-medium text-gray-700">
+                                Группировать по дате покупки
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>

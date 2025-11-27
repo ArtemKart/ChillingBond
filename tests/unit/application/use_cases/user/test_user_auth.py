@@ -1,4 +1,4 @@
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
@@ -6,16 +6,16 @@ import pytest_asyncio
 
 from src.application.dto.user import UserDTO
 from src.application.use_cases.user.user_auth import UserAuthUseCase
-from src.domain.exceptions import InvalidTokenError, NotFoundError
+from src.domain.exceptions import AuthenticationError, InvalidTokenError
 
 
 @pytest_asyncio.fixture
-def use_case(mock_user_repo: Mock, mock_token_handler: Mock) -> UserAuthUseCase:
+async def use_case(mock_user_repo: Mock, mock_token_handler: Mock) -> UserAuthUseCase:
     return UserAuthUseCase(user_repo=mock_user_repo, token_handler=mock_token_handler)
 
 
 @pytest_asyncio.fixture
-def dto_from_user(user_entity_mock: Mock) -> UserDTO:
+async def dto_from_user(user_entity_mock: Mock) -> UserDTO:
     return UserDTO(
         id=user_entity_mock.id,
         email=user_entity_mock.email,
@@ -41,9 +41,7 @@ async def test_invalid_token(use_case: UserAuthUseCase) -> None:
     use_case.token_handler.read_token = Mock(return_value=None)
 
     token = "test_token"
-    with pytest.raises(
-        InvalidTokenError, match="Token does not contain user information"
-    ):
+    with pytest.raises(InvalidTokenError, match="Token does not contain user information"):
         await use_case.execute(token=token)
 
 
@@ -55,5 +53,5 @@ async def test_user_not_found(
     use_case.user_repo.get_one = AsyncMock(return_value=None)
 
     token = "test_token"
-    with pytest.raises(NotFoundError, match="User not found"):
+    with pytest.raises(AuthenticationError, match="User not found"):
         await use_case.execute(token=token)

@@ -27,7 +27,7 @@ class BondHolderDeletedEmailHandler:
                 email=event.email, occurred_at=event.occurred_at
             )
             logger.info(
-                "Welcome email sent successfully",
+                "Notification email sent successfully",
                 extra={"user_id": event.user_id, "email": event.email},
             )
         except Exception as e:

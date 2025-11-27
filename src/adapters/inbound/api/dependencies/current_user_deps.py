@@ -16,7 +16,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 async def current_user(
     use_case: Annotated[UserAuthUseCase, Depends(user_auth_use_case)],
-    token: str = Depends(oauth2_scheme),
+    token: Annotated[str, Depends(oauth2_scheme)],
 ) -> UUID:
     try:
         user = await use_case.execute(token)

@@ -19,7 +19,6 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
     const [showQuantityInput, setShowQuantityInput] = useState(false);
     const [quantityToChange, setQuantityToChange] = useState(1);
 
-    // Состояние для редактируемых полей
     const [editedBond, setEditedBond] = useState({
         series: bond.series,
         nominal_value: bond.nominal_value,
@@ -49,7 +48,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
 
     const handleDelete = async () => {
         try {
-            const response = await fetchWithAuth(`/bonds/${bond.bond_id}`, {
+            const response = await fetchWithAuth(`/bonds/${bond.id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,6 +61,10 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
                     errorData.detail || "Не удалось удалить облигации",
                 );
             }
+            if (onUpdate) {
+                onUpdate();
+            }
+            onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Ошибка удаления");
         }
@@ -266,7 +269,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
                                                         ) || 1,
                                                     )
                                                 }
-                                                className="w-20 px-2 py-1 border border-gray-300 rounded text-center"
+                                                className="w-20 px-2 py-1 border border-gray-300 rounded text-center text-gray-900"
                                                 disabled={isChangingQuantity}
                                             />
                                             <button
