@@ -31,37 +31,11 @@ def sample_dto() -> BondHolderChangeQuantityDTO:
     return BondHolderChangeQuantityDTO(
         id=uuid4(),
         user_id=uuid4(),
-        quantity=10,
-        is_positive=True,
+        new_quantity=10,
     )
 
-async def test_add_quantity_success(
-    use_case: BondAddToBondHolderUseCase,
-    mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock,
-    sample_dto: BondHolderChangeQuantityDTO,
-    bondholder_entity_mock: Mock,
-    bond_entity_mock: Mock,
-) -> None:
-    common_user_id = uuid4()
-    sample_dto.user_id = common_user_id
-    bondholder_entity_mock.user_id = common_user_id
 
-    mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
-    mock_bondholder_repo.update.return_value = bondholder_entity_mock
-    mock_bond_repo.get_one.return_value = bond_entity_mock
-
-    result = await use_case.execute(sample_dto)
-
-    mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id=sample_dto.id)
-    bondholder_entity_mock.add_quantity.assert_called_once_with(sample_dto.quantity)
-    bondholder_entity_mock.reduce_quantity.assert_not_called()
-    mock_bondholder_repo.update.assert_called_once_with(bondholder_entity_mock)
-    mock_bond_repo.get_one.assert_called_once_with(bondholder_entity_mock.bond_id)
-    assert isinstance(result, BondHolderDTO)
-
-
-async def test_reduce_quantity_success(
+async def test_change_quantity_success(
     use_case: BondAddToBondHolderUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
@@ -71,7 +45,7 @@ async def test_reduce_quantity_success(
     common_user_id = uuid4()
     bondholder_entity_mock.user_id = common_user_id
     dto = BondHolderChangeQuantityDTO(
-        id=uuid4(), user_id=common_user_id, quantity=5, is_positive=False
+        id=uuid4(), user_id=common_user_id, new_quantity=5
     )
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
@@ -80,8 +54,7 @@ async def test_reduce_quantity_success(
     result = await use_case.execute(dto)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id=dto.id)
-    bondholder_entity_mock.reduce_quantity.assert_called_once_with(dto.quantity)
-    bondholder_entity_mock.add_quantity.assert_not_called()
+    bondholder_entity_mock.change_quantity.assert_called_once_with(dto.new_quantity)
     mock_bondholder_repo.update.assert_called_once_with(bondholder_entity_mock)
     mock_bond_repo.get_one.assert_called_once_with(bondholder_entity_mock.bond_id)
     assert isinstance(result, BondHolderDTO)
@@ -106,7 +79,7 @@ async def test_user_not_authenticated(
     bondholder_entity_mock: Mock,
 ) -> None:
     dto = BondHolderChangeQuantityDTO(
-        id=uuid4(), user_id=uuid4(), quantity=10, is_positive=True
+        id=uuid4(), user_id=uuid4(), new_quantity=10,
     )
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
 
@@ -114,8 +87,7 @@ async def test_user_not_authenticated(
         await use_case.execute(dto)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id=dto.id)
-    bondholder_entity_mock.add_quantity.assert_not_called()
-    bondholder_entity_mock.reduce_quantity.assert_not_called()
+    bondholder_entity_mock.change_quantity.assert_not_called()
 
 
 async def test_bond_not_found(
@@ -137,7 +109,7 @@ async def test_bond_not_found(
         await use_case.execute(sample_dto)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id=sample_dto.id)
-    bondholder_entity_mock.add_quantity.assert_called_once_with(sample_dto.quantity)
+    bondholder_entity_mock.change_quantity.assert_called_once_with(sample_dto.new_quantity)
     mock_bondholder_repo.update.assert_called_once_with(bondholder_entity_mock)
     mock_bond_repo.get_one.assert_called_once_with(bondholder_entity_mock.bond_id)
 
@@ -192,7 +164,7 @@ async def test_with_zero_quantity(
     common_user_id = uuid4()
     bondholder_entity_mock.user_id = common_user_id
     dto = BondHolderChangeQuantityDTO(
-        id=uuid4(), user_id=common_user_id, quantity=0, is_positive=True
+        id=uuid4(), user_id=common_user_id, new_quantity=0
     )
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
@@ -200,7 +172,7 @@ async def test_with_zero_quantity(
 
     result = await use_case.execute(dto)
 
-    bondholder_entity_mock.add_quantity.assert_called_once_with(0)
+    bondholder_entity_mock.change_quantity.assert_called_once_with(0)
     assert isinstance(result, BondHolderDTO)
 
 
@@ -216,8 +188,7 @@ async def test_with_large_quantity(
     dto = BondHolderChangeQuantityDTO(
         id=uuid4(),
         user_id=common_user_id,
-        quantity=1000000,
-        is_positive=True,
+        new_quantity=1000000,
     )
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
@@ -225,5 +196,5 @@ async def test_with_large_quantity(
 
     result = await use_case.execute(dto)
 
-    bondholder_entity_mock.add_quantity.assert_called_once_with(1000000)
+    bondholder_entity_mock.change_quantity.assert_called_once_with(1000000)
     assert isinstance(result, BondHolderDTO)

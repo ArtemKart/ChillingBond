@@ -19,16 +19,7 @@ async def valid_purchase_id() -> UUID:
 @pytest_asyncio.fixture
 async def valid_add_request() -> dict[str, Any]:
     return {
-        "quantity": 5,
-        "is_positive": True,
-    }
-
-
-@pytest_asyncio.fixture
-async def valid_subtract_request() -> dict[str, Any]:
-    return {
-        "quantity": 3,
-        "is_positive": False,
+        "new_quantity": 5,
     }
 
 
@@ -36,7 +27,7 @@ async def valid_subtract_request() -> dict[str, Any]:
 def mock_updated_bondholder() -> AsyncMock:
     return AsyncMock(
         id=uuid4(),
-        quantity=15,
+        quantity=5,
         purchase_date=date.today(),
         last_update=datetime.now(timezone.utc),
         bond_id=uuid4(),
@@ -49,7 +40,7 @@ def mock_updated_bondholder() -> AsyncMock:
     )
 
 
-async def test_add_to_bond_purchase_success(
+async def test_change_purchase_quantity_success(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -67,13 +58,13 @@ async def test_add_to_bond_purchase_success(
 
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=valid_add_request)
+    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
 
     assert data["id"] == str(mock_updated_bondholder.id)
-    assert data["quantity"] == 15
+    assert data["quantity"] == 5
     assert data["last_update"].replace("Z", "+00:00") == last_update.isoformat()
 
     mock_use_case.execute.assert_called_once()
@@ -82,86 +73,20 @@ async def test_add_to_bond_purchase_success(
 
     assert dto.id == valid_purchase_id
     assert dto.user_id == mock_current_user
-    assert dto.quantity == 5
-    assert dto.is_positive is True
+    assert dto.new_quantity == 5
 
 
-async def test_subtract_from_bond_purchase_success(
-    client: TestClient,
-    valid_purchase_id: UUID,
-    valid_subtract_request: dict,
-) -> None:
-    mock_response = AsyncMock(
-        id=uuid4(),
-        quantity=7,
-        purchase_date=date.today(),
-        last_update=datetime.now(timezone.utc),
-        bond_id=uuid4(),
-        series="А",
-        nominal_value=100.00,
-        maturity_period=12,
-        initial_interest_rate=5.5,
-        first_interest_period=3,
-        reference_rate_margin=1.2,
-    )
-
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_response
-
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
-        bond_add_to_bh_use_case,
-    )
-
-    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
-
-    response = client.patch(
-        f"/bonds/{valid_purchase_id}/add", json=valid_subtract_request
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-
-    assert data["quantity"] == 7
-
-    call_args = mock_use_case.execute.call_args
-    dto = call_args.kwargs["dto"]
-
-    assert dto.quantity == 3
-    assert dto.is_positive is False
-
-
-async def test_add_to_bond_purchase_missing_quantity(
-    client: TestClient,
-    valid_purchase_id: UUID,
-) -> None:
-    invalid_request = {"is_positive": True}
-
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=invalid_request)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-
-async def test_add_to_bond_purchase_missing_is_positive(
-    client: TestClient,
-    valid_purchase_id: UUID,
-) -> None:
-    invalid_request = {"quantity": 5}
-
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=invalid_request)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-
-
-async def test_add_to_bond_purchase_invalid_uuid(
+async def test_change_purchase_quantity_invalid_uuid(
     client: TestClient,
     valid_add_request: dict,
 ) -> None:
     invalid_id = "not-a-valid-uuid"
 
-    response = client.patch(f"/bonds/{invalid_id}/add", json=valid_add_request)
+    response = client.patch(f"/bonds/{invalid_id}/quantity", json=valid_add_request)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_add_to_bond_purchase_unauthorized(
+async def test_change_purchase_quantity_unauthorized(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -170,11 +95,11 @@ async def test_add_to_bond_purchase_unauthorized(
 
     app.dependency_overrides.pop(current_user, None)
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=valid_add_request)
+    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-async def test_add_to_bond_purchase_not_found(
+async def test_change_purchase_quantity_not_found(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -190,11 +115,11 @@ async def test_add_to_bond_purchase_not_found(
 
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=valid_add_request)
+    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-async def test_add_to_bond_purchase_user_id_from_authentication(
+async def test_change_purchase_quantity_user_id_from_authentication(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -212,7 +137,7 @@ async def test_add_to_bond_purchase_user_id_from_authentication(
 
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=valid_add_request)
+    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request)
     assert response.status_code == status.HTTP_200_OK
 
     call_args = mock_use_case.execute.call_args
@@ -220,7 +145,7 @@ async def test_add_to_bond_purchase_user_id_from_authentication(
     assert dto.user_id == expected_user_id
 
 
-async def test_add_to_bond_purchase_response_structure(
+async def test_change_purchase_quantity_response_structure(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -235,7 +160,7 @@ async def test_add_to_bond_purchase_response_structure(
 
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=valid_add_request)
+    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -258,47 +183,7 @@ async def test_add_to_bond_purchase_response_structure(
         assert field in data
 
 
-async def test_add_to_bond_purchase_large_quantity(
-    client: TestClient,
-    valid_purchase_id: UUID,
-) -> None:
-    large_quantity_request = {
-        "quantity": 10000,
-        "is_positive": True,
-    }
-
-    mock_response = AsyncMock(
-        id=uuid4(),
-        quantity=10100,
-        purchase_date=date.today(),
-        last_update=datetime.now(timezone.utc),
-        bond_id=uuid4(),
-        series="ROR0000",
-        nominal_value=100.00,
-        maturity_period=12,
-        initial_interest_rate=5.5,
-        first_interest_period=3,
-        reference_rate_margin=1.2,
-    )
-
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_response
-
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
-        bond_add_to_bh_use_case,
-    )
-
-    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
-
-    response = client.patch(
-        f"/bonds/{valid_purchase_id}/add", json=large_quantity_request
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["quantity"] == 10100
-
-
-async def test_add_to_bond_purchase_updates_last_update(
+async def test_change_purchase_quantity_updates_last_update(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -329,7 +214,7 @@ async def test_add_to_bond_purchase_updates_last_update(
 
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=valid_add_request)
+    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -347,12 +232,12 @@ async def test_add_to_bond_purchase_updates_last_update(
     assert last_update_tested.date() != purchase_date_tested
 
 
-async def test_add_to_bond_purchase_invalid_json(
+async def test_change_purchase_quantity_invalid_json(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/add",
+        f"/bonds/{valid_purchase_id}/quantity",
         content="invalid json",
         headers={"Content-Type": "application/json"},
     )
@@ -360,28 +245,27 @@ async def test_add_to_bond_purchase_invalid_json(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_add_to_bond_purchase_wrong_data_types(
+async def test_change_purchase_quantity_wrong_data_types(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
     invalid_request = {
         "quantity": "five",
-        "is_positive": "yes",
     }
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/add", json=invalid_request)
+    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=invalid_request)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_add_to_bond_purchase_multiple_operations(
+async def test_change_purchase_quantity_multiple_operations(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
     operations = [
-        ({"quantity": 5, "is_positive": True}, 15),
-        ({"quantity": 3, "is_positive": False}, 12),
-        ({"quantity": 8, "is_positive": True}, 20),
+        ({"new_quantity": 5}, 5),
+        ({"new_quantity": 3}, 3),
+        ({"new_quantity": 8}, 8),
     ]
 
     for request_data, expected_quantity in operations:
@@ -408,7 +292,7 @@ async def test_add_to_bond_purchase_multiple_operations(
 
         app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
-        response = client.patch(f"/bonds/{valid_purchase_id}/add", json=request_data)
+        response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=request_data)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["quantity"] == expected_quantity

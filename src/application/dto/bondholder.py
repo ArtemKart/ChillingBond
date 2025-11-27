@@ -25,8 +25,7 @@ class BondHolderDTO:
 class BondHolderChangeQuantityDTO:
     id: UUID
     user_id: UUID
-    quantity: int
-    is_positive: bool
+    new_quantity: int
 
 
 @dataclass

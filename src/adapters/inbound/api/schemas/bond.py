@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 
 class BondBase(BaseModel):
@@ -18,12 +18,10 @@ class BondUpdateRequest(BaseModel):
     first_interest_period: int | None = Field(None, gt=0)
     reference_rate_margin: float | None = Field(None)
 
-    @model_validator(mode="after")
-    def check_any_field_present(self):
-        if not any(value is not None for value in self.model_dump().values()):
-            raise ValueError("At least one field must be provided for update.")
-        return self
-
 
 class BondUpdateResponse(BondBase):
+    pass
+
+
+class EmptyBondUpdateResponse(BaseModel):
     pass

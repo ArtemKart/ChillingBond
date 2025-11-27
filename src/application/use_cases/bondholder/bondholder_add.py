@@ -25,10 +25,7 @@ class BondAddToBondHolderUseCase(BondHolderBaseUseCase):
             raise NotFoundError("Bond holder not found")
         if bondholder.user_id != dto.user_id:
             raise InvalidTokenError("Not authenticated")
-        if dto.is_positive:
-            bondholder.add_quantity(dto.quantity)
-        else:
-            bondholder.reduce_quantity(dto.quantity)
+        bondholder.change_quantity(dto.new_quantity)
         bondholder = await self.bondholder_repo.update(bondholder)
         bond = await self.bond_repo.get_one(bondholder.bond_id)
         if not bond:

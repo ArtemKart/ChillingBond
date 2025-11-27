@@ -73,16 +73,12 @@ class BondHolder:
             )
         )
 
-    def add_quantity(self, amount: int) -> None:
-        if amount <= 0:
-            raise ValidationError("Amount must be positive")
-        self.quantity += amount
-
-    def reduce_quantity(self, amount: int) -> None:
-        if amount > self.quantity:
-            self.quantity = 0
-            return None
-        self.quantity -= amount
+    def change_quantity(self, amount: int) -> None:
+        if not isinstance(amount, int):
+            raise ValidationError("Quantity must be an integer")
+        if amount < 0:
+            raise ValidationError("Quantity must be positive")
+        self.quantity = amount
 
     def validate(self) -> None:
         self._validate_quantity()
