@@ -6,6 +6,8 @@ from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 
 from src.adapters.di_container import setup_event_publisher
+from src.adapters.inbound.api.routers.internal_router import internal_router
+from src.adapters.outbound.apscheduler import APScheduler
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.exception_handlers import (
     domain_exception_handler,
@@ -41,9 +43,11 @@ async def startup_event():
     logging.info("✅ Event Publisher initialized")
 
 
+
 app.include_router(user_router)
 app.include_router(bond_router)
 app.include_router(login_router)
+app.include_router(internal_router)
 
 
 app.add_exception_handler(DomainError, domain_exception_handler)  # type: ignore

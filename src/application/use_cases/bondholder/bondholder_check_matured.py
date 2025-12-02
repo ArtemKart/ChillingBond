@@ -5,6 +5,7 @@ from src.application.use_cases.bondholder.bondholder_base import BondHolderBaseU
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
+from src.domain.services.bondholder_maturity_checker import BondHolderMaturityChecker
 
 
 class CheckMaturedBondHolderUseCase(BondHolderBaseUseCase):
@@ -14,7 +15,7 @@ class CheckMaturedBondHolderUseCase(BondHolderBaseUseCase):
         self,
         bondholder_repository: BondHolderRepository,
         bond_repository: BondRepository,
-        maturity_checker: MaturityChecker,
+        maturity_checker: BondHolderMaturityChecker,
         event_publisher: EventPublisher,
         user_repository: UserRepository,
     ) -> None:
