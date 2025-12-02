@@ -1,11 +1,15 @@
 from dataclasses import dataclass, field
-from datetime import datetime, date, timezone
+from datetime import date, datetime, timezone
 from typing import Self
 from uuid import UUID, uuid4
 
 from src.domain.events.base import DomainEvent
-from src.domain.events.bondholder_events import BondHolderDeletedEvent
+from src.domain.events.bondholder_events import (
+    BondHolderDeletedEvent,
+    BondHolderMatured,
+)
 from src.domain.exceptions import ValidationError
+from src.domain.ports.repositories import bond
 
 
 @dataclass
@@ -32,6 +36,7 @@ class BondHolder:
     user_id: UUID
     quantity: int
     purchase_date: date
+    is_matured: bool
     last_update: datetime | None = None
 
     _events: list[DomainEvent] = field(default_factory=list, init=False, repr=False)
@@ -52,10 +57,29 @@ class BondHolder:
             user_id=user_id,
             quantity=quantity,
             purchase_date=purchase_date,
+            is_matured=False,
             last_update=last_update,
         )
         bh.validate()
         return bh
+
+    def mark_as_matured(self, bond_series: str, user_email: str) -> None:
+        if self.is_matured:
+            return
+
+        self.is_matured = True
+        self.last_update = datetime.now(timezone.utc)
+
+        event = BondHolderMatured(
+            bondholder_id=self.id,
+            bond_id=self.bond_id,
+            bond_series=bond_series,
+            user_id=self.user_id,
+            user_email=user_email,
+            purchase_date=self.purchase_date,
+            occurred_at=datetime.now(timezone.utc),
+        )
+        self._events.append(event)
 
     def collect_events(self) -> list[DomainEvent]:
         events = self._events.copy()

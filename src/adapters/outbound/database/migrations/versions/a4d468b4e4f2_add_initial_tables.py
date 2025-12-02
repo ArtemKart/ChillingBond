@@ -59,6 +59,7 @@ def upgrade() -> None:
         sa.Column("quantity", sa.Integer(), nullable=False),
         sa.Column("purchase_date", sa.Date(), nullable=False),
         sa.Column("last_update", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("is_matured", sa.Boolean(), nullable=False, default=False),
         sa.ForeignKeyConstraint(
             ["bond_id"], ["bond.id"], name=op.f("fk_bondholder_bond_id_bond")
         ),

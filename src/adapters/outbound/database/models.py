@@ -33,6 +33,7 @@ class BondHolder(MappedAsDataclass, Base):
     last_update: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), onupdate=func.now()
     )
+    is_matured: Mapped[bool] = mapped_column(default=False)
 
 
 class ReferenceRate(MappedAsDataclass, Base):

@@ -19,7 +19,13 @@ class SQLAlchemyUserRepository(UserRepository):
         if model:
             return self._to_entity(model)
         return None
-
+    
+    async def get_by_ids(self, ids: list[UUID]) -> list[UserEntity]:
+        stmt = select(UserModel).where(UserModel.id.in_(ids))
+        result = await self._session.execute(stmt)
+        models = result.scalars().all()
+        return [self._to_entity(model) for model in models]
+    
     async def get_by_email(self, email: str) -> UserEntity | None:
         stmt = select(UserModel).where(UserModel.email == email)
         result = await self._session.execute(stmt)

@@ -1,13 +1,13 @@
 from uuid import UUID
 
-from sqlalchemy import select, func
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
-from src.domain.ports.repositories.bondholder import BondHolderRepository
-from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.adapters.outbound.database.models import BondHolder as BondHolderModel
+from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
+from src.domain.entities.bondholder import BondHolder as BondHolderEntity
+from src.domain.ports.repositories.bondholder import BondHolderRepository
 
 
 class SQLAlchemyBondHolderRepository(BondHolderRepository):
@@ -73,6 +73,17 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         result = await self._session.execute(stmt)
         return result.scalar_one()
 
+    async def get_all_active(self) -> list[BondHolderEntity]:
+        """
+        Retrieve all active bondholders (is_matured=False).
+
+        Returns:
+            List of active BondHolder entities
+        """
+        stmt = select(BondHolderModel).where(BondHolderModel.is_matured == False)
+        result = await self._session.execute(stmt)
+        return [self._to_entity(model) for model in result.scalars()]
+
     @staticmethod
     def _to_entity(model: BondHolderModel) -> BondHolderEntity:
         return BondHolderEntity(
@@ -81,6 +92,7 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             user_id=model.user_id,
             quantity=model.quantity,
             purchase_date=model.purchase_date,
+            is_matured=model.is_matured,
             last_update=model.last_update,
         )
 
@@ -92,6 +104,7 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             bond_id=entity.bond_id,
             quantity=entity.quantity,
             purchase_date=entity.purchase_date,
+            is_matured=entity.is_matured,
             last_update=entity.last_update,
         )
 
@@ -101,4 +114,5 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         model.bond_id = entity.bond_id
         model.quantity = entity.quantity
         model.purchase_date = entity.purchase_date
+        model.is_matured = entity.is_matured
         model.last_update = entity.last_update

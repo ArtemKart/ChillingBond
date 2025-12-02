@@ -3,7 +3,7 @@ from datetime import datetime
 from abc import ABC
 
 
-@dataclass
+@dataclass(frozen=True)
 class DomainEvent(ABC):
     """Base class for all domain events"""
 

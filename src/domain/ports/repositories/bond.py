@@ -23,6 +23,18 @@ class BondRepository(ABC):
             A Bond object if found, None otherwise.
         """
         pass
+    
+    @abstractmethod
+    async def get_by_ids(self, bond_ids: list[UUID]) -> list[Bond]:
+        """Retrieves bonds with specified identifiers.
+
+        Args:
+            bond_ids: A list of unique identifiers of bonds.
+
+        Returns:
+            A list of Bond objects.
+        """
+        pass
 
     @abstractmethod
     async def get_by_series(self, series: str) -> Bond | None:

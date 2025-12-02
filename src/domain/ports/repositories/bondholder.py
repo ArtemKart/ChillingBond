@@ -35,3 +35,13 @@ class BondHolderRepository(ABC):
     @abstractmethod
     async def count_by_bond_id(self, bond_id: UUID) -> int:
         pass
+
+    @abstractmethod
+    async def get_all_active(self) -> list[BondHolder]:
+        """
+        Retrieve all active bondholders (is_matured=False).
+
+        Returns:
+            List of active BondHolder entities
+        """
+        pass

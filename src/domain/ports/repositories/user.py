@@ -24,7 +24,19 @@ class UserRepository(ABC):
         """
 
         pass
+        
+    @abstractmethod
+    async def get_by_ids(self, ids: list[UUID]) -> list[User]:
+        """Retrieves users by their identifiers.
 
+        Args:
+            ids: List of unique identifiers of users.
+
+        Returns:
+            List of User objects if found, empty list otherwise.
+        """
+        pass
+    
     @abstractmethod
     async def get_by_email(self, email: str) -> User | None:
         """Retrieves a user by its email.
