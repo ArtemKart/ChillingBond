@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 from src.domain.exceptions import ValidationError
@@ -23,11 +24,11 @@ class Bond:
 
     id: UUID
     series: str
-    nominal_value: float
+    nominal_value: Decimal
     maturity_period: int
-    initial_interest_rate: float
+    initial_interest_rate: Decimal
     first_interest_period: int
-    reference_rate_margin: float
+    reference_rate_margin: Decimal
 
     @classmethod
     def create(

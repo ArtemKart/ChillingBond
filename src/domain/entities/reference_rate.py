@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
 
@@ -16,6 +17,6 @@ class ReferenceRate:
     """
 
     id: UUID
-    value: float
+    value: Decimal
     start_date: datetime
-    end_date: datetime
+    end_date: datetime | None = None
