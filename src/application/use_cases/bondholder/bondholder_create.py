@@ -16,8 +16,8 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
     def __init__(
         self, bond_repo: BondRepository, bondholder_repo: BondHolderRepository
     ) -> None:
-        self.bond_repo = bond_repo
-        self.bondholder_repo = bondholder_repo
+        self.bond_repo: BondRepository = bond_repo
+        self.bondholder_repo: BondHolderRepository = bondholder_repo
 
     async def execute(
         self, bh_dto: BondHolderCreateDTO, b_dto: BondCreateDTO
@@ -30,7 +30,7 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
                 quantity=bh_dto.quantity,
                 purchase_date=bh_dto.purchase_date,
             )
-            await self.bondholder_repo.write(new_bh)
+            new_bh = await self.bondholder_repo.write(new_bh)
             return self.to_dto(bondholder=new_bh, bond=bond)
 
         new_bond = BondEntity.create(

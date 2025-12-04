@@ -12,8 +12,8 @@ class BondHolderDeletionService:
         bondholder_repo: BondHolderRepository,
         bond_repo: BondRepository,
     ):
-        self._bondholder_repo = bondholder_repo
-        self._bond_repo = bond_repo
+        self._bondholder_repo: BondHolderRepository = bondholder_repo
+        self._bond_repo: BondRepository = bond_repo
 
     async def delete_with_cleanup(self, bondholder_id: UUID, bond_id: UUID) -> None:
         """

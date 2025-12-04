@@ -11,8 +11,8 @@ from src.domain.ports.services.token_handler import TokenHandler
 
 class UserAuthUseCase(UserBaseUseCase):
     def __init__(self, user_repo: UserRepository, token_handler: TokenHandler) -> None:
-        self.user_repo = user_repo
-        self.token_handler = token_handler
+        self.user_repo: UserRepository = user_repo
+        self.token_handler: TokenHandler = token_handler
 
     async def execute(self, token: str) -> UserDTO:
         try:

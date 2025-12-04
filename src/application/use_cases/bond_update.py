@@ -9,7 +9,7 @@ from src.domain.entities.bond import Bond as BondEntity
 
 class BondUpdateUseCase:
     def __init__(self, bond_repo: BondRepository) -> None:
-        self.bond_repo = bond_repo
+        self.bond_repo: BondRepository = bond_repo
 
     async def execute(self, dto: BondUpdateDTO, bond_id: UUID) -> BondDTO:
         bond = await self.bond_repo.get_one(bond_id=bond_id)
@@ -18,8 +18,8 @@ class BondUpdateUseCase:
         update_attr = {k: v for k, v in asdict(dto).items() if v}
         for attr, value in update_attr.items():
             setattr(bond, attr, value)
-        await self.bond_repo.update(bond)
-        return self._to_dto(bond)
+        new_bond =await self.bond_repo.update(bond)
+        return self._to_dto(new_bond)
 
     @staticmethod
     def _to_dto(bond: BondEntity) -> BondDTO:

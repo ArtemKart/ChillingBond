@@ -16,10 +16,10 @@ class BondHolderDeleteUseCase(BondHolderBaseUseCase):
         user_repo: UserRepository,
         bh_del_service: BondHolderDeletionService,
     ) -> None:
-        self._bondholder_repo = bondholder_repo
-        self._event_publisher = event_publisher
-        self._user_repo = user_repo
-        self._bh_del_service = bh_del_service
+        self._bondholder_repo: BondHolderRepository = bondholder_repo
+        self._event_publisher: EventPublisher = event_publisher
+        self._user_repo: UserRepository = user_repo
+        self._bh_del_service: BondHolderDeletionService = bh_del_service
 
     async def execute(self, bondholder_id: UUID, user_id: UUID) -> None:
         bondholder = await self._bondholder_repo.get_one(bondholder_id=bondholder_id)

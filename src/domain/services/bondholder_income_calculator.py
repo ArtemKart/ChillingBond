@@ -12,8 +12,8 @@ class BondHolderIncomeCalculator:
     """Domain service for bondholder income calculator"""
 
     def __init__(self, bondholder: BondHolder, bond: Bond) -> None:
-        self._bondholder = bondholder
-        self._bond = bond
+        self._bondholder: BondHolder = bondholder
+        self._bond: Bond = bond
 
     def calculate_month_bondholder_income(
         self,

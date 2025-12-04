@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class SendWelcomeEmailHandler:
     def __init__(self, email_sender: EmailSender) -> None:
-        self._email_sender = email_sender
+        self._email_sender: EmailSender = email_sender
 
     async def handle(self, event: UserCreated) -> None:
         logger.info(
