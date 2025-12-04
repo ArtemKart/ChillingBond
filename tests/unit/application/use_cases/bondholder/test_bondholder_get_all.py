@@ -1,9 +1,9 @@
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
 
 from src.adapters.outbound.database.models import BondHolder
 from src.application.dto.bondholder import BondHolderDTO
@@ -12,8 +12,8 @@ from src.domain.entities.bond import Bond
 from src.domain.exceptions import NotFoundError
 
 
-@pytest_asyncio.fixture
-async def use_case(
+@pytest.fixture
+def use_case(
     mock_bondholder_repo: AsyncMock, mock_bond_repo: AsyncMock
 ) -> BondHolderGetAllUseCase:
     return BondHolderGetAllUseCase(mock_bondholder_repo, mock_bond_repo)
@@ -183,11 +183,11 @@ async def test_preserves_order(
     bond = Bond(
         id=bond_id,
         series="001",
-        nominal_value=1000.0,
+        nominal_value=Decimal("1000.0"),
         maturity_period=12,
-        initial_interest_rate=5.0,
+        initial_interest_rate=Decimal("5.0"),
         first_interest_period=6,
-        reference_rate_margin=1.0,
+        reference_rate_margin=Decimal("1.0"),
     )
 
     mock_bondholder_repo.get_all.return_value = bondholders

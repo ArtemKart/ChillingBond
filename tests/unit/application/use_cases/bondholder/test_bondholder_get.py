@@ -2,14 +2,12 @@ import pytest
 from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
-import pytest_asyncio
-
 from src.application.dto.bondholder import BondHolderDTO
 from src.application.use_cases.bondholder.bondholder_get import BondHolderGetUseCase
 from src.domain.exceptions import NotFoundError, AuthorizationError
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case(
     mock_bondholder_repo: AsyncMock, mock_bond_repo: AsyncMock
 ) -> BondHolderGetUseCase:

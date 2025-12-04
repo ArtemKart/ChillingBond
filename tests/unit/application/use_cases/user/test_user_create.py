@@ -1,22 +1,20 @@
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
 
-import pytest_asyncio
-
 from src.application.dto.user import UserCreateDTO, UserDTO
 from src.application.use_cases.user.user_create import UserCreateUseCase
 from src.domain.exceptions import ConflictError
 from src.domain.entities.user import User as UserEntity
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case(
     mock_user_repo: AsyncMock, mock_hasher: AsyncMock, mock_event_publisher: AsyncMock
 ) -> UserCreateUseCase:
     return UserCreateUseCase(mock_user_repo, mock_hasher, mock_event_publisher)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def sample_user_create_dto() -> Mock:
     dto = Mock(spec=UserCreateDTO)
     dto.email = "test@example.com"
@@ -25,7 +23,7 @@ def sample_user_create_dto() -> Mock:
     return dto
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def sample_user_dto() -> Mock:
     dto = Mock(spec=UserDTO)
     dto.id = "user-123"

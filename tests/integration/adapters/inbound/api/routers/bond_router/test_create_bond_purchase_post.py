@@ -1,10 +1,11 @@
+from decimal import Decimal
 from typing import Any
 
 from datetime import date
 from uuid import uuid4
 from unittest.mock import AsyncMock
 
-import pytest_asyncio
+import pytest
 from fastapi import status
 from starlette.testclient import TestClient
 
@@ -12,7 +13,7 @@ from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.main import app
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def valid_bond_data() -> dict[str, Any]:
     return {
         "quantity": 10,
@@ -26,7 +27,7 @@ def valid_bond_data() -> dict[str, Any]:
     }
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_use_case_response() -> AsyncMock:
     return AsyncMock(
         id=uuid4(),
@@ -36,15 +37,15 @@ def mock_use_case_response() -> AsyncMock:
         last_update=date.today(),
         bond_id=uuid4(),
         series="ROR1206",
-        nominal_value=100.0,
+        nominal_value=Decimal("100.0"),
         maturity_period=12,
-        initial_interest_rate=4.75,
+        initial_interest_rate=Decimal("4.75"),
         first_interest_period=1,
-        reference_rate_margin=0.0,
+        reference_rate_margin=Decimal("0.0"),
     )
 
 
-async def test_create_bond_purchase_success(
+def test_create_bond_purchase_success(
     client: TestClient,
     valid_bond_data: dict[str, Any],
     mock_use_case_response: AsyncMock,
@@ -68,11 +69,11 @@ async def test_create_bond_purchase_success(
     assert data["purchase_date"] == purchase_date
     assert data["bond_id"] == str(mock_use_case_response.bond_id)
     assert data["series"] == "ROR1206"
-    assert data["nominal_value"] == 100.00
+    assert Decimal(data["nominal_value"]) == Decimal("100.00")
     assert data["maturity_period"] == 12
-    assert data["initial_interest_rate"] == 4.75
+    assert Decimal(data["initial_interest_rate"]) == Decimal("4.75")
     assert data["first_interest_period"] == 1
-    assert data["reference_rate_margin"] == 0.0
+    assert Decimal(data["reference_rate_margin"]) == Decimal("0.00")
 
     mock_use_case.execute.assert_called_once()
     call_args = mock_use_case.execute.call_args
@@ -82,10 +83,10 @@ async def test_create_bond_purchase_success(
     assert isinstance(bondholder_dto.purchase_date, date)
     assert bondholder_dto.purchase_date.isoformat() == purchase_date
     assert bond_dto.series == "ROR1206"
-    assert bond_dto.nominal_value == 100.0
+    assert Decimal(bond_dto.nominal_value) == Decimal("100.00")
 
 
-async def test_create_bond_purchase_missing_required_fields(client: TestClient) -> None:
+def test_create_bond_purchase_missing_required_fields(client: TestClient) -> None:
     incomplete_data = {
         "quantity": 10,
         "series": "ROR1206",
@@ -95,7 +96,7 @@ async def test_create_bond_purchase_missing_required_fields(client: TestClient) 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_bond_purchase_invalid_quantity(
+def test_create_bond_purchase_invalid_quantity(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
 
@@ -104,7 +105,7 @@ async def test_create_bond_purchase_invalid_quantity(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_bond_purchase_invalid_date_format(
+def test_create_bond_purchase_invalid_date_format(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["purchase_date"] = "invalid-date"
@@ -112,15 +113,15 @@ async def test_create_bond_purchase_invalid_date_format(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_bond_purchase_invalid_nominal_value(
+def test_create_bond_purchase_invalid_nominal_value(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
-    valid_bond_data["nominal_value"] = -1000
+    valid_bond_data["nominal_value"] = "-1000"
     response = client.post("/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_bond_purchase_invalid_maturity_period(
+def test_create_bond_purchase_invalid_maturity_period(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["maturity_period"] = 0
@@ -128,7 +129,7 @@ async def test_create_bond_purchase_invalid_maturity_period(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_bond_purchase_unauthorized(
+def test_create_bond_purchase_unauthorized(
     valid_bond_data: dict[str, Any],
 ) -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
@@ -141,7 +142,7 @@ async def test_create_bond_purchase_unauthorized(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-async def test_create_bond_purchase_use_case_exception(
+def test_create_bond_purchase_use_case_exception(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
     mock_use_case = AsyncMock()
@@ -160,14 +161,14 @@ async def test_create_bond_purchase_use_case_exception(
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
-async def test_create_bond_purchase_with_decimal_values(
+def test_create_bond_purchase_with_decimal_values(
     client: TestClient,
     valid_bond_data: dict[str, Any],
     mock_use_case_response: AsyncMock,
 ) -> None:
-    valid_bond_data["nominal_value"] = 1000.0
-    valid_bond_data["initial_interest_rate"] = 4.25
-    valid_bond_data["reference_rate_margin"] = 2.15
+    valid_bond_data["nominal_value"] = "1000.0"
+    valid_bond_data["initial_interest_rate"] = "4.25"
+    valid_bond_data["reference_rate_margin"] = "2.15"
 
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_use_case_response

@@ -1,7 +1,7 @@
-from datetime import datetime
-from decimal import Decimal, ROUND_HALF_UP
+from datetime import date, datetime
+from decimal import ROUND_HALF_UP, Decimal
 
-from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta  # type: ignore [import-untyped]
 
 from src.domain.entities.bond import Bond
 from src.domain.entities.bondholder import BondHolder
@@ -18,7 +18,7 @@ class BondHolderIncomeCalculator:
     def calculate_month_bondholder_income(
         self,
         reference_rate: ReferenceRate,
-        day: datetime = datetime.today(),
+        day: date | None = None,
     ) -> Decimal:
         """
         Calculate monthly income for a bondholder.
@@ -33,6 +33,9 @@ class BondHolderIncomeCalculator:
         Returns:
             Net monthly income after tax for all bonds held by the bondholder
         """
+        if not day:
+            day = datetime.today().date()
+
         interest_period_end = self._bondholder.purchase_date + relativedelta(
             months=self._bond.first_interest_period
         )
@@ -40,7 +43,7 @@ class BondHolderIncomeCalculator:
             purchase_date=self._bondholder.purchase_date
         )
 
-        if day.date() >= interest_period_end.date():
+        if day >= interest_period_end:
             return self._calculate_regular_income(
                 reference_rate=reference_rate.value,
                 days_in_month=days_in_period,
@@ -117,24 +120,31 @@ class BondHolderIncomeCalculator:
         return percent / Decimal(100)
 
     @staticmethod
-    def _days_in_period(purchase_date: datetime, today: datetime | None = None) -> int:
+    def _days_in_period(purchase_date: date, today: date | None = None) -> int:
         """
-        Calculate the number of days in the current interest period.
+        Calculate the number of days in the current monthly period.
 
-        Interest periods run monthly from the purchase day. For example, if purchased
-        on the 2nd, periods are: 2nd of month N to 2nd of month N+1.
+        Periods run monthly from the purchase day. The method finds
+        the current period containing 'today' and returns its length in days.
+
+        Example:
+            If bonds were purchased on 02.09.2025 and today is 04.12.2025,
+            returns the number of days from 02.12.2025 to 02.01.2026.
+
+        This is needed to calculate the correct daily rate for both regular
+        and interest-based accruals, as different months have different
+        numbers of days (28-31).
 
         Args:
-            purchase_date: Date when bonds were purchased
+            purchase_date: Date when bonds were purchased (determines period start day)
             today: Current date for calculation (defaults to today)
 
         Returns:
-            Number of days in the current interest period (typically 28-31 days)
+            Number of days in the current monthly period
         """
         if not today:
-            today = datetime.today()
-        purchase_day = purchase_date.day
-        period_start = datetime(purchase_date.year, purchase_date.month, purchase_day)
+            today = datetime.today().date()
+        period_start = date(purchase_date.year, purchase_date.month, purchase_date.day)
 
         while period_start <= today:
             period_end = period_start + relativedelta(months=1)
@@ -149,9 +159,9 @@ class BondHolderIncomeCalculator:
     def calculate_bondholder_income_for_period(
         self,
         reference_rates: list[ReferenceRate],
-        start_date: datetime,
-        end_date: datetime,
-    ) -> dict[datetime, Decimal]:
+        start_date: date,
+        end_date: date,
+    ) -> dict[date, Decimal]:
         """
         Calculate monthly income for a bondholder across a date range.
 
@@ -163,7 +173,7 @@ class BondHolderIncomeCalculator:
         Returns:
             Dictionary mapping payment dates to net income amounts
         """
-        result: dict[datetime, Decimal] = {}
+        result: dict[date, Decimal] = {}
 
         sorted_rates = sorted(reference_rates, key=lambda r: r.start_date)
         current_payment_date = self._bondholder.purchase_date + relativedelta(months=1)

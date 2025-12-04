@@ -2,19 +2,17 @@ import pytest
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
-import pytest_asyncio
-
 from src.application.dto.bond import BondUpdateDTO, BondDTO
 from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.domain.exceptions import NotFoundError
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case(mock_bond_repo: AsyncMock) -> BondUpdateUseCase:
     return BondUpdateUseCase(mock_bond_repo)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def sample_bond_update_dto() -> Mock:
     dto = Mock(spec=BondUpdateDTO)
     dto.nominal_value = 200.0
@@ -185,7 +183,7 @@ async def test_preserves_unchanged_fields(
     assert result.initial_interest_rate == original_rate
 
 
-async def test_to_dto_creates_correct_dto(
+def test_to_dto_creates_correct_dto(
     use_case: BondUpdateUseCase, bond_entity_mock: Mock
 ) -> None:
     result = use_case._to_dto(bond_entity_mock)

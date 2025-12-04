@@ -1,22 +1,20 @@
 import pytest
 from unittest.mock import AsyncMock, Mock
 
-import pytest_asyncio
-
 from src.application.dto.token import TokenDTO
 from src.application.use_cases.user.user_login import UserLoginUseCase
 from src.domain.exceptions import AuthenticationError
 from src.domain.ports.services.password_hasher import PasswordHasher
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case(
     mock_user_repo: AsyncMock, mock_hasher: AsyncMock, mock_token_handler: AsyncMock
 ) -> UserLoginUseCase:
     return UserLoginUseCase(mock_user_repo, mock_hasher, mock_token_handler)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def sample_form_data() -> Mock:
     form_data = Mock()
     form_data.username = "test@example.com"
@@ -24,7 +22,7 @@ def sample_form_data() -> Mock:
     return form_data
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def sample_token() -> Mock:
     token = Mock()
     token.token = "test_jwt_token"
@@ -119,7 +117,6 @@ async def test_with_different_credentials(
 async def test_converts_user_id_to_string(
     use_case: UserLoginUseCase,
     mock_user_repo: AsyncMock,
-    mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
     sample_token: Mock,
@@ -139,7 +136,6 @@ async def test_converts_user_id_to_string(
 async def test_handles_uuid_user_id(
     use_case: UserLoginUseCase,
     mock_user_repo: AsyncMock,
-    mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
     sample_token: Mock,
@@ -163,7 +159,6 @@ async def test_handles_uuid_user_id(
 async def test_does_not_create_token_on_failed_auth(
     use_case: UserLoginUseCase,
     mock_user_repo: AsyncMock,
-    mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
     user_entity_mock: Mock,
@@ -178,9 +173,7 @@ async def test_does_not_create_token_on_failed_auth(
 
 
 async def test_pass_hasher_to_verify_password(
-    use_case: UserLoginUseCase,
     mock_user_repo: AsyncMock,
-    mock_hasher: AsyncMock,
     mock_token_handler: AsyncMock,
     sample_form_data: Mock,
     user_entity_mock: Mock,

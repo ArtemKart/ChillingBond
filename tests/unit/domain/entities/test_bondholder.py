@@ -2,14 +2,13 @@ from datetime import date, datetime, timezone
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
 
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.domain.events.bondholder_events import BondHolderDeletedEvent
 from src.domain.exceptions import ValidationError
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def local_bondholder() -> BondHolderEntity:
     return BondHolderEntity(
         id=uuid4(),
@@ -20,7 +19,7 @@ def local_bondholder() -> BondHolderEntity:
     )
 
 
-async def test_bondholder_change_quantity_success(
+def test_bondholder_change_quantity_success(
     local_bondholder: BondHolderEntity,
 ) -> None:
     new_quantity = 300
@@ -28,21 +27,21 @@ async def test_bondholder_change_quantity_success(
     assert local_bondholder.quantity == new_quantity
 
 
-async def test_bondholder_change_quantity_type_error(
+def test_bondholder_change_quantity_type_error(
     local_bondholder: BondHolderEntity,
 ) -> None:
     with pytest.raises(ValidationError, match="Quantity must be an integer"):
         local_bondholder.change_quantity("one")  # type: ignore [arg-type]
 
 
-async def test_bondholder_change_quantity_quantity_error(
+def test_bondholder_change_quantity_quantity_error(
     local_bondholder: BondHolderEntity,
 ) -> None:
     with pytest.raises(ValidationError, match="Quantity must be positive"):
         local_bondholder.change_quantity(-1)
 
 
-async def test_bondholder_mark_as_deleted(
+def test_bondholder_mark_as_deleted(
     local_bondholder: BondHolderEntity,
 ) -> None:
     user_email = "test_user_email@email.com"
@@ -55,7 +54,7 @@ async def test_bondholder_mark_as_deleted(
     assert user_email == local_bondholder._events[0].email
 
 
-async def test_bondholder_collect_events(local_bondholder: BondHolderEntity) -> None:
+def test_bondholder_collect_events(local_bondholder: BondHolderEntity) -> None:
     bh_event = BondHolderDeletedEvent(
         bondholder_id=uuid4(),
         bond_id=uuid4(),

@@ -1,10 +1,9 @@
+from decimal import Decimal
 from uuid import uuid4
 
 import pytest
 from unittest.mock import AsyncMock, Mock
 from datetime import date
-
-import pytest_asyncio
 
 from src.application.dto.bondholder import BondHolderChangeQuantityDTO, BondHolderDTO
 from src.application.use_cases.bondholder.bondholder_add import (
@@ -13,8 +12,8 @@ from src.application.use_cases.bondholder.bondholder_add import (
 from src.domain.exceptions import NotFoundError, InvalidTokenError
 
 
-@pytest_asyncio.fixture
-def use_case(
+@pytest.fixture
+async def use_case(
     mock_bond_repo: AsyncMock,
     mock_user_repo: AsyncMock,
     mock_bondholder_repo: AsyncMock,
@@ -26,8 +25,8 @@ def use_case(
     )
 
 
-@pytest_asyncio.fixture
-def sample_dto() -> BondHolderChangeQuantityDTO:
+@pytest.fixture
+async def sample_dto() -> BondHolderChangeQuantityDTO:
     return BondHolderChangeQuantityDTO(
         id=uuid4(),
         user_id=uuid4(),
@@ -141,11 +140,11 @@ async def test_calls_to_dto_method(
         purchase_date=date.today(),
         quantity=100,
         series="ROR1206",
-        nominal_value=100,
+        nominal_value=Decimal("100"),
         maturity_period=12,
-        initial_interest_rate=4.75,
+        initial_interest_rate=Decimal("4.75"),
         first_interest_period=1,
-        reference_rate_margin=0,
+        reference_rate_margin=Decimal("0"),
     )
 
     use_case.to_dto = Mock(return_value=expected_dto)

@@ -1,8 +1,9 @@
-from datetime import datetime, date
+from datetime import date, datetime
+from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import String, DateTime, func, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, MappedAsDataclass
+from sqlalchemy import DateTime, ForeignKey, String, func
+from sqlalchemy.orm import Mapped, MappedAsDataclass, mapped_column
 
 from src.adapters.outbound.database.base import Base
 
@@ -16,12 +17,12 @@ class User(MappedAsDataclass, Base):
 
 class Bond(MappedAsDataclass, Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    nominal_value: Mapped[float]
+    nominal_value: Mapped[Decimal]
     series: Mapped[str] = mapped_column(unique=True, index=True)
     maturity_period: Mapped[int]
-    initial_interest_rate: Mapped[float]
+    initial_interest_rate: Mapped[Decimal]
     first_interest_period: Mapped[int]
-    reference_rate_margin: Mapped[float]
+    reference_rate_margin: Mapped[Decimal]
 
 
 class BondHolder(MappedAsDataclass, Base):

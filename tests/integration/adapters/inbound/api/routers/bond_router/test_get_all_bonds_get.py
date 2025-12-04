@@ -1,15 +1,16 @@
 from datetime import date, datetime, timezone
+from decimal import Decimal
 from unittest.mock import AsyncMock
 from uuid import uuid4, UUID
 
-import pytest_asyncio
+import pytest
 from starlette import status
 from starlette.testclient import TestClient
 
 from src.adapters.inbound.api.main import app
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_bondholder_response() -> AsyncMock:
     return AsyncMock(
         id=uuid4(),
@@ -18,15 +19,15 @@ def mock_bondholder_response() -> AsyncMock:
         last_update=datetime.now(timezone.utc),
         bond_id=uuid4(),
         series="ROR1206",
-        nominal_value=100.0,
+        nominal_value=Decimal("100.0"),
         maturity_period=12,
-        initial_interest_rate=4.75,
+        initial_interest_rate=Decimal("4.75"),
         first_interest_period=1,
-        reference_rate_margin=0.0,
+        reference_rate_margin=Decimal("0.0"),
     )
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_multiple_bondholders() -> list[AsyncMock]:
     return [
         AsyncMock(
@@ -36,11 +37,11 @@ def mock_multiple_bondholders() -> list[AsyncMock]:
             last_update=datetime.now(timezone.utc),
             bond_id=uuid4(),
             series="ROR1206",
-            nominal_value=100.0,
+            nominal_value=Decimal("100.0"),
             maturity_period=12,
-            initial_interest_rate=4.75,
+            initial_interest_rate=Decimal("4.75"),
             first_interest_period=1,
-            reference_rate_margin=0.0,
+            reference_rate_margin=Decimal("0.0"),
         ),
         AsyncMock(
             id=uuid4(),
@@ -49,11 +50,11 @@ def mock_multiple_bondholders() -> list[AsyncMock]:
             last_update=datetime.now(timezone.utc),
             bond_id=uuid4(),
             series="ROR0000",
-            nominal_value=101.0,
+            nominal_value=Decimal("101.0"),
             maturity_period=12,
-            initial_interest_rate=5,
+            initial_interest_rate=Decimal("5"),
             first_interest_period=1,
-            reference_rate_margin=0.1,
+            reference_rate_margin=Decimal("0.1"),
         ),
         AsyncMock(
             id=uuid4(),
@@ -62,16 +63,16 @@ def mock_multiple_bondholders() -> list[AsyncMock]:
             last_update=datetime.now(timezone.utc),
             bond_id=uuid4(),
             series="ROR1111",
-            nominal_value=102.0,
+            nominal_value=Decimal("102.0"),
             maturity_period=12,
-            initial_interest_rate=3,
+            initial_interest_rate=Decimal("3"),
             first_interest_period=1,
-            reference_rate_margin=0.3,
+            reference_rate_margin=Decimal("0.3"),
         ),
     ]
 
 
-async def test_get_all_bonds_success_with_multiple_bonds(
+def test_get_all_bonds_success_with_multiple_bonds(
     client: TestClient,
     mock_multiple_bondholders: list[AsyncMock],
     mock_current_user: UUID,
@@ -96,19 +97,18 @@ async def test_get_all_bonds_success_with_multiple_bonds(
     assert data[0]["id"] == str(mock_multiple_bondholders[0].id)
     assert data[0]["quantity"] == 10
     assert data[0]["series"] == "ROR1206"
-    assert data[0]["nominal_value"] == 100.00
+    assert Decimal(data[0]["nominal_value"]) == Decimal("100.00")
 
     assert data[1]["quantity"] == 5
     assert data[1]["series"] == "ROR0000"
-    assert data[1]["nominal_value"] == 101.00
+    assert Decimal(data[1]["nominal_value"]) == Decimal("101.00")
 
     mock_use_case.execute.assert_called_once_with(user_id=mock_current_user)
 
 
-async def test_get_all_bonds_success_with_single_bond(
+def test_get_all_bonds_success_with_single_bond(
     client: TestClient,
     mock_bondholder_response: AsyncMock,
-    mock_current_user: UUID,
 ) -> None:
     purchase_date = mock_bondholder_response.purchase_date
     mock_use_case = AsyncMock()
@@ -133,7 +133,7 @@ async def test_get_all_bonds_success_with_single_bond(
     assert data[0]["bond_id"] == str(mock_bondholder_response.bond_id)
 
 
-async def test_get_all_bonds_empty_list(
+def test_get_all_bonds_empty_list(
     client: TestClient,
     mock_current_user: UUID,
 ) -> None:
@@ -156,7 +156,7 @@ async def test_get_all_bonds_empty_list(
     mock_use_case.execute.assert_called_once_with(user_id=mock_current_user)
 
 
-async def test_get_all_bonds_unauthorized() -> None:
+def test_get_all_bonds_unauthorized() -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 
     app.dependency_overrides.pop(current_user, None)
@@ -167,7 +167,7 @@ async def test_get_all_bonds_unauthorized() -> None:
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-async def test_get_all_bonds_user_id_from_authentication(
+def test_get_all_bonds_user_id_from_authentication(
     client: TestClient,
     mock_bondholder_response: AsyncMock,
     mock_current_user: UUID,
@@ -188,7 +188,7 @@ async def test_get_all_bonds_user_id_from_authentication(
     mock_use_case.execute.assert_called_once_with(user_id=expected_user_id)
 
 
-async def test_get_all_bonds_response_structure(
+def test_get_all_bonds_response_structure(
     client: TestClient,
     mock_bondholder_response: AsyncMock,
 ) -> None:
@@ -224,9 +224,8 @@ async def test_get_all_bonds_response_structure(
         assert field in data[0]
 
 
-async def test_get_all_bonds_decimal_precision(
+def test_get_all_bonds_decimal_precision(
     client: TestClient,
-    mock_current_user: UUID,
 ) -> None:
     mock_response = AsyncMock(
         id=uuid4(),
@@ -235,11 +234,11 @@ async def test_get_all_bonds_decimal_precision(
         last_update=date.today(),
         bond_id=uuid4(),
         series="ROR2222",
-        nominal_value=1234.56,
+        nominal_value=Decimal("1234.56"),
         maturity_period=15,
-        initial_interest_rate=7.25,
+        initial_interest_rate=Decimal("7.25"),
         first_interest_period=5,
-        reference_rate_margin=2.15,
+        reference_rate_margin=Decimal("2.15"),
     )
 
     mock_use_case = AsyncMock()
@@ -256,12 +255,18 @@ async def test_get_all_bonds_decimal_precision(
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
 
-    assert data[0]["nominal_value"] == 1234.56
-    assert data[0]["initial_interest_rate"] == 7.25
-    assert data[0]["reference_rate_margin"] == 2.15
+    assert Decimal(data[0]["nominal_value"]).quantize(Decimal("0.01")) == Decimal(
+        "1234.56"
+    )
+    assert Decimal(data[0]["initial_interest_rate"]).quantize(
+        Decimal("0.01")
+    ) == Decimal("7.25")
+    assert Decimal(data[0]["reference_rate_margin"]).quantize(
+        Decimal("0.01")
+    ) == Decimal("2.15")
 
 
-async def test_get_all_bonds_date_serialization(
+def test_get_all_bonds_date_serialization(
     client: TestClient,
     mock_bondholder_response: AsyncMock,
 ) -> None:
@@ -285,7 +290,7 @@ async def test_get_all_bonds_date_serialization(
     assert data[0]["last_update"].replace("Z", "+00:00") == last_update.isoformat()
 
 
-async def test_get_all_bonds_different_users_isolation(
+def test_get_all_bonds_different_users_isolation(
     mock_bondholder_response: AsyncMock,
 ) -> None:
     user_id_1 = uuid4()

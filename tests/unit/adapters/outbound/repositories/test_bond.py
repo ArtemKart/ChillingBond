@@ -1,17 +1,17 @@
-import pytest
-from uuid import uuid4
+from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, Mock
+from uuid import uuid4
 
-import pytest_asyncio
+import pytest
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.database.models import Bond as BondModel
+from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
 from src.domain.entities.bond import Bond as BondEntity
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def bond_model(bond_entity_mock: Mock) -> BondModel:
     return BondModel(
         id=bond_entity_mock.id,
@@ -24,7 +24,7 @@ def bond_model(bond_entity_mock: Mock) -> BondModel:
     )
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_session() -> AsyncMock:
     session = AsyncMock()
     session.get = AsyncMock()
@@ -37,7 +37,7 @@ def mock_session() -> AsyncMock:
     return session
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def repository(mock_session: AsyncMock) -> SQLAlchemyBondRepository:
     return SQLAlchemyBondRepository(mock_session)
 
@@ -216,7 +216,7 @@ async def test_delete_sqlalchemy_error(
     mock_session.rollback.assert_called_once()
 
 
-async def test_to_entity_conversion(
+def test_to_entity_conversion(
     repository: SQLAlchemyBondRepository, bond_model: BondModel
 ) -> None:
     result = repository._to_entity(bond_model)
@@ -231,7 +231,7 @@ async def test_to_entity_conversion(
     assert result.reference_rate_margin == bond_model.reference_rate_margin
 
 
-async def test_to_model_conversion(
+def test_to_model_conversion(
     repository: SQLAlchemyBondRepository, bond_entity_mock: Mock
 ) -> None:
     result = repository._to_model(bond_entity_mock)
@@ -246,23 +246,23 @@ async def test_to_model_conversion(
     assert result.reference_rate_margin == bond_entity_mock.reference_rate_margin
 
 
-async def test_update_model(
+def test_update_model(
     repository: SQLAlchemyBondRepository, bond_model: BondModel, bond_entity_mock: Mock
 ) -> None:
     new_entity = BondEntity(
         id=bond_entity_mock.id,
         series="ROR0000",
-        nominal_value=3000.0,
+        nominal_value=Decimal("3000.0"),
         maturity_period=730,
-        initial_interest_rate=8.0,
+        initial_interest_rate=Decimal("8.0"),
         first_interest_period=60,
-        reference_rate_margin=3.0,
+        reference_rate_margin=Decimal("3.0"),
     )
     repository._update_model(bond_model, new_entity)
 
     assert bond_model.series == "ROR0000"
-    assert bond_model.nominal_value == 3000.0
+    assert bond_model.nominal_value == Decimal("3000.0")
     assert bond_model.maturity_period == 730
-    assert bond_model.initial_interest_rate == 8.0
+    assert bond_model.initial_interest_rate == Decimal("8.0")
     assert bond_model.first_interest_period == 60
-    assert bond_model.reference_rate_margin == 3.0
+    assert bond_model.reference_rate_margin == Decimal("3.0")

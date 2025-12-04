@@ -11,15 +11,15 @@ class Bond:
 
     Args:
         id (UUID): Bond identifier.
-        nominal_value (float): Nominal value of a single bondholder unit.
+        nominal_value (Decimal): Nominal value of a single bondholder unit.
         series (str): Identifier or code representing the bondholder series.
         maturity_period (int): Total lifetime of the bondholder, typically expressed
             in months.
-        initial_interest_rate (float): Interest rate applied during the initial
+        initial_interest_rate (Decimal): Interest rate applied during the initial
             period of the bondholder.
         first_interest_period (int): Duration of the initial interest rate period,
             typically expressed in months.
-        reference_rate_margin (float): Additional percentage added to the reference rate (spread).
+        reference_rate_margin (Decimal): Additional percentage added to the reference rate (spread).
     """
 
     id: UUID
@@ -34,11 +34,11 @@ class Bond:
     def create(
         cls,
         series: str,
-        nominal_value: float,
+        nominal_value: Decimal,
         maturity_period: int,
-        initial_interest_rate: float,
+        initial_interest_rate: Decimal,
         first_interest_period: int,
-        reference_rate_margin: float,
+        reference_rate_margin: Decimal,
     ) -> "Bond":
         bond = Bond(
             id=uuid4(),

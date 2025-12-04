@@ -4,26 +4,26 @@ from datetime import date, datetime, timezone, timedelta
 from uuid import uuid4, UUID
 from unittest.mock import AsyncMock
 
-import pytest_asyncio
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.adapters.inbound.api.main import app
 
 
-@pytest_asyncio.fixture
-async def valid_purchase_id() -> UUID:
+@pytest.fixture
+def valid_purchase_id() -> UUID:
     return uuid4()
 
 
-@pytest_asyncio.fixture
-async def valid_add_request() -> dict[str, Any]:
+@pytest.fixture
+def valid_add_request() -> dict[str, Any]:
     return {
         "new_quantity": 5,
     }
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_updated_bondholder() -> AsyncMock:
     return AsyncMock(
         id=uuid4(),
@@ -40,7 +40,7 @@ def mock_updated_bondholder() -> AsyncMock:
     )
 
 
-async def test_change_purchase_quantity_success(
+def test_change_purchase_quantity_success(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -78,7 +78,7 @@ async def test_change_purchase_quantity_success(
     assert dto.new_quantity == 5
 
 
-async def test_change_purchase_quantity_invalid_uuid(
+def test_change_purchase_quantity_invalid_uuid(
     client: TestClient,
     valid_add_request: dict,
 ) -> None:
@@ -88,7 +88,7 @@ async def test_change_purchase_quantity_invalid_uuid(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_change_purchase_quantity_unauthorized(
+def test_change_purchase_quantity_unauthorized(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -103,7 +103,7 @@ async def test_change_purchase_quantity_unauthorized(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-async def test_change_purchase_quantity_not_found(
+def test_change_purchase_quantity_not_found(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -125,7 +125,7 @@ async def test_change_purchase_quantity_not_found(
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-async def test_change_purchase_quantity_user_id_from_authentication(
+def test_change_purchase_quantity_user_id_from_authentication(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -153,7 +153,7 @@ async def test_change_purchase_quantity_user_id_from_authentication(
     assert dto.user_id == expected_user_id
 
 
-async def test_change_purchase_quantity_response_structure(
+def test_change_purchase_quantity_response_structure(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -193,7 +193,7 @@ async def test_change_purchase_quantity_response_structure(
         assert field in data
 
 
-async def test_change_purchase_quantity_updates_last_update(
+def test_change_purchase_quantity_updates_last_update(
     client: TestClient,
     valid_purchase_id: UUID,
     valid_add_request: dict,
@@ -244,7 +244,7 @@ async def test_change_purchase_quantity_updates_last_update(
     assert last_update_tested.date() != purchase_date_tested
 
 
-async def test_change_purchase_quantity_invalid_json(
+def test_change_purchase_quantity_invalid_json(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
@@ -257,7 +257,7 @@ async def test_change_purchase_quantity_invalid_json(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_change_purchase_quantity_wrong_data_types(
+def test_change_purchase_quantity_wrong_data_types(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
@@ -272,7 +272,7 @@ async def test_change_purchase_quantity_wrong_data_types(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_change_purchase_quantity_multiple_operations(
+def test_change_purchase_quantity_multiple_operations(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:

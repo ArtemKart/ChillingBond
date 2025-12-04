@@ -2,7 +2,7 @@ from typing import Any
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
-import pytest_asyncio
+import pytest
 from starlette import status
 from starlette.testclient import TestClient
 
@@ -15,7 +15,7 @@ from src.application.use_cases.user.user_create import UserCreateUseCase
 from src.adapters.outbound.database.models import User as UserModel
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def user_create_valid_data(user_entity_mock: Mock) -> dict[str, Any]:
     return {
         "email": user_entity_mock.email,
@@ -24,7 +24,7 @@ def user_create_valid_data(user_entity_mock: Mock) -> dict[str, Any]:
     }
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case(
     mock_hasher: Mock,
     mock_user_repo: AsyncMock,
@@ -37,7 +37,7 @@ def use_case(
     )
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case_return_mock() -> Mock:
     mock = Mock(spec=UserDTO)
     mock.id = uuid4()
@@ -46,7 +46,7 @@ def use_case_return_mock() -> Mock:
     return mock
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def user_model_mock() -> Mock:
     mock = Mock(spec=UserModel)
     mock.id = uuid4()
@@ -56,7 +56,7 @@ def user_model_mock() -> Mock:
     return mock
 
 
-async def test_create_user_success(
+def test_create_user_success(
     client: TestClient,
     user_create_valid_data: dict[str, Any],
     use_case: UserCreateUseCase,
@@ -75,7 +75,7 @@ async def test_create_user_success(
     assert r.json()["name"] == user_entity_mock.name
 
 
-async def test_create_user_user_already_exists(
+def test_create_user_user_already_exists(
     client: TestClient,
     user_create_valid_data: dict[str, Any],
     use_case: UserCreateUseCase,
@@ -90,7 +90,7 @@ async def test_create_user_user_already_exists(
     assert r.json()["detail"] == "User already exists"
 
 
-async def test_create_user_email_normalization(
+def test_create_user_email_normalization(
     client: TestClient,
     use_case: UserCreateUseCase,
     user_entity_mock: Mock,
@@ -112,7 +112,7 @@ async def test_create_user_email_normalization(
     assert response_data["email"] == "test@example.com"
 
 
-async def test_create_user_invalid_email(
+def test_create_user_invalid_email(
     client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     invalid_data = {**user_create_valid_data, "email": "invalid-email"}
@@ -120,7 +120,7 @@ async def test_create_user_invalid_email(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_user_missing_email(
+def test_create_user_missing_email(
     client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     data_without_email = {
@@ -131,7 +131,7 @@ async def test_create_user_missing_email(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_user_missing_password(
+def test_create_user_missing_password(
     client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     data_without_password = {
@@ -142,7 +142,7 @@ async def test_create_user_missing_password(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-async def test_create_user_without_name(
+def test_create_user_without_name(
     client: TestClient,
     use_case: UserCreateUseCase,
     user_entity_mock: Mock,
@@ -161,7 +161,7 @@ async def test_create_user_without_name(
     assert response_data["name"] is None
 
 
-async def test_create_user_empty_password(
+def test_create_user_empty_password(
     client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     invalid_data = {**user_create_valid_data, "password": ""}

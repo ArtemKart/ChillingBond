@@ -1,7 +1,7 @@
 import json
 from unittest.mock import Mock, patch
 
-import pytest_asyncio
+import pytest
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 
@@ -17,8 +17,8 @@ from src.domain.exceptions import (
 )
 
 
-@pytest_asyncio.fixture
-async def mock_request() -> Mock:
+@pytest.fixture
+def mock_request() -> Mock:
     request = Mock(spec=Request)
     request.url.path = "/api/v1/test"
     request.method = "GET"
