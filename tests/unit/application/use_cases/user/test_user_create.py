@@ -112,13 +112,13 @@ async def test_with_different_user_data(
 async def test_hasher_is_passed_correctly(
     use_case: UserCreateUseCase,
     mock_user_repo: AsyncMock,
-    mock_hasher: AsyncMock,
+    mock_hasher: Mock,
     sample_user_create_dto: Mock,
     user_entity_mock: Mock,
 ) -> None:
     mock_user_repo.get_by_email.return_value = None
     mock_user_repo.write.return_value = user_entity_mock
-    use_case.to_dto = AsyncMock(return_value=Mock(spec=UserDTO))
+    use_case.to_dto = Mock(return_value=Mock(spec=UserDTO))
 
     with patch(
         "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
@@ -133,7 +133,6 @@ async def test_hasher_is_passed_correctly(
 async def test_returns_dto_from_written_entity(
     use_case: UserCreateUseCase,
     mock_user_repo: AsyncMock,
-    mock_hasher: Mock,
     sample_user_create_dto: Mock,
 ) -> None:
     created_entity = Mock(spec=UserEntity, id="created-123")

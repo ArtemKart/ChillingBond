@@ -117,7 +117,7 @@ def test_create_user_invalid_email(
 ) -> None:
     invalid_data = {**user_create_valid_data, "email": "invalid-email"}
     response = client.post("/users", json=invalid_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_user_missing_email(
@@ -128,7 +128,7 @@ def test_create_user_missing_email(
         "name": user_create_valid_data["name"],
     }
     response = client.post("/users", json=data_without_email)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_user_missing_password(
@@ -139,7 +139,7 @@ def test_create_user_missing_password(
         "name": user_create_valid_data["name"],
     }
     response = client.post("/users", json=data_without_password)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_user_without_name(
@@ -166,4 +166,4 @@ def test_create_user_empty_password(
 ) -> None:
     invalid_data = {**user_create_valid_data, "password": ""}
     response = client.post("/users", json=invalid_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

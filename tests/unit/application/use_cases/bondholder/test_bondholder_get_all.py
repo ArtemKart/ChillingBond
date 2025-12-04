@@ -135,7 +135,7 @@ async def test_bond_not_found_middle_item(
 
     mock_bondholder_repo.get_all.return_value = mock_bondholders
     mock_bond_repo.get_one.side_effect = [Mock(), None, Mock()]
-    use_case.to_dto = AsyncMock()
+    use_case.to_dto = Mock()
 
     with pytest.raises(NotFoundError, match="Bond connected to BondHolder not found"):
         await use_case.execute(user_id)

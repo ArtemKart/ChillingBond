@@ -132,7 +132,7 @@ def test_get_bond_invalid_uuid_format(
 ) -> None:
     invalid_id = "not-a-valid-uuid"
     response = client.get(f"/bonds/{invalid_id}")
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_get_bond_different_user_cannot_access(

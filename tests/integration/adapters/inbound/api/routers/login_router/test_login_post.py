@@ -104,19 +104,19 @@ def test_login_missing_username(client: TestClient) -> None:
 
     response = client.post("/login/token", data=form_data)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_missing_password(client: TestClient) -> None:
     form_data = {"username": "test@example.com"}
     response = client.post("/login/token", data=form_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_empty_credentials(client: TestClient) -> None:
     response = client.post("/login/token", data={})
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_response_structure(

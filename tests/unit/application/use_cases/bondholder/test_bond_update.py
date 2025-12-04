@@ -1,8 +1,10 @@
-import pytest
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
 
-from src.application.dto.bond import BondUpdateDTO, BondDTO
+import pytest
+
+from src.application.dto.bond import BondDTO, BondUpdateDTO
 from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.domain.exceptions import NotFoundError
 
@@ -15,7 +17,7 @@ def use_case(mock_bond_repo: AsyncMock) -> BondUpdateUseCase:
 @pytest.fixture
 def sample_bond_update_dto() -> Mock:
     dto = Mock(spec=BondUpdateDTO)
-    dto.nominal_value = 200.0
+    dto.nominal_value = Decimal("200.0")
     dto.series = None
     dto.maturity_period = None
     dto.initial_interest_rate = None
@@ -32,6 +34,7 @@ async def test_success_with_partial_update(
 ) -> None:
     bond_id = uuid4()
     mock_bond_repo.get_one.return_value = bond_entity_mock
+    mock_bond_repo.update.return_value = bond_entity_mock
 
     with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
@@ -57,14 +60,15 @@ async def test_success_with_all_fields_update(
     bond_id = uuid4()
 
     update_dto = Mock(spec=BondUpdateDTO)
-    update_dto.nominal_value = 300.0
+    update_dto.nominal_value = Decimal("300.0")
     update_dto.series = "ROR1111"
     update_dto.maturity_period = 24
-    update_dto.initial_interest_rate = 7.5
+    update_dto.initial_interest_rate = Decimal("7.5")
     update_dto.first_interest_period = 12
-    update_dto.reference_rate_margin = 3.5
+    update_dto.reference_rate_margin = Decimal("3.5")
 
     mock_bond_repo.get_one.return_value = bond_entity_mock
+    mock_bond_repo.update.return_value = bond_entity_mock
 
     with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
@@ -96,6 +100,7 @@ async def test_success_with_no_updates(
     update_dto = Mock(spec=BondUpdateDTO)
 
     mock_bond_repo.get_one.return_value = bond_entity_mock
+    mock_bond_repo.update.return_value = bond_entity_mock
 
     with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
@@ -165,10 +170,11 @@ async def test_preserves_unchanged_fields(
     update_dto = Mock(spec=BondUpdateDTO)
 
     mock_bond_repo.get_one.return_value = bond_entity_mock
+    mock_bond_repo.update.return_value = bond_entity_mock
 
     with patch("src.application.use_cases.bond_update.asdict") as mock_asdict:
         mock_asdict.return_value = {
-            "nominal_value": 4000.0,
+            "nominal_value": Decimal("4000.0"),
             "series": None,
             "maturity_period": None,
             "initial_interest_rate": None,

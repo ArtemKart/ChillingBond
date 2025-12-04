@@ -1,6 +1,5 @@
 from datetime import date, datetime
 from decimal import ROUND_HALF_UP, Decimal
-
 from dateutil.relativedelta import relativedelta  # type: ignore [import-untyped]
 
 from src.domain.entities.bond import Bond

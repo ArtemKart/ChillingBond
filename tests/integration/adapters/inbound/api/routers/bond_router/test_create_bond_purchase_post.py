@@ -93,7 +93,7 @@ def test_create_bond_purchase_missing_required_fields(client: TestClient) -> Non
         # Missing other required fields
     }
     response = client.post("/bonds", json=incomplete_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_bond_purchase_invalid_quantity(
@@ -102,7 +102,7 @@ def test_create_bond_purchase_invalid_quantity(
 
     valid_bond_data["quantity"] = -5
     response = client.post("/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_bond_purchase_invalid_date_format(
@@ -110,7 +110,7 @@ def test_create_bond_purchase_invalid_date_format(
 ) -> None:
     valid_bond_data["purchase_date"] = "invalid-date"
     response = client.post("/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_bond_purchase_invalid_nominal_value(
@@ -118,7 +118,7 @@ def test_create_bond_purchase_invalid_nominal_value(
 ) -> None:
     valid_bond_data["nominal_value"] = "-1000"
     response = client.post("/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_bond_purchase_invalid_maturity_period(
@@ -126,7 +126,7 @@ def test_create_bond_purchase_invalid_maturity_period(
 ) -> None:
     valid_bond_data["maturity_period"] = 0
     response = client.post("/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_create_bond_purchase_unauthorized(
@@ -184,4 +184,6 @@ def test_create_bond_purchase_with_decimal_values(
     assert response.status_code == status.HTTP_201_CREATED
     call_args = mock_use_case.execute.call_args[0]
     bond_dto = call_args[1]
-    assert isinstance(bond_dto.nominal_value, float)
+    assert isinstance(bond_dto.nominal_value, Decimal)
+    assert isinstance(bond_dto.initial_interest_rate, Decimal)
+    assert isinstance(bond_dto.reference_rate_margin, Decimal)

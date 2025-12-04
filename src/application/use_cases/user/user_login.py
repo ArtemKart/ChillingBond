@@ -1,4 +1,5 @@
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+
 from src.application.dto.token import TokenDTO
 from src.application.use_cases.user.user_base import UserBaseUseCase
 from src.domain.exceptions import AuthenticationError

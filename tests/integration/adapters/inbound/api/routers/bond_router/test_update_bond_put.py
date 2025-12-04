@@ -161,7 +161,7 @@ def test_update_bond_invalid_uuid(
         f"/bonds/{invalid_id}/specification", json=valid_update_request
     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_update_bond_unauthorized() -> None:
@@ -203,7 +203,7 @@ def test_update_bond_invalid_nominal_value(
 
     response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_update_bond_invalid_maturity_period(
@@ -217,7 +217,7 @@ def test_update_bond_invalid_maturity_period(
 
     response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_update_bond_invalid_interest_rate(
@@ -231,7 +231,7 @@ def test_update_bond_invalid_interest_rate(
 
     response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_update_bond_response_structure(
@@ -308,8 +308,9 @@ def test_update_bond_decimal_precision(
 
     call_args = mock_use_case.execute.call_args
     dto = call_args.kwargs["dto"]
-    assert isinstance(dto.nominal_value, float)
-    assert isinstance(dto.initial_interest_rate, float)
+    assert isinstance(dto.nominal_value, Decimal)
+    assert isinstance(dto.initial_interest_rate, Decimal)
+    assert isinstance(dto.reference_rate_margin, Decimal)
 
 
 def test_update_bond_different_series(
@@ -357,11 +358,11 @@ def test_update_bond_invalid_json(
 ) -> None:
     response = client.put(
         f"/bonds/{valid_bond_id}/specification",
-        data="invalid json",
+        content="invalid json",
         headers={"Content-Type": "application/json"},
     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_update_bond_wrong_data_types(
@@ -376,7 +377,7 @@ def test_update_bond_wrong_data_types(
 
     response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_update_bond_only_nominal_value(
