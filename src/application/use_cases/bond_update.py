@@ -18,7 +18,7 @@ class BondUpdateUseCase:
         update_attr = {k: v for k, v in asdict(dto).items() if v}
         for attr, value in update_attr.items():
             setattr(bond, attr, value)
-        new_bond =await self.bond_repo.update(bond)
+        new_bond = await self.bond_repo.update(bond)
         return self._to_dto(new_bond)
 
     @staticmethod

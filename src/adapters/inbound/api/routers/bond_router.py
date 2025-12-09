@@ -164,18 +164,22 @@ async def update_bond(
     if not bond_data.model_dump(exclude_none=True):
         return EmptyBondUpdateResponse()
     dto = BondUpdateDTO(
-        nominal_value=Decimal(bond_data.nominal_value)
-        if bond_data.nominal_value
-        else None,
+        nominal_value=(
+            Decimal(bond_data.nominal_value) if bond_data.nominal_value else None
+        ),
         series=bond_data.series,
         maturity_period=bond_data.maturity_period,
-        initial_interest_rate=Decimal(bond_data.initial_interest_rate)
-        if bond_data.initial_interest_rate
-        else None,
+        initial_interest_rate=(
+            Decimal(bond_data.initial_interest_rate)
+            if bond_data.initial_interest_rate
+            else None
+        ),
         first_interest_period=bond_data.first_interest_period,
-        reference_rate_margin=Decimal(bond_data.reference_rate_margin)
-        if bond_data.reference_rate_margin
-        else None,
+        reference_rate_margin=(
+            Decimal(bond_data.reference_rate_margin)
+            if bond_data.reference_rate_margin
+            else None
+        ),
     )
     return await use_case.execute(dto=dto, bond_id=purchase_id)  # type: ignore [return-value]
 

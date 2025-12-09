@@ -10,12 +10,10 @@ from src.domain.entities.reference_rate import ReferenceRate
 class BondHolderIncomeCalculator:
     """Domain service for bondholder income calculator"""
 
-    def __init__(self, bondholder: BondHolder, bond: Bond) -> None:
-        self._bondholder: BondHolder = bondholder
-        self._bond: Bond = bond
-
-    def calculate_month_bondholder_income(
+    def calculate_monthly_bh_income(
         self,
+        bondholder: BondHolder,
+        bond: Bond,
         reference_rate: ReferenceRate,
         day: date | None = None,
     ) -> Decimal:
@@ -27,6 +25,8 @@ class BondHolderIncomeCalculator:
 
         Args:
             reference_rate: Current reference rate from the central bank
+            bondholder: Bondholder object
+            bond: Bond object
             day: Payment date for income calculation (defaults to today)
 
         Returns:
@@ -35,24 +35,28 @@ class BondHolderIncomeCalculator:
         if not day:
             day = datetime.today().date()
 
-        interest_period_end = self._bondholder.purchase_date + relativedelta(
-            months=self._bond.first_interest_period
+        interest_period_end = bondholder.purchase_date + relativedelta(
+            months=bond.first_interest_period
         )
-        days_in_period = self._days_in_period(
-            purchase_date=self._bondholder.purchase_date
-        )
+        days_in_period = self._days_in_period(purchase_date=bondholder.purchase_date)
 
         if day >= interest_period_end:
             return self._calculate_regular_income(
+                bond=bond,
+                quantity=bondholder.quantity,
                 reference_rate=reference_rate.value,
                 days_in_month=days_in_period,
             )
         return self._calculate_interest_income(
+            bond=bond,
+            quantity=bondholder.quantity,
             days_in_month=days_in_period,
         )
 
     def _calculate_interest_income(
         self,
+        bond: Bond,
+        quantity: int,
         days_in_month: int,
     ) -> Decimal:
         """
@@ -68,19 +72,21 @@ class BondHolderIncomeCalculator:
             Total net income after 19% tax (Belka tax) for all bonds
         """
         daily_rate = (
-            self._bond.nominal_value
-            * self._from_percent(self._bond.initial_interest_rate)
+            bond.nominal_value
+            * self._from_percent(bond.initial_interest_rate)
             * days_in_month
             / Decimal("365")
         )
         gross_interest = daily_rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         net_interest = gross_interest * (Decimal("1") - Decimal("0.19"))
 
-        return net_interest * self._bondholder.quantity
+        return net_interest * quantity
 
     def _calculate_regular_income(
         self,
+        bond: Bond,
         reference_rate: Decimal,
+        quantity: int,
         days_in_month: int,
     ) -> Decimal:
         """
@@ -97,13 +103,13 @@ class BondHolderIncomeCalculator:
             Total net income after 19% tax (Belka tax) for all bonds
         """
         annual_rate = self._from_percent(reference_rate) + self._from_percent(
-            self._bond.reference_rate_margin
+            bond.reference_rate_margin
         )
         gross_interest_per_bond = (
-            self._bond.nominal_value * annual_rate * days_in_month / Decimal("365")
+            bond.nominal_value * annual_rate * days_in_month / Decimal("365")
         ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-        return gross_interest_per_bond * Decimal("0.81") * self._bondholder.quantity
+        return gross_interest_per_bond * Decimal("0.81") * quantity
 
     @staticmethod
     def _from_percent(percent: Decimal) -> Decimal:
@@ -155,9 +161,12 @@ class BondHolderIncomeCalculator:
 
         return (period_end - period_start).days
 
-    def calculate_bondholder_income_for_period(
+    def calculate_bh_income_for_period(
         self,
+        bondholder: BondHolder,
+        bond: Bond,
         reference_rates: list[ReferenceRate],
+        purchase_date: date,
         start_date: date,
         end_date: date,
     ) -> dict[date, Decimal]:
@@ -165,7 +174,10 @@ class BondHolderIncomeCalculator:
         Calculate monthly income for a bondholder across a date range.
 
         Args:
+            bondholder: BondHolder object
+            bond: Bond object
             reference_rates: List of reference rates with their start dates
+            purchase_date: Day when the purchase was made
             start_date: Start of the calculation period (inclusive)
             end_date: End of the calculation period (inclusive)
 
@@ -175,7 +187,7 @@ class BondHolderIncomeCalculator:
         result: dict[date, Decimal] = {}
 
         sorted_rates = sorted(reference_rates, key=lambda r: r.start_date)
-        current_payment_date = self._bondholder.purchase_date + relativedelta(months=1)
+        current_payment_date = purchase_date + relativedelta(months=1)
 
         while current_payment_date <= end_date:
             if current_payment_date >= start_date:
@@ -189,7 +201,9 @@ class BondHolderIncomeCalculator:
                     raise ValueError(
                         f"No reference rate found for payment date {current_payment_date}"
                     )
-                income = self.calculate_month_bondholder_income(
+                income = self.calculate_monthly_bh_income(
+                    bondholder=bondholder,
+                    bond=bond,
                     reference_rate=applicable_rate,
                     day=current_payment_date,
                 )

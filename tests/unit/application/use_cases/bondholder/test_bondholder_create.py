@@ -233,7 +233,7 @@ async def test_preserves_all_bondholder_dto_fields(
     bondholder_create_dto: BondHolderCreateDTO,
     bond_create_dto: BondCreateDTO,
     bond_entity_mock: Mock,
-    bondholder_entity_mock: Mock
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_bond_repo.get_by_series.return_value = bond_entity_mock
     mock_bondholder_repo.write.return_value = bondholder_entity_mock
@@ -254,7 +254,7 @@ async def test_calls_to_dto_with_correct_params(
     bondholder_create_dto: BondHolderCreateDTO,
     bond_create_dto: BondCreateDTO,
     bond_entity_mock: Mock,
-    bondholder_entity_mock: Mock
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_bond_repo.get_by_series.return_value = bond_entity_mock
     mock_bondholder_repo.write.return_value = bondholder_entity_mock

@@ -46,10 +46,7 @@ def calculator(
     sample_bondholder: BondHolder,
     sample_bond: Bond,
 ) -> BondHolderIncomeCalculator:
-    return BondHolderIncomeCalculator(
-        bondholder=sample_bondholder,
-        bond=sample_bond,
-    )
+    return BondHolderIncomeCalculator()
 
 
 def _calculate_regular_gross_bond_income(
@@ -87,7 +84,9 @@ def test_calculate_month_bondholder_income_regular_period(
     calculator: BondHolderIncomeCalculator,
     sample_reference_rate: ReferenceRate,
 ) -> None:
-    tested_income = calculator.calculate_month_bondholder_income(
+    tested_income = calculator.calculate_monthly_bh_income(
+        bondholder=sample_bondholder,
+        bond=sample_bond,
         reference_rate=sample_reference_rate,
     )
     days_in_period = calculator._days_in_period(
@@ -112,7 +111,9 @@ def test_calculate_month_bondholder_income_interest_period(
 ) -> None:
     payment_date = sample_bondholder.purchase_date + timedelta(days=10)
 
-    tested_income = calculator.calculate_month_bondholder_income(
+    tested_income = calculator.calculate_monthly_bh_income(
+        bondholder=sample_bondholder,
+        bond=sample_bond,
         reference_rate=sample_reference_rate,
         day=payment_date,
     )
@@ -138,7 +139,11 @@ def test_calculate_interest_income_correct_rounding(
     days_in_period = calculator._days_in_period(
         purchase_date=sample_bondholder.purchase_date
     )
-    tested_income = calculator._calculate_interest_income(days_in_month=days_in_period)
+    tested_income = calculator._calculate_interest_income(
+        days_in_month=days_in_period,
+        bond=sample_bond,
+        quantity=sample_bondholder.quantity,
+    )
 
     gross_per_bond = _calculate_interest_gross_bond_income(
         bond=sample_bond,
@@ -164,12 +169,13 @@ def test_calculate_regular_income_with_different_margins(
         reference_rate_margin=Decimal("1.00"),
         first_interest_period=3,
     )
-    calculator._bond = bond_high_margin
     days_in_period = calculator._days_in_period(
         purchase_date=sample_bondholder.purchase_date
     )
     tested_income = calculator._calculate_regular_income(
+        bond=bond_high_margin,
         reference_rate=sample_reference_rate.value,
+        quantity=sample_bondholder.quantity,
         days_in_month=days_in_period,
     )
 
@@ -214,17 +220,22 @@ def test_days_in_period_standard_month(
     assert tested_days == expected_days
 
 
-def test_calculate_bondholder_income_for_period_single_rate(
+def test_calculate_bh_income_for_period_single_rate(
+    sample_bondholder: BondHolder,
+    sample_bond: Bond,
     calculator: BondHolderIncomeCalculator,
     sample_reference_rate: ReferenceRate,
 ) -> None:
     start_date = date(2024, 2, 1)
     end_date = date(2024, 4, 30)
 
-    result = calculator.calculate_bondholder_income_for_period(
+    result = calculator.calculate_bh_income_for_period(
+        bondholder=sample_bondholder,
+        bond=sample_bond,
         reference_rates=[sample_reference_rate],
         start_date=start_date,
         end_date=end_date,
+        purchase_date=sample_bondholder.purchase_date,
     )
 
     assert len(result) == 3
@@ -237,11 +248,11 @@ def test_calculate_bondholder_income_for_period_single_rate(
         assert income > 0
 
 
-def test_calculate_bondholder_income_for_period_multiple_rates(
+def test_calculate_bh_income_for_period_multiple_rates(
     sample_bond: Bond,
     sample_bondholder: BondHolder,
 ) -> None:
-    calculator = BondHolderIncomeCalculator(sample_bondholder, sample_bond)
+    calculator = BondHolderIncomeCalculator()
 
     rates = [
         ReferenceRate(id=uuid4(), value=Decimal("5.75"), start_date=date(2024, 1, 1)),
@@ -252,10 +263,13 @@ def test_calculate_bondholder_income_for_period_multiple_rates(
     start_date = date(2024, 2, 1)
     end_date = date(2024, 6, 30)
 
-    result = calculator.calculate_bondholder_income_for_period(
+    result = calculator.calculate_bh_income_for_period(
+        bondholder=sample_bondholder,
+        bond=sample_bond,
         reference_rates=rates,
         start_date=start_date,
         end_date=end_date,
+        purchase_date=sample_bondholder.purchase_date,
     )
 
     assert len(result) == 5
@@ -263,23 +277,30 @@ def test_calculate_bondholder_income_for_period_multiple_rates(
     assert result[date(2024, 3, 15)] != result[date(2024, 6, 15)]
 
 
-def test_calculate_bondholder_income_for_period_no_overlap(
+def test_calculate_bh_income_for_period_no_overlap(
+    sample_bond: Bond,
+    sample_bondholder: BondHolder,
     calculator: BondHolderIncomeCalculator,
     sample_reference_rate: ReferenceRate,
 ) -> None:
     start_date = date(2024, 1, 16)
     end_date = date(2024, 2, 10)
 
-    result = calculator.calculate_bondholder_income_for_period(
+    result = calculator.calculate_bh_income_for_period(
+        bondholder=sample_bondholder,
+        bond=sample_bond,
         reference_rates=[sample_reference_rate],
         start_date=start_date,
         end_date=end_date,
+        purchase_date=sample_bondholder.purchase_date,
     )
 
     assert len(result) == 0
 
 
-def test_calculate_bondholder_income_for_period_exact_boundaries(
+def test_calculate_bh_income_for_period_exact_boundaries(
+    sample_bond: Bond,
+    sample_bondholder: BondHolder,
     calculator: BondHolderIncomeCalculator,
     sample_reference_rate: ReferenceRate,
 ) -> None:
@@ -287,7 +308,10 @@ def test_calculate_bondholder_income_for_period_exact_boundaries(
     start_date = date(2024, 2, 15)
     end_date = date(2024, 2, 15)
 
-    result = calculator.calculate_bondholder_income_for_period(
+    result = calculator.calculate_bh_income_for_period(
+        bond=sample_bond,
+        bondholder=sample_bondholder,
+        purchase_date=sample_bondholder.purchase_date,
         reference_rates=[sample_reference_rate],
         start_date=start_date,
         end_date=end_date,
@@ -297,7 +321,9 @@ def test_calculate_bondholder_income_for_period_exact_boundaries(
     assert date(2024, 2, 15) in result
 
 
-def test_calculate_bondholder_income_for_period_missing_rate_raises_error(
+def test_calculate_bh_income_for_period_missing_rate_raises_error(
+    sample_bond: Bond,
+    sample_bondholder: BondHolder,
     calculator: BondHolderIncomeCalculator,
 ) -> None:
 
@@ -307,7 +333,10 @@ def test_calculate_bondholder_income_for_period_missing_rate_raises_error(
     end_date = date(2024, 4, 30)
 
     with pytest.raises(ValueError, match="No reference rate found for payment date"):
-        calculator.calculate_bondholder_income_for_period(
+        calculator.calculate_bh_income_for_period(
+            bond=sample_bond,
+            bondholder=sample_bondholder,
+            purchase_date=sample_bondholder.purchase_date,
             reference_rates=[rate],
             start_date=start_date,
             end_date=end_date,
@@ -315,6 +344,7 @@ def test_calculate_bondholder_income_for_period_missing_rate_raises_error(
 
 
 def test_zero_quantity_bondholder(
+    sample_bond: Bond,
     calculator: BondHolderIncomeCalculator,
     sample_reference_rate: ReferenceRate,
 ) -> None:
@@ -325,11 +355,12 @@ def test_zero_quantity_bondholder(
         quantity=0,
         purchase_date=date(2024, 1, 15),
     )
-    calculator._bondholder = bondholder_zero
 
     payment_date = date(2024, 3, 15)
 
-    income = calculator.calculate_month_bondholder_income(
+    income = calculator.calculate_monthly_bh_income(
+        bondholder=bondholder_zero,
+        bond=sample_bond,
         reference_rate=sample_reference_rate,
         day=payment_date,
     )

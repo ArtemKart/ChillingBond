@@ -38,6 +38,6 @@ class BondHolder(MappedAsDataclass, Base):
 
 class ReferenceRate(MappedAsDataclass, Base):
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    value: Mapped[float]
-    start_date: Mapped[datetime]
-    end_date: Mapped[datetime | None] = mapped_column(nullable=True)
+    value: Mapped[Decimal]
+    start_date: Mapped[date]
+    end_date: Mapped[date | None] = mapped_column(nullable=True)
