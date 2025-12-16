@@ -6,7 +6,7 @@ import pytest
 from starlette import status
 from starlette.testclient import TestClient
 
-from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_create_use_case,
 )
 from src.adapters.inbound.api.main import app

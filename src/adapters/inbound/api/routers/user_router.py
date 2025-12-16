@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
 from src.adapters.inbound.api.dependencies.repo_deps import UserRepoDep
-from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_create_use_case,
 )
 from src.adapters.inbound.api.schemas.user import UserCreate, UserResponse

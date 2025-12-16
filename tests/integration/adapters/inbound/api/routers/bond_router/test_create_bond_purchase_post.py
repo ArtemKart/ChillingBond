@@ -54,7 +54,7 @@ def test_create_bond_purchase_success(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_use_case_response
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         create_bondholder_use_case,
     )
 
@@ -150,7 +150,7 @@ def test_create_bond_purchase_use_case_exception(
         "Failed to save BondHolder object"
     )
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         create_bondholder_use_case,
     )
 
@@ -173,7 +173,7 @@ def test_create_bond_purchase_with_decimal_values(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_use_case_response
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         create_bondholder_use_case,
     )
 

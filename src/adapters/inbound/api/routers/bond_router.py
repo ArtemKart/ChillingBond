@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from starlette import status
 
-from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
     bh_delete_use_case,
     bh_get_all_use_case,
     bh_get_use_case,

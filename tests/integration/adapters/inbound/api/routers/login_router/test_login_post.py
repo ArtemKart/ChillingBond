@@ -24,7 +24,7 @@ def mock_user_login_use_case(
 
 @pytest.fixture(autouse=True)
 def setup_login_use_case_override(mock_user_login_use_case: UserLoginUseCase) -> None:
-    from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
         user_login_use_case,
     )
 

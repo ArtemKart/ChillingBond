@@ -2,6 +2,7 @@ from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
+from src.application.dto.calculations import MonthlyIncomeResponseDTO
 from src.application.use_cases.calculations.calculations_base import (
     CalculationsBaseUseCase,
 )
@@ -24,7 +25,9 @@ class CalculateIncomeUseCase(CalculationsBaseUseCase):
         self.bond_repo = bond_repo
         self.ref_rate_repo = reference_rate_repo
 
-    async def execute(self, bondholder_id: UUID, target_date: date) -> Decimal:
+    async def execute(
+        self, bondholder_id: UUID, target_date: date
+    ) -> MonthlyIncomeResponseDTO:
         bondholder = await self.bondholder_repo.get_one(bondholder_id=bondholder_id)
         if not bondholder:
             raise NotFoundError("Bondholder not found.")
@@ -33,9 +36,14 @@ class CalculateIncomeUseCase(CalculationsBaseUseCase):
             raise NotFoundError("Bond not found.")
         reference_rate = await self.ref_rate_repo.get_by_date(target_date=target_date)
 
-        return self.bh_income_calculator.calculate_monthly_bh_income(
+        income = self.bh_income_calculator.calculate_monthly_bh_income(
             bondholder=bondholder,
             bond=bond,
             reference_rate=reference_rate,
-            day=None,
+            day=target_date,
         )
+        return self._to_dto(income)
+
+    @staticmethod
+    def _to_dto(income: Decimal) -> MonthlyIncomeResponseDTO:
+        return MonthlyIncomeResponseDTO(value=income)

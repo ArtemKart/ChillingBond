@@ -58,7 +58,7 @@ def test_update_bond_success_full_update(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_updated_bond
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -106,7 +106,7 @@ def test_update_bond_success_partial_update(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_response
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -138,7 +138,7 @@ def test_update_bond_not_found(
     mock_use_case = AsyncMock()
     mock_use_case.execute.side_effect = NotFoundError("Bond not found")
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -243,7 +243,7 @@ def test_update_bond_response_structure(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_updated_bond
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -291,7 +291,7 @@ def test_update_bond_decimal_precision(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_response
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -338,7 +338,7 @@ def test_update_bond_different_series(
         mock_use_case = AsyncMock()
         mock_use_case.execute.return_value = mock_response
 
-        from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+        from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
             bond_update_use_case,
         )
 
@@ -401,7 +401,7 @@ def test_update_bond_only_nominal_value(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_response
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -434,7 +434,7 @@ def test_update_bond_only_series(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_response
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -470,7 +470,7 @@ def test_update_bond_multiple_updates_same_bond(
         mock_use_case = AsyncMock()
         mock_use_case.execute.return_value = mock_response
 
-        from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+        from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
             bond_update_use_case,
         )
 
@@ -517,7 +517,7 @@ def test_update_bond_extra_fields_ignored(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_updated_bond
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
@@ -541,7 +541,7 @@ def test_update_bond_use_case_exception(
         "Failed to update bond"
     )
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bond_update_use_case,
     )
 
