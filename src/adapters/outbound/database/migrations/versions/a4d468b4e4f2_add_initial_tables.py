@@ -25,21 +25,21 @@ def upgrade() -> None:
     op.create_table(
         "bond",
         sa.Column("id", sa.Uuid(), nullable=False),
-        sa.Column("nominal_value", sa.Float(), nullable=False),
+        sa.Column("nominal_value", sa.Numeric(), nullable=False),
         sa.Column("series", sa.String(), nullable=False),
         sa.Column("maturity_period", sa.Integer(), nullable=False),
-        sa.Column("initial_interest_rate", sa.Float(), nullable=False),
+        sa.Column("initial_interest_rate", sa.Numeric(), nullable=False),
         sa.Column("first_interest_period", sa.Integer(), nullable=False),
-        sa.Column("reference_rate_margin", sa.Float(), nullable=False),
+        sa.Column("reference_rate_margin", sa.Numeric(), nullable=False),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_bond")),
     )
     op.create_index(op.f("ix_bond_series"), "bond", ["series"], unique=True)
     op.create_table(
         "referencerate",
         sa.Column("id", sa.Uuid(), nullable=False),
-        sa.Column("value", sa.Float(), nullable=False),
-        sa.Column("start_date", sa.DateTime(), nullable=False),
-        sa.Column("end_date", sa.DateTime(), nullable=True),
+        sa.Column("value", sa.Numeric(), nullable=False),
+        sa.Column("start_date", sa.Date(), nullable=False),
+        sa.Column("end_date", sa.Date(), nullable=True),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_referencerate")),
     )
     op.create_table(

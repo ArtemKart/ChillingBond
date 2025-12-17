@@ -1,8 +1,9 @@
 from datetime import date, datetime
+from decimal import Decimal
 from unittest.mock import Mock, AsyncMock
 from uuid import uuid4
 
-import pytest_asyncio
+import pytest
 
 from src.application.events.event_publisher import EventPublisher
 from src.domain.entities.bond import Bond as BondEntity
@@ -14,9 +15,10 @@ from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
 from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
+from src.domain.services.bondholder_income_calculator import BondHolderIncomeCalculator
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def bondholder_entity_mock() -> Mock:
     bh = Mock(spec=BondHolderEntity)
     bh.id = uuid4()
@@ -28,20 +30,20 @@ def bondholder_entity_mock() -> Mock:
     return bh
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def bond_entity_mock() -> Mock:
     bond = Mock(spec=BondEntity)
     bond.id = uuid4()
     bond.series = "ROR1206"
-    bond.nominal_value = 100.0
+    bond.nominal_value = Decimal("100.0")
     bond.maturity_period = 12
-    bond.initial_interest_rate = 4.75
+    bond.initial_interest_rate = Decimal("4.75")
     bond.first_interest_period = 1
-    bond.reference_rate_margin = 0.0
+    bond.reference_rate_margin = Decimal("0.0")
     return bond
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def user_entity_mock(mock_hasher: Mock) -> Mock:
     user = Mock(spec=UserEntity)
     user.id = uuid4()
@@ -52,36 +54,46 @@ def user_entity_mock(mock_hasher: Mock) -> Mock:
     return user
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_hasher() -> Mock:
     return Mock(spec=PasswordHasher)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_token_handler() -> Mock:
     return Mock(spec=TokenHandler)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_bond_repo() -> AsyncMock:
     return AsyncMock(spec=BondRepository)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_bondholder_repo() -> AsyncMock:
     return AsyncMock(spec=BondHolderRepository)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_user_repo() -> AsyncMock:
     return AsyncMock(spec=UserRepository)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_event_publisher() -> AsyncMock:
     return AsyncMock(spec=EventPublisher)
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def bh_del_service_mock():
     return AsyncMock(spec=BondHolderDeletionService)
+
+
+@pytest.fixture
+def mock_reference_rate_repo() -> AsyncMock:
+    return AsyncMock()
+
+
+@pytest.fixture
+def mock_bh_income_calculator() -> Mock:
+    return Mock(spec=BondHolderIncomeCalculator)

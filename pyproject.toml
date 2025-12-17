@@ -12,6 +12,7 @@ dependencies = [
     "gunicorn>=23.0.0",
     "pydantic-settings>=2.11.0",
     "pyjwt>=2.10.1",
+    "python-dateutil>=2.9.0.post0",
     "python-json-logger>=4.0.0",
     "pyyaml>=6.0.3",
     "sqlalchemy>=2.0.44",
@@ -21,12 +22,9 @@ dependencies = [
 dev = [
     "black>=25.9.0",
     "pre-commit>=4.3.0",
-    "pyright>=1.1.407",
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
     "pytest-cov>=7.0.0",
-    "ruff>=0.14.6",
-    "ruff-lsp>=0.0.62",
 ]
 
 [tool.pytest.ini_options]
@@ -37,4 +35,4 @@ venvPath = "."
 venv = ".venv"
 
 [tool.ruff]
-line-length = 100
+line-length = 89

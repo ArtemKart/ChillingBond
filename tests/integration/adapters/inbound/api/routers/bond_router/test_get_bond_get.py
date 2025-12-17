@@ -3,19 +3,19 @@ from decimal import Decimal
 from uuid import uuid4, UUID
 from unittest.mock import AsyncMock
 
-import pytest_asyncio
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.adapters.inbound.api.main import app
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def valid_purchase_id() -> UUID:
     return uuid4()
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_bond_dto() -> AsyncMock:
     return AsyncMock(
         id=uuid4(),
@@ -32,7 +32,7 @@ def mock_bond_dto() -> AsyncMock:
     )
 
 
-async def test_get_bond_success(
+def test_get_bond_success(
     client: TestClient,
     valid_purchase_id: UUID,
     mock_bond_dto: AsyncMock,
@@ -44,7 +44,7 @@ async def test_get_bond_success(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_bond_dto
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -72,7 +72,7 @@ async def test_get_bond_success(
     )
 
 
-async def test_get_bond_not_found(
+def test_get_bond_not_found(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
@@ -81,7 +81,7 @@ async def test_get_bond_not_found(
     mock_use_case = AsyncMock()
     mock_use_case.execute.side_effect = NotFoundError("BondHolder not found")
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -93,7 +93,7 @@ async def test_get_bond_not_found(
     assert response.json()["detail"] == "BondHolder not found"
 
 
-async def test_get_bond_invalid_token(
+def test_get_bond_invalid_token(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
@@ -102,7 +102,7 @@ async def test_get_bond_invalid_token(
     mock_use_case = AsyncMock()
     mock_use_case.execute.side_effect = InvalidTokenError("Invalid credentials")
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -114,7 +114,7 @@ async def test_get_bond_invalid_token(
     assert response.json()["detail"] == "Invalid credentials"
 
 
-async def test_get_bond_unauthorized() -> None:
+def test_get_bond_unauthorized() -> None:
     purchase_id = uuid4()
 
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
@@ -127,15 +127,15 @@ async def test_get_bond_unauthorized() -> None:
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-async def test_get_bond_invalid_uuid_format(
+def test_get_bond_invalid_uuid_format(
     client: TestClient,
 ) -> None:
     invalid_id = "not-a-valid-uuid"
     response = client.get(f"/bonds/{invalid_id}")
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-async def test_get_bond_different_user_cannot_access(
+def test_get_bond_different_user_cannot_access(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
@@ -144,7 +144,7 @@ async def test_get_bond_different_user_cannot_access(
     mock_use_case = AsyncMock()
     mock_use_case.execute.side_effect = NotFoundError("BondHolder not found")
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -155,7 +155,7 @@ async def test_get_bond_different_user_cannot_access(
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-async def test_get_bond_response_structure(
+def test_get_bond_response_structure(
     client: TestClient,
     valid_purchase_id: UUID,
     mock_bond_dto: AsyncMock,
@@ -163,7 +163,7 @@ async def test_get_bond_response_structure(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_bond_dto
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -192,7 +192,7 @@ async def test_get_bond_response_structure(
         assert field in data
 
 
-async def test_get_bond_decimal_precision(
+def test_get_bond_decimal_precision(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
@@ -212,7 +212,7 @@ async def test_get_bond_decimal_precision(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_dto
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -228,7 +228,7 @@ async def test_get_bond_decimal_precision(
     assert data["reference_rate_margin"] == 2.15
 
 
-async def test_get_bond_date_serialization(
+def test_get_bond_date_serialization(
     client: TestClient,
     valid_purchase_id: UUID,
     mock_bond_dto: AsyncMock,
@@ -239,7 +239,7 @@ async def test_get_bond_date_serialization(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_bond_dto
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -254,7 +254,7 @@ async def test_get_bond_date_serialization(
     assert data["last_update"].replace("Z", "+00:00") == last_update.isoformat()
 
 
-async def test_get_bond_user_id_from_authentication(
+def test_get_bond_user_id_from_authentication(
     client: TestClient,
     valid_purchase_id: UUID,
     mock_bond_dto: AsyncMock,
@@ -265,7 +265,7 @@ async def test_get_bond_user_id_from_authentication(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_bond_dto
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 
@@ -279,7 +279,7 @@ async def test_get_bond_user_id_from_authentication(
     )
 
 
-async def test_get_bond_with_different_series(
+def test_get_bond_with_different_series(
     client: TestClient,
     valid_purchase_id: UUID,
 ) -> None:
@@ -303,7 +303,7 @@ async def test_get_bond_with_different_series(
         mock_use_case = AsyncMock()
         mock_use_case.execute.return_value = mock_dto
 
-        from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+        from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
             bh_get_use_case,
         )
 
@@ -315,7 +315,7 @@ async def test_get_bond_with_different_series(
         assert response.json()["series"] == series
 
 
-async def test_get_bond_multiple_calls_different_ids(
+def test_get_bond_multiple_calls_different_ids(
     client: TestClient,
     mock_bond_dto: AsyncMock,
 ) -> None:
@@ -325,7 +325,7 @@ async def test_get_bond_multiple_calls_different_ids(
     mock_use_case = AsyncMock()
     mock_use_case.execute.return_value = mock_bond_dto
 
-    from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
         bh_get_use_case,
     )
 

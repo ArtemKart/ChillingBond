@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
 
-from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_auth_use_case,
 )
 from src.application.use_cases.user.user_auth import UserAuthUseCase

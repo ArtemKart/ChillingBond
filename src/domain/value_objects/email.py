@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import re
+from typing import override
 
 
 @dataclass(frozen=True)
@@ -23,5 +24,6 @@ class Email:
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         return bool(re.match(pattern, email))
 
+    @override
     def __str__(self) -> str:
         return self.value

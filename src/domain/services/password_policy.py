@@ -2,7 +2,7 @@ from src.domain.exceptions import ValidationError
 
 
 class PasswordPolicy:
-    MIN_LENGTH = 8
+    MIN_LENGTH: int = 8
 
     @staticmethod
     def validate(password: str) -> None:

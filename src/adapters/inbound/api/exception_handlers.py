@@ -24,7 +24,7 @@ async def domain_exception_handler(request: Request, exc: DomainError) -> JSONRe
     status_code_map = {
         NotFoundError: status.HTTP_404_NOT_FOUND,
         ConflictError: status.HTTP_409_CONFLICT,
-        ValidationError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+        ValidationError: status.HTTP_422_UNPROCESSABLE_CONTENT,
         InvalidTokenError: status.HTTP_401_UNAUTHORIZED,
         AuthenticationError: status.HTTP_401_UNAUTHORIZED,
         AuthorizationError: status.HTTP_403_FORBIDDEN,
@@ -85,6 +85,6 @@ async def request_validation_exception_handler(
         },
     )
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={"detail": "Validation error", "errors": errors},
     )

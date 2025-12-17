@@ -2,7 +2,6 @@ import pytest
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, Mock
 
-import pytest_asyncio
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
@@ -11,7 +10,7 @@ from src.adapters.outbound.repositories.user import SQLAlchemyUserRepository
 from src.domain.entities.user import User as UserEntity
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def user_model(user_entity_mock: Mock) -> UserModel:
     return UserModel(
         id=user_entity_mock.id,
@@ -21,7 +20,7 @@ def user_model(user_entity_mock: Mock) -> UserModel:
     )
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def mock_session() -> AsyncMock:
     session = AsyncMock()
     session.get = AsyncMock()
@@ -34,7 +33,7 @@ def mock_session() -> AsyncMock:
     return session
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def repository(mock_session: AsyncMock) -> SQLAlchemyUserRepository:
     return SQLAlchemyUserRepository(mock_session)
 
@@ -195,7 +194,7 @@ async def test_delete_sqlalchemy_error(
     mock_session.rollback.assert_called_once()
 
 
-async def test_to_entity_conversion(
+def test_to_entity_conversion(
     repository: SQLAlchemyUserRepository, user_model: UserModel
 ) -> None:
     result = repository._to_entity(user_model)
@@ -207,7 +206,7 @@ async def test_to_entity_conversion(
     assert result.name == user_model.name
 
 
-async def test_to_model_conversion(
+def test_to_model_conversion(
     repository: SQLAlchemyUserRepository, user_entity_mock: Mock
 ) -> None:
     result = repository._to_model(user_entity_mock)
@@ -219,7 +218,7 @@ async def test_to_model_conversion(
     assert result.name == user_entity_mock.name
 
 
-async def test_update_model(
+def test_update_model(
     repository: SQLAlchemyUserRepository,
     user_model: UserModel,
     mock_hasher: Mock,

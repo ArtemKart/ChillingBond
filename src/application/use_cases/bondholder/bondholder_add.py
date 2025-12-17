@@ -15,9 +15,9 @@ class ChangeBondHolderQuantityUseCase(BondHolderBaseUseCase):
         user_repo: UserRepository,
         bondholder_repo: BondHolderRepository,
     ) -> None:
-        self.bond_repo = bond_repo
-        self.user_repo = user_repo
-        self.bondholder_repo = bondholder_repo
+        self.bond_repo: BondRepository = bond_repo
+        self.user_repo: UserRepository = user_repo
+        self.bondholder_repo: BondHolderRepository = bondholder_repo
 
     async def execute(self, dto: BondHolderChangeQuantityDTO) -> BondHolderDTO:
         bondholder = await self.bondholder_repo.get_one(bondholder_id=dto.id)

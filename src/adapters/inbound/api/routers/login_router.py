@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
-from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_login_use_case,
 )
 from src.adapters.inbound.api.schemas.auth import TokenResponse, UUIDResponse

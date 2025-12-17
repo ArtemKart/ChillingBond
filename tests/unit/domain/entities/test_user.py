@@ -1,17 +1,17 @@
 from unittest.mock import Mock
 
-import pytest_asyncio
+import pytest
 
 from src.domain.entities.user import User
 from src.domain.ports.services.password_hasher import PasswordHasher
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def hasher() -> PasswordHasher:
     return Mock(PasswordHasher)
 
 
-async def test_create_user_happy_path(hasher: Mock) -> None:
+def test_create_user_happy_path(hasher: Mock) -> None:
     hashed_password = "test_hashed_password"
     hasher.hash.return_value = hashed_password
     user = User.create(
@@ -26,7 +26,7 @@ async def test_create_user_happy_path(hasher: Mock) -> None:
     assert user.name == "name"
 
 
-async def test_verify_password_return_true(hasher: Mock) -> None:
+def test_verify_password_return_true(hasher: Mock) -> None:
     hasher.verify.return_value = True
     plain_password = "plain_password1"
     user = User.create(
@@ -38,7 +38,7 @@ async def test_verify_password_return_true(hasher: Mock) -> None:
     assert user.verify_password(hasher=hasher, plain_password=plain_password)
 
 
-async def test_verify_password_return_false(hasher: Mock) -> None:
+def test_verify_password_return_false(hasher: Mock) -> None:
     hasher.verify.return_value = False
     plain_password = "plain_password1"
     user = User.create(

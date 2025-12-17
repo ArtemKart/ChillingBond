@@ -1,21 +1,21 @@
+from datetime import date
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
-from datetime import date
 
 import pytest
-import pytest_asyncio
 
+from src.application.dto.bond import BondCreateDTO
+from src.application.dto.bondholder import BondHolderCreateDTO, BondHolderDTO
 from src.application.use_cases.bondholder.bondholder_create import (
     BondHolderCreateUseCase,
 )
-from src.application.dto.bond import BondCreateDTO
-from src.application.dto.bondholder import BondHolderCreateDTO, BondHolderDTO
 from src.domain.entities.bond import Bond as BondEntity
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.domain.exceptions import ValidationError
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case(
     mock_bond_repo: AsyncMock, mock_bondholder_repo: AsyncMock
 ) -> BondHolderCreateUseCase:
@@ -24,7 +24,7 @@ def use_case(
     )
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def bondholder_create_dto() -> BondHolderCreateDTO:
     return BondHolderCreateDTO(
         user_id=uuid4(),
@@ -33,19 +33,19 @@ def bondholder_create_dto() -> BondHolderCreateDTO:
     )
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def bond_create_dto() -> BondCreateDTO:
     return BondCreateDTO(
         series="ROR1602",
-        nominal_value=100.0,
+        nominal_value=Decimal("100.0"),
         maturity_period=12,
-        initial_interest_rate=4.75,
+        initial_interest_rate=Decimal("4.75"),
         first_interest_period=1,
-        reference_rate_margin=0.0,
+        reference_rate_margin=Decimal("0.0"),
     )
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def sample_bondholder_dto() -> BondHolderDTO:
     return BondHolderDTO(
         id=uuid4(),
@@ -54,11 +54,11 @@ def sample_bondholder_dto() -> BondHolderDTO:
         quantity=50,
         purchase_date=date.today(),
         series="ROR1602",
-        nominal_value=100.0,
+        nominal_value=Decimal("100.0"),
         maturity_period=12,
-        initial_interest_rate=4.75,
+        initial_interest_rate=Decimal("4.75"),
         first_interest_period=1,
-        reference_rate_margin=0.0,
+        reference_rate_margin=Decimal("0.0"),
     )
 
 
@@ -157,6 +157,7 @@ async def test_with_large_quantity(
     mock_bondholder_repo: AsyncMock,
     bond_create_dto: BondCreateDTO,
     bond_entity_mock: Mock,
+    bondholder_entity_mock: Mock,
 ) -> None:
     bondholder_dto = BondHolderCreateDTO(
         user_id=uuid4(),
@@ -164,7 +165,7 @@ async def test_with_large_quantity(
         purchase_date=date.today(),
     )
     mock_bond_repo.get_by_series.return_value = bond_entity_mock
-    mock_bondholder_repo.write.return_value = Mock(spec=BondHolderEntity)
+    mock_bondholder_repo.write.return_value = bondholder_entity_mock
 
     await use_case.execute(bondholder_dto, bond_create_dto)
 
@@ -181,8 +182,7 @@ async def test_preserves_all_bond_dto_fields(
 ) -> None:
     mock_bond_repo.get_by_series.return_value = None
 
-    created_bond_from_write = BondEntity(
-        id=uuid4(),
+    created_bond_from_write = BondEntity.create(
         series=bond_create_dto.series,
         nominal_value=bond_create_dto.nominal_value,
         maturity_period=bond_create_dto.maturity_period,
@@ -192,8 +192,7 @@ async def test_preserves_all_bond_dto_fields(
     )
     mock_bond_repo.write.return_value = created_bond_from_write
 
-    created_bondholder_from_write = BondHolderEntity(
-        id=uuid4(),
+    created_bondholder_from_write = BondHolderEntity.create(
         bond_id=uuid4(),
         user_id=bondholder_create_dto.user_id,
         quantity=bondholder_create_dto.quantity,
@@ -208,13 +207,13 @@ async def test_preserves_all_bond_dto_fields(
         quantity=50,
         purchase_date=date.today(),
         series="ROR1206",
-        nominal_value=100.0,
+        nominal_value=Decimal("100.0"),
         maturity_period=12,
-        initial_interest_rate=4.75,
+        initial_interest_rate=Decimal("4.75"),
         first_interest_period=1,
-        reference_rate_margin=0.0,
+        reference_rate_margin=Decimal("0.0"),
     )
-    use_case.to_dto = AsyncMock(return_value=mock_dto)
+    use_case.to_dto = Mock(return_value=mock_dto)
 
     await use_case.execute(bondholder_create_dto, bond_create_dto)
 
@@ -234,9 +233,10 @@ async def test_preserves_all_bondholder_dto_fields(
     bondholder_create_dto: BondHolderCreateDTO,
     bond_create_dto: BondCreateDTO,
     bond_entity_mock: Mock,
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_bond_repo.get_by_series.return_value = bond_entity_mock
-    mock_bondholder_repo.write.return_value = Mock(spec=BondHolderEntity)
+    mock_bondholder_repo.write.return_value = bondholder_entity_mock
 
     await use_case.execute(bondholder_create_dto, bond_create_dto)
 
@@ -254,17 +254,15 @@ async def test_calls_to_dto_with_correct_params(
     bondholder_create_dto: BondHolderCreateDTO,
     bond_create_dto: BondCreateDTO,
     bond_entity_mock: Mock,
+    bondholder_entity_mock: Mock,
 ) -> None:
     mock_bond_repo.get_by_series.return_value = bond_entity_mock
-    created_bondholder = Mock(spec=BondHolderEntity)
-    mock_bondholder_repo.write.return_value = created_bondholder
-    use_case.to_dto = AsyncMock()
+    mock_bondholder_repo.write.return_value = bondholder_entity_mock
+    use_case.to_dto = Mock()
 
     await use_case.execute(bondholder_create_dto, bond_create_dto)
 
     call_args = use_case.to_dto.call_args
     assert call_args[1]["bond"] == bond_entity_mock
 
-    bondholder_arg = call_args[1]["bondholder"]
-    assert bondholder_arg.bond_id == bond_entity_mock.id
-    assert bondholder_arg.user_id == bondholder_create_dto.user_id
+    assert call_args[1]["bondholder"] == bondholder_entity_mock

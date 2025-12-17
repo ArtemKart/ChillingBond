@@ -38,7 +38,7 @@ def test_get_user_invalid_uuid(client: TestClient, mock_user_repo: AsyncMock) ->
 
     response = client.get("/users/invalid-uuid")
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
     mock_user_repo.get_one.assert_not_called()
 
 

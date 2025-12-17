@@ -6,6 +6,7 @@ class BondBase(BaseModel):
     nominal_value: float = Field(..., gt=0, description="Nominal value")
     maturity_period: int = Field(..., gt=0, description="Maturity period in months")
     initial_interest_rate: float = Field(..., gt=0, description="Initial interest rate")
+
     first_interest_period: int = Field(..., gt=0, description="First interest period")
     reference_rate_margin: float = Field(..., description="Reference rate margin")
 

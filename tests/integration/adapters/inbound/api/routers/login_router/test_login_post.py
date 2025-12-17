@@ -24,7 +24,7 @@ def mock_user_login_use_case(
 
 @pytest.fixture(autouse=True)
 def setup_login_use_case_override(mock_user_login_use_case: UserLoginUseCase) -> None:
-    from src.adapters.inbound.api.dependencies.user_use_cases_deps import (
+    from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
         user_login_use_case,
     )
 
@@ -104,19 +104,19 @@ def test_login_missing_username(client: TestClient) -> None:
 
     response = client.post("/login/token", data=form_data)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_missing_password(client: TestClient) -> None:
     form_data = {"username": "test@example.com"}
     response = client.post("/login/token", data=form_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_empty_credentials(client: TestClient) -> None:
     response = client.post("/login/token", data={})
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_response_structure(

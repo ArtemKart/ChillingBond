@@ -16,26 +16,26 @@ class BondHolderDeleteUseCase(BondHolderBaseUseCase):
         user_repo: UserRepository,
         bh_del_service: BondHolderDeletionService,
     ) -> None:
-        self._bondholder_repo = bondholder_repo
-        self._event_publisher = event_publisher
-        self._user_repo = user_repo
-        self._bh_del_service = bh_del_service
+        self.bondholder_repo: BondHolderRepository = bondholder_repo
+        self.event_publisher: EventPublisher = event_publisher
+        self.user_repo: UserRepository = user_repo
+        self.bh_del_service: BondHolderDeletionService = bh_del_service
 
     async def execute(self, bondholder_id: UUID, user_id: UUID) -> None:
-        bondholder = await self._bondholder_repo.get_one(bondholder_id=bondholder_id)
+        bondholder = await self.bondholder_repo.get_one(bondholder_id=bondholder_id)
         if not bondholder:
             raise NotFoundError("Bondholder not found")
 
         if bondholder.user_id != user_id:
             raise AuthorizationError("Permission denied")
-        user = await self._user_repo.get_one(user_id=user_id)
+        user = await self.user_repo.get_one(user_id=user_id)
         if not user:
             raise AuthorizationError("User not found")
 
         bondholder.mark_as_deleted(user_email=user.email)
         events = bondholder.collect_events()
 
-        await self._bh_del_service.delete_with_cleanup(
+        await self.bh_del_service.delete_with_cleanup(
             bondholder_id=bondholder.id, bond_id=bondholder.bond_id
         )
-        await self._event_publisher.publish_all(events)
+        await self.event_publisher.publish_all(events)

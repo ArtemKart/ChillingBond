@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
 
 from src.application.use_cases.bondholder.bondholder_delete import (
     BondHolderDeleteUseCase,
@@ -12,7 +11,7 @@ from src.domain.entities.user import User
 from src.domain.exceptions import AuthorizationError, NotFoundError
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 def use_case(
     mock_bondholder_repo: AsyncMock,
     mock_event_publisher: AsyncMock,
@@ -113,7 +112,6 @@ async def test_delete_bondholder_user_not_found(
     mock_bondholder_repo.get_one.return_value = bondholder_mock
     mock_user_repo.get_one.return_value = None
 
-    # Act & Assert
     with pytest.raises(AuthorizationError, match="User not found"):
         await use_case.execute(bondholder_id=bondholder_id, user_id=user_id)
 

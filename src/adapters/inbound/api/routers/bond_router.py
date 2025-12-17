@@ -1,16 +1,17 @@
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from starlette import status
 
-from src.adapters.inbound.api.dependencies.bond_use_cases_deps import (
-    bond_add_to_bh_use_case,
-    create_bondholder_use_case,
-    bond_update_use_case,
-    bh_get_use_case,
-    bh_get_all_use_case,
+from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
     bh_delete_use_case,
+    bh_get_all_use_case,
+    bh_get_use_case,
+    bond_add_to_bh_use_case,
+    bond_update_use_case,
+    create_bondholder_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 from src.adapters.inbound.api.schemas.bond import (
@@ -65,11 +66,11 @@ async def create_bond_purchase(
     )
     bond_dto = BondCreateDTO(
         series=bondholder_data.series,
-        nominal_value=bondholder_data.nominal_value,
+        nominal_value=Decimal(bondholder_data.nominal_value),
         maturity_period=bondholder_data.maturity_period,
-        initial_interest_rate=bondholder_data.initial_interest_rate,
+        initial_interest_rate=Decimal(bondholder_data.initial_interest_rate),
         first_interest_period=bondholder_data.first_interest_period,
-        reference_rate_margin=bondholder_data.reference_rate_margin,
+        reference_rate_margin=Decimal(bondholder_data.reference_rate_margin),
     )
     response_dto = await use_case.execute(bondholder_dto, bond_dto)
     return BondHolderResponse(
@@ -79,11 +80,11 @@ async def create_bond_purchase(
         last_update=response_dto.last_update,
         bond_id=response_dto.bond_id,
         series=response_dto.series,
-        nominal_value=response_dto.nominal_value,
+        nominal_value=float(response_dto.nominal_value),
         maturity_period=response_dto.maturity_period,
-        initial_interest_rate=response_dto.initial_interest_rate,
+        initial_interest_rate=float(response_dto.initial_interest_rate),
         first_interest_period=response_dto.first_interest_period,
-        reference_rate_margin=response_dto.reference_rate_margin,
+        reference_rate_margin=float(response_dto.reference_rate_margin),
     )
 
 
@@ -119,11 +120,11 @@ async def get_bond(
         last_update=dto.last_update,
         bond_id=dto.bond_id,
         series=dto.series,
-        nominal_value=dto.nominal_value,
+        nominal_value=float(dto.nominal_value),
         maturity_period=dto.maturity_period,
-        initial_interest_rate=dto.initial_interest_rate,
+        initial_interest_rate=float(dto.initial_interest_rate),
         first_interest_period=dto.first_interest_period,
-        reference_rate_margin=dto.reference_rate_margin,
+        reference_rate_margin=float(dto.reference_rate_margin),
     )
 
 
@@ -163,12 +164,22 @@ async def update_bond(
     if not bond_data.model_dump(exclude_none=True):
         return EmptyBondUpdateResponse()
     dto = BondUpdateDTO(
-        nominal_value=bond_data.nominal_value,
+        nominal_value=(
+            Decimal(bond_data.nominal_value) if bond_data.nominal_value else None
+        ),
         series=bond_data.series,
         maturity_period=bond_data.maturity_period,
-        initial_interest_rate=bond_data.initial_interest_rate,
+        initial_interest_rate=(
+            Decimal(bond_data.initial_interest_rate)
+            if bond_data.initial_interest_rate
+            else None
+        ),
         first_interest_period=bond_data.first_interest_period,
-        reference_rate_margin=bond_data.reference_rate_margin,
+        reference_rate_margin=(
+            Decimal(bond_data.reference_rate_margin)
+            if bond_data.reference_rate_margin
+            else None
+        ),
     )
     return await use_case.execute(dto=dto, bond_id=purchase_id)  # type: ignore [return-value]
 

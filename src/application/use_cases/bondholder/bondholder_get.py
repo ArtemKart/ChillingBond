@@ -11,8 +11,8 @@ class BondHolderGetUseCase(BondHolderBaseUseCase):
     def __init__(
         self, bondholder_repo: BondHolderRepository, bond_repo: BondRepository
     ) -> None:
-        self.bondholder_repo = bondholder_repo
-        self.bond_repo = bond_repo
+        self.bondholder_repo: BondHolderRepository = bondholder_repo
+        self.bond_repo: BondRepository = bond_repo
 
     async def execute(self, bondholder_id: UUID, user_id: UUID) -> BondHolderDTO:
         bondholder = await self.bondholder_repo.get_one(bondholder_id)
@@ -30,8 +30,8 @@ class BondHolderGetAllUseCase(BondHolderBaseUseCase):
     def __init__(
         self, bondholder_repo: BondHolderRepository, bond_repo: BondRepository
     ) -> None:
-        self.bondholder_repo = bondholder_repo
-        self.bond_repo = bond_repo
+        self.bondholder_repo: BondHolderRepository = bondholder_repo
+        self.bond_repo: BondRepository = bond_repo
 
     async def execute(self, user_id: UUID) -> list[BondHolderDTO]:
         bh_list = await self.bondholder_repo.get_all(user_id=user_id)
