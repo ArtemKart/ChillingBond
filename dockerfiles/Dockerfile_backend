@@ -1,15 +1,27 @@
 FROM python:3.13-slim
-ARG PROJECT_DIR=/home/app
 
+ARG PROJECT_DIR=/home/app
 WORKDIR $PROJECT_DIR
 
-COPY ../pyproject.toml README.md alembic.ini uv.lock logging.yml $PROJECT_DIR/
-COPY ../src $PROJECT_DIR/src
-
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-RUN uv sync --frozen
 
-CMD ["uv", "run", "gunicorn", "src.adapters.inbound.api.main:app", \
+COPY pyproject.toml alembic.ini logging.yml uv.lock ./
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    uv sync --frozen && rm -rf /root/.cache/pip
+
+ENV PATH="/home/app/.venv/bin:$PATH"
+
+COPY src ./src
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uv", "run", "gunicorn", \
+     "src.adapters.inbound.api.main:app", \
      "--workers", "4", \
      "--worker-class", "uvicorn.workers.UvicornWorker", \
      "--bind", "0.0.0.0:8000", \

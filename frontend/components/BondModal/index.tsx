@@ -194,7 +194,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
                     <BondTimeParams
                         maturityPeriod={editedBond.maturity_period}
                         purchaseDate={bond.purchase_date}
-                        lastUpdate={bond.last_update}
+                        lastUpdate={bond.last_update || undefined}
                         isEditing={isEditing}
                         onMaturityPeriodChange={(value) =>
                             handleChange("maturity_period", value)
