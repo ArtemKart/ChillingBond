@@ -17,7 +17,7 @@ from src.application.use_cases.calculations.calculations_calculate_income import
 calculation_router = APIRouter(prefix="/calculations", tags=["Calculations"])
 
 
-@calculation_router.get("/month-income", dependencies=[Depends(current_user)])
+@calculation_router.post("/month-income", dependencies=[Depends(current_user)])
 async def calculate_income(
     use_case: Annotated[CalculateIncomeUseCase, Depends(get_calculate_income_use_case)],
     bondholder_id: UUID = Query(...),

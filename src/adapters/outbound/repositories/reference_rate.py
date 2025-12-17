@@ -27,12 +27,12 @@ class SQLAlchemyReferenceRateRepository(ReferenceRateRepository):
             and end_date (inclusive). If end_date is NULL, the rate is considered
             currently active with no expiration.
         """
-        stmt = select(ReferenceRateEntity).where(
+        stmt = select(ReferenceRateModel).where(
             and_(
-                ReferenceRateEntity.start_date <= target_date,
+                ReferenceRateModel.start_date <= target_date,
                 or_(
-                    ReferenceRateEntity.end_date >= target_date,
-                    ReferenceRateEntity.end_date.is_(None),
+                    ReferenceRateModel.end_date >= target_date,
+                    ReferenceRateModel.end_date.is_(None),
                 ),
             )
         )

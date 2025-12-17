@@ -9,6 +9,7 @@ from src.application.use_cases.calculations.calculations_base import (
 from src.domain.exceptions import NotFoundError
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository
+from src.domain.ports.repositories.reference_rate import ReferenceRateRepository
 from src.domain.services.bondholder_income_calculator import BondHolderIncomeCalculator
 
 
@@ -18,7 +19,7 @@ class CalculateIncomeUseCase(CalculationsBaseUseCase):
         bh_income_calculator: BondHolderIncomeCalculator,
         bondholder_repo: BondHolderRepository,
         bond_repo: BondRepository,
-        reference_rate_repo,
+        reference_rate_repo: ReferenceRateRepository,
     ) -> None:
         self.bh_income_calculator = bh_income_calculator
         self.bondholder_repo = bondholder_repo
@@ -35,7 +36,8 @@ class CalculateIncomeUseCase(CalculationsBaseUseCase):
         if not bond:
             raise NotFoundError("Bond not found.")
         reference_rate = await self.ref_rate_repo.get_by_date(target_date=target_date)
-
+        if not reference_rate:
+            raise NotFoundError("Reference rate not found for the given date.")
         income = self.bh_income_calculator.calculate_monthly_bh_income(
             bondholder=bondholder,
             bond=bond,

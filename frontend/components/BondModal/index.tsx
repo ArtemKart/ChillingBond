@@ -202,6 +202,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
                     />
 
                     <BondCalculations
+                        bondHolderId={bond.id}
                         nominalValue={editedBond.nominal_value}
                         quantity={editedBond.quantity}
                         initialInterestRate={editedBond.initial_interest_rate}
