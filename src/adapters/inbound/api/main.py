@@ -6,6 +6,7 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from src.adapters.di_container import setup_event_publisher
 from src.adapters.inbound.api.routers.calculation_router import calculation_router
@@ -37,6 +38,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app: Final = FastAPI(lifespan=lifespan)
+
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    should_ignore_untemplated=True,
+    should_respect_env_var=False,
+    should_instrument_requests_inprogress=True,
+    excluded_handlers=["/metrics"],
+    inprogress_name="inprogress",
+    inprogress_labels=True,
+)
+instrumentator.instrument(app).expose(app, endpoint="/metrics")
+
 
 app.add_middleware(
     CORSMiddleware,
