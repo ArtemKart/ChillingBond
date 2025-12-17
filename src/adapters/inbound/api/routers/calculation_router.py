@@ -9,7 +9,7 @@ from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 from src.adapters.inbound.api.dependencies.use_cases.calculations_deps import (
     get_calculate_income_use_case,
 )
-from src.application.use_cases.calculations.calculations_calculate_income import (
+from src.application.use_cases.calculations.calculate_income import (
     CalculateIncomeUseCase,
 )
 

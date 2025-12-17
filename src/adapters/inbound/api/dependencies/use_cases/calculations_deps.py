@@ -3,7 +3,7 @@ from src.adapters.inbound.api.dependencies.repo_deps import (
     ReferenceRateRepoDep,
     BondHolderRepoDep,
 )
-from src.application.use_cases.calculations.calculations_calculate_income import (
+from src.application.use_cases.calculations.calculate_income import (
     CalculateIncomeUseCase,
 )
 from src.domain.services.bondholder_income_calculator import BondHolderIncomeCalculator

@@ -15,6 +15,7 @@ from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.ports.repositories.user import UserRepository
 from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
+from src.domain.services.bondholder_income_calculator import BondHolderIncomeCalculator
 
 
 @pytest.fixture
@@ -86,3 +87,13 @@ def mock_event_publisher() -> AsyncMock:
 @pytest.fixture
 def bh_del_service_mock():
     return AsyncMock(spec=BondHolderDeletionService)
+
+
+@pytest.fixture
+def mock_reference_rate_repo() -> AsyncMock:
+    return AsyncMock()
+
+
+@pytest.fixture
+def mock_bh_income_calculator() -> Mock:
+    return Mock(spec=BondHolderIncomeCalculator)
