@@ -25,6 +25,7 @@ dev = [
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
     "pytest-cov>=7.0.0",
+    "python-semantic-release>=9.0.0",
 ]
 
 [tool.pytest.ini_options]
@@ -36,3 +37,63 @@ venv = ".venv"
 
 [tool.ruff]
 line-length = 89
+
+[tool.semantic_release]
+version_variable = "pyproject.toml:version"
+version_pattern = "version = \"{version}\""
+upload_to_repository = false
+build_command = false
+changelog_file = "CHANGELOG.md"
+commit_message = "chore: bump version to {version}"
+tag_format = "v{version}"
+allow_zero_version = true
+prerelease_token = "rc"
+parse_commit_message = true
+hvcs = "github"
+logging_use_named_filters = true
+
+# Only bump version for these commit types
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "feat"
+section = "Features"
+hidden = false
+
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "fix"
+section = "Fixes"
+hidden = false
+
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "perf"
+section = "Performance"
+hidden = true
+
+# These types don't trigger version bump
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "docs"
+section = "Documentation"
+hidden = true
+
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "style"
+section = "Code Style"
+hidden = true
+
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "refactor"
+section = "Refactoring"
+hidden = true
+
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "test"
+section = "Tests"
+hidden = true
+
+[[tool.semantic_release.parser_angular.parser_opts.sections]]
+type = "chore"
+section = "Chores"
+hidden = true
+
+[[tool.semantic_release.publish]]
+# Disable publishing to PyPI
+skip = true
