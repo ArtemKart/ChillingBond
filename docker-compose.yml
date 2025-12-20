@@ -1,58 +1,89 @@
 ---
+x-api-url: &api-url
+    NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost/api}
+
 services:
-  database:
-    image: postgres:17.0
-    env_file: .env
-    container_name: database
-    ports:
-      - ${POSTGRES_PORT}:5432
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./src/adapters/outbound/database/init.sh:/docker-entrypoint-initdb.d/init.sh
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_APP_USER} -d ${POSTGRES_DB}"]
-      interval: 15s
-      retries: 5
-      start_period: 120s
-    networks:
-      - app_net
+    database:
+        image: postgres:17.0
+        env_file: .env
+        container_name: database
+        ports:
+            - ${POSTGRES_PORT}:5432
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+            - ./src/adapters/outbound/database/init.sh:/docker-entrypoint-initdb.d/init.sh
+        healthcheck:
+            test:
+                ["CMD-SHELL", "pg_isready -U ${DB_APP_USER} -d ${POSTGRES_DB}"]
+            interval: 15s
+            retries: 5
+            start_period: 120s
+        networks:
+            - app_net
 
-  migrations:
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile_migrations
-    container_name: migrations
-    env_file: .env
-    environment:
-      POSTGRES_HOST: database
-    command: uv run alembic upgrade head
-    depends_on:
-      database:
-        condition: service_healthy
-    networks:
-      - app_net
+    migrations:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile_migrations
+        container_name: migrations
+        env_file: .env
+        environment:
+            POSTGRES_HOST: database
+        command: uv run alembic upgrade head
+        depends_on:
+            database:
+                condition: service_healthy
+        networks:
+            - app_net
 
-  backend:
-    env_file: .env
-    ports:
-      - "8000:8000"
-    build:
-      context: .
-      dockerfile: dockerfiles/Dockerfile_backend
-    container_name: backend
-    environment:
-      POSTGRES_HOST: database
-    depends_on:
-      database:
-        condition: service_healthy
-    networks:
-      - app_net
-    restart: always
+    backend:
+        env_file: .env
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile_backend
+        container_name: backend
+        environment:
+            POSTGRES_HOST: database
+        depends_on:
+            database:
+                condition: service_healthy
+        networks:
+            - app_net
+        restart: always
 
+    frontend:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile_frontend
+            args:
+                NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost}/api
+        container_name: frontend
+        env_file: .env
+        depends_on:
+            - backend
+        networks:
+            - app_net
+        restart: always
+
+    nginx:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile_nginx
+        container_name: nginx
+        ports:
+            - "80:80"
+        depends_on:
+            - frontend
+            - backend
+        networks:
+            - app_net
+        restart: always
+        volumes:
+            - ./logs/nginx:/var/log/nginx
 
 volumes:
-  postgres-data:
+    postgres-data:
 
 networks:
-  app_net:
-    driver: bridge
+    app_net:
+        driver: bridge

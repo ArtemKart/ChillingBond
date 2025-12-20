@@ -65,7 +65,7 @@ def test_update_bond_success_full_update(
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
     response = client.put(
-        f"/bonds/{valid_bond_id}/specification", json=valid_update_request
+        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -113,7 +113,7 @@ def test_update_bond_success_partial_update(
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
     response = client.put(
-        f"/bonds/{valid_bond_id}/specification", json=partial_update_request
+        f"api/bonds/{valid_bond_id}/specification", json=partial_update_request
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -145,7 +145,7 @@ def test_update_bond_not_found(
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
     response = client.put(
-        f"/bonds/{valid_bond_id}/specification", json=valid_update_request
+        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -158,7 +158,7 @@ def test_update_bond_invalid_uuid(
     invalid_id = "not-a-valid-uuid"
 
     response = client.put(
-        f"/bonds/{invalid_id}/specification", json=valid_update_request
+        f"api/bonds/{invalid_id}/specification", json=valid_update_request
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -176,7 +176,7 @@ def test_update_bond_unauthorized() -> None:
     app.dependency_overrides.pop(current_user, None)
     test_client = TestClient(app)
 
-    response = test_client.put(f"/bonds/{bond_id}/specification", json=update_request)
+    response = test_client.put(f"api/bonds/{bond_id}/specification", json=update_request)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -187,7 +187,7 @@ def test_update_bond_missing_required_fields(
 ) -> None:
     empty_request: dict = {}
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=empty_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=empty_request)
 
     assert response.status_code == status.HTTP_200_OK
 
@@ -201,7 +201,7 @@ def test_update_bond_invalid_nominal_value(
         "series": "ROR5555",
     }
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -215,7 +215,7 @@ def test_update_bond_invalid_maturity_period(
         "maturity_period": -12,
     }
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -229,7 +229,7 @@ def test_update_bond_invalid_interest_rate(
         "initial_interest_rate": -5.5,
     }
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -250,7 +250,7 @@ def test_update_bond_response_structure(
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
     response = client.put(
-        f"/bonds/{valid_bond_id}/specification", json=valid_update_request
+        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
     )
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -297,7 +297,7 @@ def test_update_bond_decimal_precision(
 
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=update_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -345,7 +345,7 @@ def test_update_bond_different_series(
         app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
         response = client.put(
-            f"/bonds/{valid_bond_id}/specification", json=update_request
+            f"api/bonds/{valid_bond_id}/specification", json=update_request
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -357,7 +357,7 @@ def test_update_bond_invalid_json(
     valid_bond_id: UUID,
 ) -> None:
     response = client.put(
-        f"/bonds/{valid_bond_id}/specification",
+        f"api/bonds/{valid_bond_id}/specification",
         content="invalid json",
         headers={"Content-Type": "application/json"},
     )
@@ -375,7 +375,7 @@ def test_update_bond_wrong_data_types(
         "initial_interest_rate": "five percent",
     }
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=invalid_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -407,7 +407,7 @@ def test_update_bond_only_nominal_value(
 
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=update_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["nominal_value"] == 3000.00
@@ -440,7 +440,7 @@ def test_update_bond_only_series(
 
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=update_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["series"] == "ROR9999"
@@ -477,7 +477,7 @@ def test_update_bond_multiple_updates_same_bond(
         app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
         response = client.put(
-            f"/bonds/{valid_bond_id}/specification", json=update_request
+            f"api/bonds/{valid_bond_id}/specification", json=update_request
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -497,7 +497,7 @@ def test_update_bond_with_all_fields_as_none(
         "reference_rate_margin": None,
     }
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=update_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
 
     assert response.status_code == status.HTTP_200_OK
 
@@ -523,7 +523,7 @@ def test_update_bond_extra_fields_ignored(
 
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
-    response = client.put(f"/bonds/{valid_bond_id}/specification", json=update_request)
+    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -548,6 +548,6 @@ def test_update_bond_use_case_exception(
     app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
 
     response = client.put(
-        f"/bonds/{valid_bond_id}/specification", json=valid_update_request
+        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
     )
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

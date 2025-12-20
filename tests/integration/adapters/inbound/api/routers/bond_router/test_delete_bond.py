@@ -17,7 +17,7 @@ async def test_delete_bondholder_delete_bond(
     mock_bondholder_repo.count_by_bond_id.return_value = 0
     mock_bond_repo.delete.return_value = None
 
-    response = client.delete(f"/bonds/{bondholder_entity_mock.id}")
+    response = client.delete(f"api/bonds/{bondholder_entity_mock.id}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     mock_bondholder_repo.delete.assert_called_once_with(
@@ -42,7 +42,7 @@ async def test_delete_bondholder_keep_bond(
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.count_by_bond_id.return_value = 1
 
-    response = client.delete(f"/bonds/{bondholder_entity_mock.id}")
+    response = client.delete(f"api/bonds/{bondholder_entity_mock.id}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     mock_bondholder_repo.delete.assert_called_once_with(
@@ -60,7 +60,7 @@ async def test_delete_bondholder_bondholder_not_found_idempotent(
 ) -> None:
     mock_bondholder_repo.get_one.return_value = None
 
-    response = client.delete(f"/bonds/{uuid4()}")
+    response = client.delete(f"api/bonds/{uuid4()}")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
     mock_bondholder_repo.delete.assert_not_called()
@@ -74,7 +74,7 @@ async def test_delete_bondholder_authorization_error(
 ) -> None:
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
 
-    response = client.delete(f"/bonds/{uuid4()}")
+    response = client.delete(f"api/bonds/{uuid4()}")
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()["detail"] == "Permission denied"
