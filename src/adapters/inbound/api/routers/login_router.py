@@ -10,7 +10,7 @@ from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_login_use_case,
 )
 from src.adapters.inbound.api.schemas.auth import TokenResponse, UUIDResponse
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 from src.domain.exceptions import AuthenticationError
 
 login_router = APIRouter(prefix="/login", tags=["login"])

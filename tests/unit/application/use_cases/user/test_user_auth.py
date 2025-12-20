@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from src.application.dto.user import UserDTO
-from src.application.use_cases.user.user_auth import UserAuthUseCase
+from src.application.use_cases.user.auth import UserAuthUseCase
 from src.domain.exceptions import AuthenticationError, InvalidTokenError
 
 

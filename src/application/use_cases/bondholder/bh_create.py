@@ -1,6 +1,6 @@
 from src.application.dto.bond import BondCreateDTO
 from src.application.dto.bondholder import BondHolderCreateDTO, BondHolderDTO
-from src.application.use_cases.bondholder.bondholder_base import BondHolderBaseUseCase
+from src.application.use_cases.bondholder.base import BondHolderBaseUseCase
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository

@@ -8,7 +8,7 @@ from jwt import PyJWTError
 from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_auth_use_case,
 )
-from src.application.use_cases.user.user_auth import UserAuthUseCase
+from src.application.use_cases.user.auth import UserAuthUseCase
 from src.domain.exceptions import NotFoundError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

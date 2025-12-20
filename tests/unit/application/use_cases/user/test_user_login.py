@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, Mock
 
 from src.application.dto.token import TokenDTO
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 from src.domain.exceptions import AuthenticationError
 from src.domain.ports.services.password_hasher import PasswordHasher
 
@@ -180,9 +180,7 @@ async def test_pass_hasher_to_verify_password(
     sample_token: Mock,
 ) -> None:
     custom_hasher = AsyncMock(spec=PasswordHasher)
-    custom_use_case = UserLoginUseCase(
-        mock_user_repo, custom_hasher, mock_token_handler
-    )
+    custom_use_case = UserLoginUseCase(mock_user_repo, custom_hasher, mock_token_handler)
 
     mock_user_repo.get_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = True

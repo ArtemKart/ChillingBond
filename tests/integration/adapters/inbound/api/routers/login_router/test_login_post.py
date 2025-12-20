@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 from starlette.testclient import TestClient
 
 from src.adapters.inbound.api.main import app
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 
 
 @pytest.fixture

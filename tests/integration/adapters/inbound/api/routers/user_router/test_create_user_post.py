@@ -11,7 +11,7 @@ from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
 )
 from src.adapters.inbound.api.main import app
 from src.application.dto.user import UserDTO
-from src.application.use_cases.user.user_create import UserCreateUseCase
+from src.application.use_cases.user.create import UserCreateUseCase
 from src.adapters.outbound.database.models import User as UserModel
 
 

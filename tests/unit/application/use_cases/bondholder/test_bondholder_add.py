@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, Mock
 from datetime import date
 
 from src.application.dto.bondholder import BondHolderChangeQuantityDTO, BondHolderDTO
-from src.application.use_cases.bondholder.bondholder_add import (
+from src.application.use_cases.bondholder.bh_add import (
     ChangeBondHolderQuantityUseCase,
 )
 from src.domain.exceptions import NotFoundError, InvalidTokenError
@@ -43,9 +43,7 @@ async def test_change_quantity_success(
 ) -> None:
     common_user_id = uuid4()
     bondholder_entity_mock.user_id = common_user_id
-    dto = BondHolderChangeQuantityDTO(
-        id=uuid4(), user_id=common_user_id, new_quantity=5
-    )
+    dto = BondHolderChangeQuantityDTO(id=uuid4(), user_id=common_user_id, new_quantity=5)
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
     mock_bond_repo.get_one.return_value = bond_entity_mock
@@ -166,9 +164,7 @@ async def test_with_zero_quantity(
 ) -> None:
     common_user_id = uuid4()
     bondholder_entity_mock.user_id = common_user_id
-    dto = BondHolderChangeQuantityDTO(
-        id=uuid4(), user_id=common_user_id, new_quantity=0
-    )
+    dto = BondHolderChangeQuantityDTO(id=uuid4(), user_id=common_user_id, new_quantity=0)
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
     mock_bond_repo.get_one.return_value = bond_entity_mock

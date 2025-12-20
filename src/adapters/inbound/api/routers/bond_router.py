@@ -30,16 +30,16 @@ from src.application.dto.bondholder import (
     BondHolderCreateDTO,
 )
 from src.application.use_cases.bond_update import BondUpdateUseCase
-from src.application.use_cases.bondholder.bondholder_add import (
+from src.application.use_cases.bondholder.bh_add import (
     ChangeBondHolderQuantityUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_create import (
+from src.application.use_cases.bondholder.bh_create import (
     BondHolderCreateUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_delete import (
+from src.application.use_cases.bondholder.bh_delete import (
     BondHolderDeleteUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_get import (
+from src.application.use_cases.bondholder.bh_get import (
     BondHolderGetAllUseCase,
     BondHolderGetUseCase,
 )

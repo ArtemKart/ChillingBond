@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from src.application.use_cases.bondholder.bondholder_delete import (
+from src.application.use_cases.bondholder.bh_delete import (
     BondHolderDeleteUseCase,
 )
 from src.domain.entities.bondholder import BondHolder
