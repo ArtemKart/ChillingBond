@@ -48,7 +48,7 @@ def test_login_success(
 
     form_data = {"username": "test@example.com", "password": "correct_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -69,7 +69,7 @@ def test_login_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> 
 
     form_data = {"username": "nonexistent@example.com", "password": "any_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Incorrect username or password"
@@ -88,7 +88,7 @@ def test_login_incorrect_password(
 
     form_data = {"username": "test@example.com", "password": "wrong_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Incorrect username or password"
@@ -102,19 +102,19 @@ def test_login_incorrect_password(
 def test_login_missing_username(client: TestClient) -> None:
     form_data = {"password": "some_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_missing_password(client: TestClient) -> None:
     form_data = {"username": "test@example.com"}
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_empty_credentials(client: TestClient) -> None:
-    response = client.post("/login/token", data={})
+    response = client.post("api/login/token", data={})
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -136,7 +136,7 @@ def test_login_response_structure(
 
     form_data = {"username": "test@example.com", "password": "password123"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()

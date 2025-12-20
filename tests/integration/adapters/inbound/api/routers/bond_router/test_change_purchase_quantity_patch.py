@@ -59,7 +59,7 @@ def test_change_purchase_quantity_success(
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request
+        f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -84,7 +84,7 @@ def test_change_purchase_quantity_invalid_uuid(
 ) -> None:
     invalid_id = "not-a-valid-uuid"
 
-    response = client.patch(f"/bonds/{invalid_id}/quantity", json=valid_add_request)
+    response = client.patch(f"api/bonds/{invalid_id}/quantity", json=valid_add_request)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -98,7 +98,7 @@ def test_change_purchase_quantity_unauthorized(
     app.dependency_overrides.pop(current_user, None)
 
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request
+        f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -120,7 +120,7 @@ def test_change_purchase_quantity_not_found(
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request
+        f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -144,7 +144,7 @@ def test_change_purchase_quantity_user_id_from_authentication(
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request
+        f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
     )
     assert response.status_code == status.HTTP_200_OK
 
@@ -169,7 +169,7 @@ def test_change_purchase_quantity_response_structure(
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request
+        f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -225,7 +225,7 @@ def test_change_purchase_quantity_updates_last_update(
     app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/quantity", json=valid_add_request
+        f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -249,7 +249,7 @@ def test_change_purchase_quantity_invalid_json(
     valid_purchase_id: UUID,
 ) -> None:
     response = client.patch(
-        f"/bonds/{valid_purchase_id}/quantity",
+        f"api/bonds/{valid_purchase_id}/quantity",
         content="invalid json",
         headers={"Content-Type": "application/json"},
     )
@@ -265,7 +265,7 @@ def test_change_purchase_quantity_wrong_data_types(
         "quantity": "five",
     }
 
-    response = client.patch(f"/bonds/{valid_purchase_id}/quantity", json=invalid_request)
+    response = client.patch(f"api/bonds/{valid_purchase_id}/quantity", json=invalid_request)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -305,7 +305,7 @@ def test_change_purchase_quantity_multiple_operations(
         app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
 
         response = client.patch(
-            f"/bonds/{valid_purchase_id}/quantity", json=request_data
+            f"api/bonds/{valid_purchase_id}/quantity", json=request_data
         )
 
         assert response.status_code == status.HTTP_200_OK

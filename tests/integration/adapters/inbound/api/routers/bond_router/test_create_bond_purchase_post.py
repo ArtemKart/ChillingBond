@@ -60,7 +60,7 @@ def test_create_bond_purchase_success(
 
     app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
 
-    response = client.post("/bonds", json=valid_bond_data)
+    response = client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
 
@@ -92,7 +92,7 @@ def test_create_bond_purchase_missing_required_fields(client: TestClient) -> Non
         "series": "ROR1206",
         # Missing other required fields
     }
-    response = client.post("/bonds", json=incomplete_data)
+    response = client.post("api/bonds", json=incomplete_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -101,7 +101,7 @@ def test_create_bond_purchase_invalid_quantity(
 ) -> None:
 
     valid_bond_data["quantity"] = -5
-    response = client.post("/bonds", json=valid_bond_data)
+    response = client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -109,7 +109,7 @@ def test_create_bond_purchase_invalid_date_format(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["purchase_date"] = "invalid-date"
-    response = client.post("/bonds", json=valid_bond_data)
+    response = client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -117,7 +117,7 @@ def test_create_bond_purchase_invalid_nominal_value(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["nominal_value"] = "-1000"
-    response = client.post("/bonds", json=valid_bond_data)
+    response = client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -125,7 +125,7 @@ def test_create_bond_purchase_invalid_maturity_period(
     client: TestClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["maturity_period"] = 0
-    response = client.post("/bonds", json=valid_bond_data)
+    response = client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -138,7 +138,7 @@ def test_create_bond_purchase_unauthorized(
 
     test_client = TestClient(app)
 
-    response = test_client.post("/bonds", json=valid_bond_data)
+    response = test_client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
@@ -156,7 +156,7 @@ def test_create_bond_purchase_use_case_exception(
 
     app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
 
-    response = client.post("/bonds", json=valid_bond_data)
+    response = client.post("api/bonds", json=valid_bond_data)
 
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -179,7 +179,7 @@ def test_create_bond_purchase_with_decimal_values(
 
     app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
 
-    response = client.post("/bonds", json=valid_bond_data)
+    response = client.post("api/bonds", json=valid_bond_data)
 
     assert response.status_code == status.HTTP_201_CREATED
     call_args = mock_use_case.execute.call_args[0]

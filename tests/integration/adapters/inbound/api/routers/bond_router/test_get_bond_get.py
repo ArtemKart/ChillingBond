@@ -50,7 +50,7 @@ def test_get_bond_success(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -87,7 +87,7 @@ def test_get_bond_not_found(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json()["detail"] == "BondHolder not found"
@@ -108,7 +108,7 @@ def test_get_bond_invalid_token(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Invalid credentials"
@@ -122,7 +122,7 @@ def test_get_bond_unauthorized() -> None:
     app.dependency_overrides.pop(current_user, None)
     test_client = TestClient(app)
 
-    response = test_client.get(f"/bonds/{purchase_id}")
+    response = test_client.get(f"api/bonds/{purchase_id}")
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -131,7 +131,7 @@ def test_get_bond_invalid_uuid_format(
     client: TestClient,
 ) -> None:
     invalid_id = "not-a-valid-uuid"
-    response = client.get(f"/bonds/{invalid_id}")
+    response = client.get(f"api/bonds/{invalid_id}")
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -150,7 +150,7 @@ def test_get_bond_different_user_cannot_access(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -169,7 +169,7 @@ def test_get_bond_response_structure(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -218,7 +218,7 @@ def test_get_bond_decimal_precision(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -245,7 +245,7 @@ def test_get_bond_date_serialization(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -271,7 +271,7 @@ def test_get_bond_user_id_from_authentication(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response = client.get(f"/bonds/{valid_purchase_id}")
+    response = client.get(f"api/bonds/{valid_purchase_id}")
 
     assert response.status_code == status.HTTP_200_OK
     mock_use_case.execute.assert_called_once_with(
@@ -309,7 +309,7 @@ def test_get_bond_with_different_series(
 
         app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-        response = client.get(f"/bonds/{valid_purchase_id}")
+        response = client.get(f"api/bonds/{valid_purchase_id}")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["series"] == series
@@ -331,8 +331,8 @@ def test_get_bond_multiple_calls_different_ids(
 
     app.dependency_overrides[bh_get_use_case] = lambda: mock_use_case
 
-    response_1 = client.get(f"/bonds/{purchase_id_1}")
-    response_2 = client.get(f"/bonds/{purchase_id_2}")
+    response_1 = client.get(f"api/bonds/{purchase_id_1}")
+    response_2 = client.get(f"api/bonds/{purchase_id_2}")
 
     assert response_1.status_code == status.HTTP_200_OK
     assert response_2.status_code == status.HTTP_200_OK
