@@ -77,7 +77,7 @@ export default function Dashboard() {
         } catch (err) {
             console.error("Logout failed:", err);
         } finally {
-            window.location.href = "/login";
+            window.location.href = "/";
         }
     };
 
