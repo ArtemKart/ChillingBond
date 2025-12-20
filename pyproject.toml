@@ -30,9 +30,6 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
-[tool.pyright]
-venvPath = "."
-venv = ".venv"
 
 [tool.ruff]
 line-length = 89

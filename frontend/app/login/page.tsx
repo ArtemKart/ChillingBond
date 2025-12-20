@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { login } from "@/lib/api";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
@@ -16,37 +17,17 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const formData = new URLSearchParams();
-            formData.append("username", username);
-            formData.append("password", password);
-
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/login/token`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: formData.toString(),
-                },
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                if (errorData.detail == "Incorrect username or password") {
-                    throw new Error("Неверный логин или пароль");
-                }
-                throw new Error(errorData.detail);
-            }
-
-            const data = await response.json();
-
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("token_type", data.type);
-
+            await login({ username, password });
             router.push("/dashboard");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Ошибка входа");
+            if (
+                err instanceof Error &&
+                err.message === "Incorrect username or password"
+            ) {
+                setError("Неверный логин или пароль");
+            } else {
+                setError(err instanceof Error ? err.message : "Ошибка входа");
+            }
         } finally {
             setLoading(false);
         }

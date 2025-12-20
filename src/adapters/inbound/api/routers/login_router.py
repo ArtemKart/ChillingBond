@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
@@ -10,7 +10,7 @@ from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_login_use_case,
 )
 from src.adapters.inbound.api.schemas.auth import TokenResponse, UUIDResponse
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 from src.domain.exceptions import AuthenticationError
 
 login_router = APIRouter(prefix="/login", tags=["login"])
@@ -21,15 +21,36 @@ async def me(user_id: Annotated[UUID, Depends(current_user)]):
     return UUIDResponse(id=user_id)
 
 
-@login_router.post("/token", response_model=TokenResponse)
+@login_router.post("/token", response_model=TokenResponse, status_code=status.HTTP_200_OK)
 async def login(
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     use_case: Annotated[UserLoginUseCase, Depends(user_login_use_case)],
 ):
     try:
-        return await use_case.execute(form_data)
+        token_data = await use_case.execute(form_data)
+        response.set_cookie(
+            key="access_token",
+            value=token_data.token,
+            httponly=True,
+            secure=False,  # TODO: Set to True in production with HTTPS
+            samesite="lax",
+            max_age=3600 * 24 * 7,
+            path="/",
+        )
+        return TokenResponse()
     except AuthenticationError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
+
+
+@login_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        httponly=True,
+        samesite="lax",
+    )

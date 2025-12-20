@@ -4,8 +4,7 @@ from pydantic import BaseModel
 
 
 class TokenResponse(BaseModel):
-    token: str
-    type: str
+    message: str = "Successfully authenticated"
 
 
 class UUIDResponse(BaseModel):

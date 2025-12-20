@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 from starlette.testclient import TestClient
 
 from src.adapters.inbound.api.main import app
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 
 
 @pytest.fixture
@@ -52,9 +52,8 @@ def test_login_success(
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert data["token"] == "test_jwt_token"
-    assert data["type"] == "bearer"
-
+    
+    assert data['message'] == 'Successfully authenticated'
     mock_user_repo.get_by_email.assert_called_once_with("test@example.com")
     user_entity_mock.verify_password.assert_called_once_with(
         hasher=mock_hasher, plain_password="correct_password"
@@ -123,7 +122,6 @@ def test_login_response_structure(
     client: TestClient,
     mock_user_repo: AsyncMock,
     user_entity_mock: Mock,
-    mock_hasher: Mock,
     mock_token_handler: Mock,
 ) -> None:
     mock_user_repo.get_by_email.return_value = user_entity_mock
@@ -140,8 +138,6 @@ def test_login_response_structure(
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert "token" in data
-    assert "type" in data
-    assert len(data) == 2
-    assert isinstance(data["token"], str)
-    assert isinstance(data["type"], str)
+    assert "message" in data
+    assert len(data) == 1
+    assert isinstance(data["message"], str)

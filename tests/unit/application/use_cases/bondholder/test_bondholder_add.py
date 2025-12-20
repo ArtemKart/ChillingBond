@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, Mock
 from datetime import date
 
 from src.application.dto.bondholder import BondHolderChangeQuantityDTO, BondHolderDTO
-from src.application.use_cases.bondholder.bondholder_add import (
+from src.application.use_cases.bondholder.bh_add import (
     ChangeBondHolderQuantityUseCase,
 )
 from src.domain.exceptions import NotFoundError, InvalidTokenError

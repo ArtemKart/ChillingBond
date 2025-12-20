@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchWithAuth } from "@/lib/api";
+import { apiFetch, logout } from "@/lib/api";
 import type { BondHolderResponse } from "@/types/bond";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { BondsList } from "./components/BondsList";
 import { Sidebar } from "@/components/Sidebar";
 import BondModal from "@/components/BondModal";
-import AddBondModal from "@/components/AddBondModal"; // Добавь импорт, если его нет
+import AddBondModal from "@/components/AddBondModal";
 
 export default function Dashboard() {
     const [bonds, setBonds] = useState<BondHolderResponse[]>([]);
@@ -58,13 +58,7 @@ export default function Dashboard() {
 
     const loadBonds = async () => {
         try {
-            const response = await fetchWithAuth("/bonds");
-
-            if (!response.ok) {
-                throw new Error("Не удалось загрузить облигации");
-            }
-
-            const result = await response.json();
+            const result = await apiFetch<BondHolderResponse[]>("/bonds");
             setBonds(result);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Ошибка загрузки");
@@ -77,10 +71,14 @@ export default function Dashboard() {
         loadBonds();
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("token_type");
-        window.location.href = "/login";
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (err) {
+            console.error("Logout failed:", err);
+        } finally {
+            window.location.href = "/login";
+        }
     };
 
     const handleClose = () => {
@@ -109,48 +107,45 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-          <div className="flex-1 p-8">
-            <DashboardHeader
-              onAddClick={() => setIsAddModalOpen(true)}
-              onLogout={handleLogout}
+            <div className="flex-1 p-8">
+                <DashboardHeader
+                    onAddClick={() => setIsAddModalOpen(true)}
+                    onLogout={handleLogout}
+                />
+
+                <BondsList
+                    bonds={sortedBonds}
+                    groupedBonds={groupedBonds}
+                    onBondClick={setSelectedBond}
+                />
+            </div>
+
+            <Sidebar
+                isOpen={isSidebarOpen}
+                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={(newSortBy, newSortOrder) => {
+                    setSortBy(newSortBy);
+                    setSortOrder(newSortOrder);
+                }}
+                groupByDate={groupByDate}
+                onGroupByDateChange={setGroupByDate}
             />
 
-            <BondsList
-              bonds={sortedBonds}
-              groupedBonds={groupedBonds}
-              onBondClick={setSelectedBond}
-            />
-          </div>
-
-          <Sidebar
-            isOpen={isSidebarOpen}
-            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSortChange={(newSortBy, newSortOrder) => {
-              setSortBy(newSortBy);
-              setSortOrder(newSortOrder);
-            }}
-            groupByDate={groupByDate}
-            onGroupByDateChange={setGroupByDate}
-          />
-
-          {selectedBond && (
-            <BondModal
-              bond={selectedBond}
-              onClose={handleClose}
-              onUpdate={refetch}
-            />
-          )}
-          {isAddModalOpen && (
-            <AddBondModal
-              onClose={() => setIsAddModalOpen(false)}
-              onUpdate={loadBonds}
-            />
-          )}
+            {selectedBond && (
+                <BondModal
+                    bond={selectedBond}
+                    onClose={handleClose}
+                    onUpdate={refetch}
+                />
+            )}
+            {isAddModalOpen && (
+                <AddBondModal
+                    onClose={() => setIsAddModalOpen(false)}
+                    onUpdate={loadBonds}
+                />
+            )}
         </div>
-
-
-
     );
 }

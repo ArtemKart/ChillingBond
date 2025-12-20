@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
 from src.application.dto.bondholder import BondHolderDTO
-from src.application.use_cases.bondholder.bondholder_get import BondHolderGetUseCase
+from src.application.use_cases.bondholder.bh_get import BondHolderGetUseCase
 from src.domain.exceptions import NotFoundError, AuthorizationError
 
 

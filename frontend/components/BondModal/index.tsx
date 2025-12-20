@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { BondHolderResponse } from "@/types/bond";
-import { fetchWithAuth } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import BondModalHeader from "./BondModalHeader";
 import BondBasicInfo from "./BondBasicInfo";
 import BondFinancialParams from "./BondFinancialParams";
@@ -13,7 +13,7 @@ import BondModalFooter from "./BondModalFooter";
 interface BondModalProps {
     bond: BondHolderResponse;
     onClose: () => void;
-    onUpdate?: () => void;
+    onUpdate: () => void;
 }
 
 export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
@@ -51,23 +51,13 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
     };
 
     const handleDelete = async () => {
-        try {
-            const response = await fetchWithAuth(`/bonds/${bond.id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+        if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(
-                    errorData.detail || "Не удалось удалить облигации",
-                );
-            }
-            if (onUpdate) {
-                onUpdate();
-            }
+        try {
+            await apiFetch(`/bonds/${bond.id}`, {
+                method: "DELETE",
+            });
+            onUpdate();
             onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Ошибка удаления");
@@ -79,62 +69,31 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
         setError("");
 
         try {
-            const specResponse = await fetchWithAuth(
-                `/bonds/${bond.bond_id}/specification`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        series: editedBond.series,
-                        nominal_value: editedBond.nominal_value,
-                        maturity_period: editedBond.maturity_period,
-                        initial_interest_rate: editedBond.initial_interest_rate,
-                        first_interest_period: editedBond.first_interest_period,
-                        reference_rate_margin: editedBond.reference_rate_margin,
-                    }),
-                },
-            );
+            // Update specification
+            await apiFetch(`/bonds/${bond.bond_id}/specification`, {
+                method: "PUT",
+                body: JSON.stringify({
+                    series: editedBond.series,
+                    nominal_value: editedBond.nominal_value,
+                    maturity_period: editedBond.maturity_period,
+                    initial_interest_rate: editedBond.initial_interest_rate,
+                    first_interest_period: editedBond.first_interest_period,
+                    reference_rate_margin: editedBond.reference_rate_margin,
+                }),
+            });
 
-            if (!specResponse.ok) {
-                const errorData = await specResponse.json().catch(() => ({}));
-                throw new Error(
-                    errorData.detail || "Не удалось сохранить изменения",
-                );
-            }
-
+            // Update quantity if changed
             if (editedBond.quantity !== bond.quantity) {
-                const quantityResponse = await fetchWithAuth(
-                    `/bonds/${bond.id}/quantity`,
-                    {
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            new_quantity: editedBond.quantity,
-                        }),
-                    },
-                );
-
-                if (!quantityResponse.ok) {
-                    const errorData = await quantityResponse
-                        .json()
-                        .catch(() => ({}));
-                    throw new Error(
-                        errorData.detail || "Не удалось изменить количество",
-                    );
-                }
+                await apiFetch(`/bonds/${bond.id}/quantity`, {
+                    method: "PATCH",
+                    body: JSON.stringify({
+                        new_quantity: editedBond.quantity,
+                    }),
+                });
             }
 
+            onUpdate();
             setIsEditing(false);
-
-            if (onUpdate) {
-                onUpdate();
-            }
-
-            onClose();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Ошибка сохранения");
         } finally {
@@ -151,7 +110,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
 
     return (
         <div
-            className="fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-md"
+            className="fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-md bg-black/30"
             onClick={onClose}
         >
             <div
@@ -203,9 +162,9 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
 
                     <BondCalculations
                         bondHolderId={bond.id}
-                        nominalValue={editedBond.nominal_value}
-                        quantity={editedBond.quantity}
-                        initialInterestRate={editedBond.initial_interest_rate}
+                        nominalValue={bond.nominal_value}
+                        quantity={bond.quantity}
+                        initialInterestRate={bond.initial_interest_rate}
                     />
                 </div>
 
