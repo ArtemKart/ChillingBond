@@ -1,5 +1,5 @@
 from datetime import date
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -12,7 +12,6 @@ from src.adapters.inbound.api.dependencies.use_cases.calculations_deps import (
 from src.application.use_cases.calculations.calculate_income import (
     CalculateIncomeUseCase,
 )
-
 
 calculation_router = APIRouter(prefix="/calculations", tags=["Calculations"])
 
@@ -27,4 +26,4 @@ async def calculate_income(
     ),
 ) -> Decimal:
     dto = await use_case.execute(bondholder_id=bondholder_id, target_date=target_date)
-    return dto.value
+    return dto.value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)

@@ -4,9 +4,9 @@ from src.adapters.inbound.api.dependencies.security_deps import (
     HasherDep,
     TokenHandlerDep,
 )
-from src.application.use_cases.user.user_auth import UserAuthUseCase
-from src.application.use_cases.user.user_create import UserCreateUseCase
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.auth import UserAuthUseCase
+from src.application.use_cases.user.create import UserCreateUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 
 
 def user_create_use_case(

@@ -1,25 +1,26 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Cookie, Depends, HTTPException, status
 from jwt import PyJWTError
 
 from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_auth_use_case,
 )
-from src.application.use_cases.user.user_auth import UserAuthUseCase
+from src.application.use_cases.user.auth import UserAuthUseCase
 from src.domain.exceptions import NotFoundError
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 async def current_user(
     use_case: Annotated[UserAuthUseCase, Depends(user_auth_use_case)],
-    token: Annotated[str, Depends(oauth2_scheme)],
+    access_token: Annotated[Optional[str], Cookie()] = None,
 ) -> UUID:
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
+        )
     try:
-        user = await use_case.execute(token)
+        user = await use_case.execute(access_token)
         return user.id
     except (PyJWTError, NotFoundError):
         raise HTTPException(

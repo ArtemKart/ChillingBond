@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, Mock
 
 from src.application.dto.token import TokenDTO
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 from src.domain.exceptions import AuthenticationError
 from src.domain.ports.services.password_hasher import PasswordHasher
 

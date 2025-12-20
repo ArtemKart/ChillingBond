@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, Mock, patch
 
 from src.application.dto.user import UserCreateDTO, UserDTO
-from src.application.use_cases.user.user_create import UserCreateUseCase
+from src.application.use_cases.user.create import UserCreateUseCase
 from src.domain.exceptions import ConflictError
 from src.domain.entities.user import User as UserEntity
 
@@ -45,7 +45,7 @@ async def test_success_creates_new_user(
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
+        "src.application.use_cases.user.create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = user_entity_mock
         result = await use_case.execute(sample_user_create_dto)
@@ -94,7 +94,7 @@ async def test_with_different_user_data(
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
+        "src.application.use_cases.user.create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = user_entity_mock
         result = await use_case.execute(user_dto)
@@ -121,7 +121,7 @@ async def test_hasher_is_passed_correctly(
     use_case.to_dto = Mock(return_value=Mock(spec=UserDTO))
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
+        "src.application.use_cases.user.create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = user_entity_mock
         await use_case.execute(sample_user_create_dto)
@@ -144,7 +144,7 @@ async def test_returns_dto_from_written_entity(
     use_case.to_dto = Mock(return_value=expected_dto)
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
+        "src.application.use_cases.user.create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = created_entity
         result = await use_case.execute(sample_user_create_dto)
@@ -170,7 +170,7 @@ async def test_with_minimal_user_data(
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
     with patch(
-        "src.application.use_cases.user.user_create.UserEntity.create", new=Mock()
+        "src.application.use_cases.user.create.UserEntity.create", new=Mock()
     ) as mock_create:
         mock_create.return_value = user_entity_mock
         result = await use_case.execute(minimal_dto)

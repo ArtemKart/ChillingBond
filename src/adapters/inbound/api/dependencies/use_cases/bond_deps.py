@@ -9,16 +9,16 @@ from src.adapters.inbound.api.dependencies.repo_deps import (
     BondHolderRepoDep,
 )
 from src.adapters.inbound.api.dependencies.service_deps import get_bh_deletion_service
-from src.application.use_cases.bondholder.bondholder_add import (
+from src.application.use_cases.bondholder.bh_add import (
     ChangeBondHolderQuantityUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_create import (
+from src.application.use_cases.bondholder.bh_create import (
     BondHolderCreateUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_delete import (
+from src.application.use_cases.bondholder.bh_delete import (
     BondHolderDeleteUseCase,
 )
-from src.application.use_cases.bondholder.bondholder_get import (
+from src.application.use_cases.bondholder.bh_get import (
     BondHolderGetUseCase,
     BondHolderGetAllUseCase,
 )

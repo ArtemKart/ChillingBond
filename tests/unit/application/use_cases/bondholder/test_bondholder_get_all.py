@@ -7,7 +7,7 @@ import pytest
 
 from src.adapters.outbound.database.models import BondHolder
 from src.application.dto.bondholder import BondHolderDTO
-from src.application.use_cases.bondholder.bondholder_get import BondHolderGetAllUseCase
+from src.application.use_cases.bondholder.bh_get import BondHolderGetAllUseCase
 from src.domain.entities.bond import Bond
 from src.domain.exceptions import NotFoundError
 

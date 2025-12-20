@@ -19,7 +19,6 @@ export default function BondTimeParams({
                 Временные параметры
             </h3>
             <div className="space-y-3">
-                {/* Срок погашения */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">Срок погашения</span>
                     {isEditing ? (
@@ -45,7 +44,6 @@ export default function BondTimeParams({
                     )}
                 </div>
 
-                {/* Дата покупки */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">Дата покупки</span>
                     <span className="font-semibold text-gray-900">
@@ -57,7 +55,6 @@ export default function BondTimeParams({
                     </span>
                 </div>
 
-                {/* Последнее обновление */}
                 {lastUpdate && (
                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                         <span className="text-gray-600">

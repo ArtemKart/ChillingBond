@@ -1,5 +1,5 @@
 from src.application.dto.bondholder import BondHolderDTO, BondHolderChangeQuantityDTO
-from src.application.use_cases.bondholder.bondholder_base import BondHolderBaseUseCase
+from src.application.use_cases.bondholder.base import BondHolderBaseUseCase
 from src.domain.exceptions import NotFoundError, InvalidTokenError
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository
