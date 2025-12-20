@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
+from jwt.exceptions import PyJWTError
 import pytest
 
 from src.application.dto.user import UserDTO
@@ -36,7 +37,7 @@ async def test_happy_path(
     await use_case.execute(token=token)
 
 
-async def test_invalid_token(use_case: UserAuthUseCase) -> None:
+async def test_empty_token(use_case: UserAuthUseCase) -> None:
     use_case.token_handler.read_token = Mock(return_value=None)
 
     token = "test_token"
@@ -55,4 +56,14 @@ async def test_user_not_found(
 
     token = "test_token"
     with pytest.raises(AuthenticationError, match="User not found"):
+        await use_case.execute(token=token)
+
+
+async def test_invalid_token(use_case: UserAuthUseCase) -> None:
+    use_case.token_handler.read_token = Mock(side_effect=PyJWTError())
+
+    token = "test_token"
+    with pytest.raises(
+        InvalidTokenError, match="Invalid token"
+    ):
         await use_case.execute(token=token)
