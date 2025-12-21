@@ -21,7 +21,6 @@ export default function BondFinancialParams({
                 Финансовые параметры
             </h3>
             <div className="space-y-3">
-                {/* Номинальная стоимость */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">Номинальная стоимость</span>
                     {isEditing ? (
@@ -39,12 +38,11 @@ export default function BondFinancialParams({
                         />
                     ) : (
                         <span className="font-semibold text-gray-900">
-                            {nominalValue.toLocaleString()} ₽
+                            {nominalValue.toLocaleString()} PLN
                         </span>
                     )}
                 </div>
 
-                {/* Начальная процентная ставка */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">
                         Начальная процентная ставка
@@ -74,7 +72,6 @@ export default function BondFinancialParams({
                     )}
                 </div>
 
-                {/* Маржа к ставке */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">Маржа к ставке</span>
                     {isEditing ? (
@@ -103,7 +100,6 @@ export default function BondFinancialParams({
                     )}
                 </div>
 
-                {/* Первый процентный период */}
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">
                         Первый процентный период

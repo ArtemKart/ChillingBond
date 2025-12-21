@@ -10,7 +10,7 @@ from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
 )
 from src.adapters.inbound.api.schemas.user import UserCreate, UserResponse
 from src.application.dto.user import UserCreateDTO
-from src.application.use_cases.user.user_create import UserCreateUseCase
+from src.application.use_cases.user.create import UserCreateUseCase
 
 user_router = APIRouter(prefix="/users", tags=["user"])
 

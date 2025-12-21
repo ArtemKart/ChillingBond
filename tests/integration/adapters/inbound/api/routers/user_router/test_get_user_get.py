@@ -11,7 +11,7 @@ def test_get_user_success(
     user_id = user_entity_mock.id
     mock_user_repo.get_one.return_value = user_entity_mock
 
-    response = client.get(f"/users/{user_id}")
+    response = client.get(f"api/users/{user_id}")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -26,7 +26,7 @@ def test_get_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> No
     user_id = uuid4()
     mock_user_repo.get_one.return_value = None
 
-    response = client.get(f"/users/{user_id}")
+    response = client.get(f"api/users/{user_id}")
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json()["detail"] == "User not found"
@@ -36,7 +36,7 @@ def test_get_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> No
 
 def test_get_user_invalid_uuid(client: TestClient, mock_user_repo: AsyncMock) -> None:
 
-    response = client.get("/users/invalid-uuid")
+    response = client.get("api/users/invalid-uuid")
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
     mock_user_repo.get_one.assert_not_called()
@@ -48,7 +48,7 @@ def test_get_user_with_none_name(
     user_entity_mock.name = None
     mock_user_repo.get_one.return_value = user_entity_mock
 
-    response = client.get(f"/users/{user_entity_mock.id}")
+    response = client.get(f"api/users/{user_entity_mock.id}")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -63,7 +63,7 @@ def test_get_user_email_normalized(
     user_entity_mock.email = "Test@Example.COM"
     mock_user_repo.get_one.return_value = user_entity_mock
 
-    response = client.get(f"/users/{user_entity_mock.id}")
+    response = client.get(f"api/users/{user_entity_mock.id}")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()

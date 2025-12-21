@@ -11,7 +11,7 @@ from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
 )
 from src.adapters.inbound.api.main import app
 from src.application.dto.user import UserDTO
-from src.application.use_cases.user.user_create import UserCreateUseCase
+from src.application.use_cases.user.create import UserCreateUseCase
 from src.adapters.outbound.database.models import User as UserModel
 
 
@@ -67,7 +67,7 @@ def test_create_user_success(
 
     app.dependency_overrides[user_create_use_case] = lambda: use_case
 
-    r = client.post("/users", json=user_create_valid_data)
+    r = client.post("api/users", json=user_create_valid_data)
 
     assert r.status_code == status.HTTP_201_CREATED
     assert r.json()["id"] == str(user_entity_mock.id)
@@ -84,7 +84,7 @@ def test_create_user_user_already_exists(
     use_case.user_repo.get_by_email.return_value = user_entity_mock  # type: ignore[attr-defined]
     app.dependency_overrides[user_create_use_case] = lambda: use_case
 
-    r = client.post("/users", json=user_create_valid_data)
+    r = client.post("api/users", json=user_create_valid_data)
 
     assert r.status_code == status.HTTP_409_CONFLICT
     assert r.json()["detail"] == "User already exists"
@@ -105,7 +105,7 @@ def test_create_user_email_normalization(
 
     app.dependency_overrides[user_create_use_case] = lambda: use_case
 
-    response = client.post("/users", json=data_with_uppercase_email)
+    response = client.post("api/users", json=data_with_uppercase_email)
 
     assert response.status_code == status.HTTP_201_CREATED
     response_data = response.json()
@@ -116,7 +116,7 @@ def test_create_user_invalid_email(
     client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     invalid_data = {**user_create_valid_data, "email": "invalid-email"}
-    response = client.post("/users", json=invalid_data)
+    response = client.post("api/users", json=invalid_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -127,7 +127,7 @@ def test_create_user_missing_email(
         "password": user_create_valid_data["password"],
         "name": user_create_valid_data["name"],
     }
-    response = client.post("/users", json=data_without_email)
+    response = client.post("api/users", json=data_without_email)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -138,7 +138,7 @@ def test_create_user_missing_password(
         "email": user_create_valid_data["email"],
         "name": user_create_valid_data["name"],
     }
-    response = client.post("/users", json=data_without_password)
+    response = client.post("api/users", json=data_without_password)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
@@ -154,7 +154,7 @@ def test_create_user_without_name(
 
     app.dependency_overrides[user_create_use_case] = lambda: use_case
 
-    response = client.post("/users", json=data_without_name)
+    response = client.post("api/users", json=data_without_name)
 
     assert response.status_code == status.HTTP_201_CREATED
     response_data = response.json()
@@ -165,5 +165,5 @@ def test_create_user_empty_password(
     client: TestClient, user_create_valid_data: dict[str, str]
 ) -> None:
     invalid_data = {**user_create_valid_data, "password": ""}
-    response = client.post("/users", json=invalid_data)
+    response = client.post("api/users", json=invalid_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

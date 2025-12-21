@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchWithAuth } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 interface BondCalculationsProps {
     bondHolderId: string;
@@ -16,84 +16,87 @@ export default function BondCalculations({
     quantity,
     initialInterestRate,
 }: BondCalculationsProps) {
-    const [annualIncome, setAnnualIncome] = useState<number | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const totalValue = nominalValue * quantity;
+    const [income, setIncome] = useState<number | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const fetchMonthlyIncome = async () => {
-            setIsLoading(true);
-            setError(null);
-
             try {
-                const response = await fetchWithAuth(
+                // The API currently returns a single number (Decimal) representing income
+                const result = await apiFetch<number>(
                     `/calculations/month-income?bondholder_id=${bondHolderId}`,
                     {
                         method: "POST",
                     },
                 );
-
-                if (!response.ok) {
-                    throw new Error("Не удалось получить данные о доходе");
-                }
-
-                const data = await response.json();
-                console.log("Received data:", data);
-                setAnnualIncome(Number(data));
+                setIncome(result);
             } catch (err) {
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "Ошибка загрузки данных",
+                        : "Не удалось получить данные о доходе",
                 );
-                setAnnualIncome((totalValue * initialInterestRate) / 100);
             } finally {
-                setIsLoading(false);
+                setLoading(false);
             }
         };
 
         fetchMonthlyIncome();
-    }, [bondHolderId, totalValue, initialInterestRate]);
+    }, [bondHolderId]);
+
+    const totalInvestment = nominalValue * quantity;
+    // Fallback calculation if API fails or is loading
+    const calculatedMonthlyAverage =
+        (totalInvestment * (initialInterestRate / 100)) / 12;
+
+    const formatValue = (val: number) => {
+        return val.toLocaleString("ru-RU", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    };
 
     return (
-        <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Расчётные показатели
+        <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+                Расчет доходности
             </h3>
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg space-y-2">
-                <div className="flex justify-between">
-                    <span className="text-gray-600">
-                        Общая стоимость портфеля
-                    </span>
-                    <span className="font-bold text-gray-900 text-lg">
-                        {totalValue.toLocaleString()} ₽
-                    </span>
-                </div>
 
-                <div className="flex justify-between">
-                    <span className="text-gray-600">
-                        Месячный доход (ожидаемый)
-                    </span>
-                    {isLoading ? (
-                        <span className="font-bold text-gray-400 text-lg">
-                            Загрузка...
-                        </span>
-                    ) : error ? (
-                        <span
-                            className="font-bold text-orange-600 text-lg"
-                            title={error}
-                        >
-                            {annualIncome?.toLocaleString() || "—"} ₽
-                        </span>
-                    ) : (
-                        <span className="font-bold text-green-600 text-lg">
-                            {annualIncome?.toLocaleString() || "—"} ₽
-                        </span>
-                    )}
+            <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-xs text-blue-600 font-medium uppercase">
+                        Общий номинал
+                    </p>
+                    <p className="text-xl font-bold text-blue-900">
+                        {totalInvestment.toLocaleString("ru-RU")} PLN
+                    </p>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="text-xs text-green-600 font-medium uppercase">
+                        Доход в месяц
+                    </p>
+                    <div className="flex items-baseline gap-1">
+                        <p className="text-xl font-bold text-green-900">
+                            {loading ? (
+                                <span className="animate-pulse">...</span>
+                            ) : income !== null ? (
+                                formatValue(income)
+                            ) : (
+                                formatValue(calculatedMonthlyAverage)
+                            )}
+                        </p>
+                        <p className="text-xl font-bold text-green-900">PLN</p>
+                    </div>
                 </div>
             </div>
+
+            {error && (
+                <div className="text-amber-600 text-xs bg-amber-50 p-2 rounded border border-amber-100">
+                    Внимание: {error}. Показан расчет на основе начальной
+                    ставки.
+                </div>
+            )}
         </div>
     );
 }

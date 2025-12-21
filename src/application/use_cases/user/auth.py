@@ -3,7 +3,7 @@ from uuid import UUID
 from jwt import PyJWTError
 
 from src.application.dto.user import UserDTO
-from src.application.use_cases.user.user_base import UserBaseUseCase
+from src.application.use_cases.user.base import UserBaseUseCase
 from src.domain.exceptions import AuthenticationError, InvalidTokenError
 from src.domain.ports.repositories.user import UserRepository
 from src.domain.ports.services.token_handler import TokenHandler

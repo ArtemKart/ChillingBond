@@ -86,7 +86,7 @@ def test_get_all_bonds_success_with_multiple_bonds(
 
     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
 
-    response = client.get("/bonds")
+    response = client.get("api/bonds")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -120,7 +120,7 @@ def test_get_all_bonds_success_with_single_bond(
 
     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
 
-    response = client.get("/bonds")
+    response = client.get("api/bonds")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -146,7 +146,7 @@ def test_get_all_bonds_empty_list(
 
     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
 
-    response = client.get("/bonds")
+    response = client.get("api/bonds")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -162,7 +162,7 @@ def test_get_all_bonds_unauthorized() -> None:
     app.dependency_overrides.pop(current_user, None)
     test_client = TestClient(app)
 
-    response = test_client.get("/bonds")
+    response = test_client.get("api/bonds")
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -182,7 +182,7 @@ def test_get_all_bonds_user_id_from_authentication(
 
     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
 
-    response = client.get("/bonds")
+    response = client.get("api/bonds")
 
     assert response.status_code == status.HTTP_200_OK
     mock_use_case.execute.assert_called_once_with(user_id=expected_user_id)
@@ -201,7 +201,7 @@ def test_get_all_bonds_response_structure(
 
     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
 
-    response = client.get("/bonds")
+    response = client.get("api/bonds")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -250,7 +250,7 @@ def test_get_all_bonds_decimal_precision(
 
     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
 
-    response = client.get("/bonds")
+    response = client.get("api/bonds")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -281,7 +281,7 @@ def test_get_all_bonds_date_serialization(
 
     app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
 
-    response = client.get("/bonds")
+    response = client.get("api/bonds")
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
@@ -308,7 +308,7 @@ def test_get_all_bonds_different_users_isolation(
 
     app.dependency_overrides[current_user] = lambda: user_id_1
     client_1 = TestClient(app)
-    response_1 = client_1.get("/bonds")
+    response_1 = client_1.get("api/bonds")
     assert response_1.status_code == status.HTTP_200_OK
 
     first_call = mock_use_case.execute.call_args_list[0]
@@ -316,7 +316,7 @@ def test_get_all_bonds_different_users_isolation(
 
     app.dependency_overrides[current_user] = lambda: user_id_2
     client_2 = TestClient(app)
-    response_2 = client_2.get("/bonds")
+    response_2 = client_2.get("api/bonds")
     assert response_2.status_code == status.HTTP_200_OK
 
     second_call = mock_use_case.execute.call_args_list[1]

@@ -1,6 +1,6 @@
 from src.application.dto.user import UserCreateDTO, UserDTO
 from src.application.events.event_publisher import EventPublisher
-from src.application.use_cases.user.user_base import UserBaseUseCase
+from src.application.use_cases.user.base import UserBaseUseCase
 from src.domain.events.base import DomainEvent
 from src.domain.exceptions import ConflictError
 from src.domain.ports.repositories.user import UserRepository

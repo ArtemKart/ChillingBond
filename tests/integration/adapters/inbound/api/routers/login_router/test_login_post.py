@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 from starlette.testclient import TestClient
 
 from src.adapters.inbound.api.main import app
-from src.application.use_cases.user.user_login import UserLoginUseCase
+from src.application.use_cases.user.login import UserLoginUseCase
 
 
 @pytest.fixture
@@ -48,13 +48,12 @@ def test_login_success(
 
     form_data = {"username": "test@example.com", "password": "correct_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert data["token"] == "test_jwt_token"
-    assert data["type"] == "bearer"
-
+    
+    assert data['message'] == 'Successfully authenticated'
     mock_user_repo.get_by_email.assert_called_once_with("test@example.com")
     user_entity_mock.verify_password.assert_called_once_with(
         hasher=mock_hasher, plain_password="correct_password"
@@ -69,7 +68,7 @@ def test_login_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> 
 
     form_data = {"username": "nonexistent@example.com", "password": "any_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Incorrect username or password"
@@ -88,7 +87,7 @@ def test_login_incorrect_password(
 
     form_data = {"username": "test@example.com", "password": "wrong_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Incorrect username or password"
@@ -102,19 +101,19 @@ def test_login_incorrect_password(
 def test_login_missing_username(client: TestClient) -> None:
     form_data = {"password": "some_password"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_missing_password(client: TestClient) -> None:
     form_data = {"username": "test@example.com"}
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_login_empty_credentials(client: TestClient) -> None:
-    response = client.post("/login/token", data={})
+    response = client.post("api/login/token", data={})
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -123,7 +122,6 @@ def test_login_response_structure(
     client: TestClient,
     mock_user_repo: AsyncMock,
     user_entity_mock: Mock,
-    mock_hasher: Mock,
     mock_token_handler: Mock,
 ) -> None:
     mock_user_repo.get_by_email.return_value = user_entity_mock
@@ -136,12 +134,10 @@ def test_login_response_structure(
 
     form_data = {"username": "test@example.com", "password": "password123"}
 
-    response = client.post("/login/token", data=form_data)
+    response = client.post("api/login/token", data=form_data)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert "token" in data
-    assert "type" in data
-    assert len(data) == 2
-    assert isinstance(data["token"], str)
-    assert isinstance(data["type"], str)
+    assert "message" in data
+    assert len(data) == 1
+    assert isinstance(data["message"], str)

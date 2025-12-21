@@ -3,7 +3,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from src.application.dto.calculations import MonthlyIncomeResponseDTO
-from src.application.use_cases.calculations.calculations_base import (
+from src.application.use_cases.calculations.base import (
     CalculationsBaseUseCase,
 )
 from src.domain.exceptions import NotFoundError
