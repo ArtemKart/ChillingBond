@@ -8,18 +8,36 @@ interface AddBondModalProps {
     onUpdate?: () => void;
 }
 
+type BondCreatePayload = {
+    series: string;
+    nominal_value: number;
+    quantity: number;
+    purchase_date: string;
+    initial_interest_rate: number;
+    reference_rate_margin: number;
+    first_interest_period: number;
+    maturity_period: number;
+};
+
 export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Keep form inputs as strings where appropriate; cast to numbers on submit.
     const [formData, setFormData] = useState({
+        // Основная информация
         series: "",
         nominal_value: "",
-        maturity_period: "",
-        initial_interest_rate: "",
-        first_interest_period: "",
-        reference_rate_margin: "",
         quantity: 1,
         purchase_date: new Date().toISOString().split("T")[0],
+
+        // Финансовые параметры
+        initial_interest_rate: "",
+        reference_rate_margin: "",
+        first_interest_period: "",
+
+        // Временные параметры
+        maturity_period: "",
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -28,9 +46,20 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
         setLoading(true);
 
         try {
+            const payload: BondCreatePayload = {
+                series: formData.series.trim(),
+                nominal_value: Number(formData.nominal_value),
+                quantity: Number(formData.quantity),
+                purchase_date: formData.purchase_date,
+                initial_interest_rate: Number(formData.initial_interest_rate),
+                reference_rate_margin: Number(formData.reference_rate_margin),
+                first_interest_period: Number(formData.first_interest_period),
+                maturity_period: Number(formData.maturity_period),
+            };
+
             await apiFetch("/bonds", {
                 method: "POST",
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             if (onUpdate) {
@@ -47,8 +76,17 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+        <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={onClose}
+            role="presentation"
+        >
+            <div
+                className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+            >
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                     <h2 className="text-xl font-bold text-gray-900">
                         Добавить облигацию
@@ -80,8 +118,12 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2">
+                    <div className="space-y-4">
+                        <div className="text-sm font-semibold text-gray-900">
+                            Основная информация
+                        </div>
+
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Серия
                             </label>
@@ -98,6 +140,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 }
                             />
                         </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Номинал
@@ -106,6 +149,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 type="number"
                                 step="0.01"
                                 required
+                                min="0"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
                                 value={formData.nominal_value}
                                 onChange={(e) =>
@@ -116,6 +160,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 }
                             />
                         </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Количество
@@ -129,14 +174,40 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        quantity: parseInt(e.target.value),
+                                        quantity: parseInt(
+                                            e.target.value || "1",
+                                            10,
+                                        ),
                                     })
                                 }
                             />
                         </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Ставка %
+                                Дата покупки
+                            </label>
+                            <input
+                                type="date"
+                                required
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
+                                value={formData.purchase_date}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        purchase_date: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+
+                        <div className="text-sm font-semibold text-gray-900 pt-2">
+                            Финансовые параметры
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Начальная процентная ставка
                             </label>
                             <input
                                 type="number"
@@ -152,19 +223,63 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 }
                             />
                         </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Дата покупки
+                                Маржа к ставке
                             </label>
                             <input
-                                type="date"
+                                type="number"
+                                step="0.01"
                                 required
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
-                                value={formData.purchase_date}
+                                value={formData.reference_rate_margin}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        purchase_date: e.target.value,
+                                        reference_rate_margin: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Первый процентный период (мес)
+                            </label>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
+                                value={formData.first_interest_period}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        first_interest_period: e.target.value,
+                                    })
+                                }
+                            />
+                        </div>
+
+                        <div className="text-sm font-semibold text-gray-900 pt-2">
+                            Временные параметры
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Срок погашения (мес)
+                            </label>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
+                                value={formData.maturity_period}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        maturity_period: e.target.value,
                                     })
                                 }
                             />
