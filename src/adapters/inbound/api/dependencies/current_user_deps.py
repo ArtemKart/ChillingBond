@@ -8,7 +8,6 @@ from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
 )
 from src.application.dto.user import UserDTO
 from src.application.use_cases.user.auth import UserAuthUseCase
-from src.domain.exceptions import NotFoundError
 
 
 async def current_user(
@@ -21,7 +20,7 @@ async def current_user(
         )
     try:
         return await use_case.execute(access_token)
-    except (PyJWTError, NotFoundError):
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
         )
