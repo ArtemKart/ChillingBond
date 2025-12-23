@@ -1,21 +1,36 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, Mock
 from uuid import uuid4
 
 import pytest
 
+from src.adapters.outbound.repositories.reference_rate import ReferenceRateEntity
 from src.application.events.event_publisher import EventPublisher
 from src.domain.entities.bond import Bond as BondEntity
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 from src.domain.entities.user import User as UserEntity
-from src.domain.ports.services.password_hasher import PasswordHasher
-from src.domain.ports.services.token_handler import TokenHandler
 from src.domain.ports.repositories.bond import BondRepository
 from src.domain.ports.repositories.bondholder import BondHolderRepository
+from src.domain.ports.repositories.reference_rate import ReferenceRateRepository
 from src.domain.ports.repositories.user import UserRepository
+from src.domain.ports.services.password_hasher import PasswordHasher
+from src.domain.ports.services.token_handler import TokenHandler
 from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
 from src.domain.services.bondholder_income_calculator import BondHolderIncomeCalculator
+
+
+@pytest.fixture
+def mock_session() -> AsyncMock:
+    session = AsyncMock()
+    session.get = AsyncMock()
+    session.execute = AsyncMock()
+    session.add = MagicMock()
+    session.delete = AsyncMock()
+    session.commit = AsyncMock()
+    session.rollback = AsyncMock()
+    session.refresh = AsyncMock()
+    return session
 
 
 @pytest.fixture
@@ -55,6 +70,16 @@ def user_entity_mock(mock_hasher: Mock) -> Mock:
 
 
 @pytest.fixture
+def mock_reference_rate_entity() -> Mock:
+    ref_rate = Mock(spec=ReferenceRateEntity)
+    ref_rate.id = uuid4()
+    ref_rate.value = Decimal("5.25")
+    ref_rate.start_date = date.today() - timedelta(days=30)
+    ref_rate.end_date = date.today() + timedelta(days=30)
+    return ref_rate
+
+
+@pytest.fixture
 def mock_hasher() -> Mock:
     return Mock(spec=PasswordHasher)
 
@@ -80,6 +105,11 @@ def mock_user_repo() -> AsyncMock:
 
 
 @pytest.fixture
+def mock_reference_rate_repo() -> AsyncMock:
+    return AsyncMock(spec=ReferenceRateRepository)
+
+
+@pytest.fixture
 def mock_event_publisher() -> AsyncMock:
     return AsyncMock(spec=EventPublisher)
 
@@ -87,11 +117,6 @@ def mock_event_publisher() -> AsyncMock:
 @pytest.fixture
 def bh_del_service_mock():
     return AsyncMock(spec=BondHolderDeletionService)
-
-
-@pytest.fixture
-def mock_reference_rate_repo() -> AsyncMock:
-    return AsyncMock()
 
 
 @pytest.fixture
