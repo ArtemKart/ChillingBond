@@ -11,10 +11,10 @@ class UserRepository(ABC):
     Concrete implementations must provide persistence for User entities
     in various data stores.
     """
-
     @abstractmethod
-    async def get_one(self, user_id: UUID) -> User | None:
-        """Retrieves a user by its identifier.
+    async def get_user_if_exists(self, user_id: UUID) -> User | None:
+        """
+        Checks if a user with the given UUID exists.
 
         Args:
             user_id: The unique identifier of the user.
@@ -22,18 +22,47 @@ class UserRepository(ABC):
         Returns:
             A User object if found, None otherwise.
         """
+    
+    @abstractmethod
+    async def get_user_if_exists_by_email(self, email: str) -> User | None:
+        """
+        Checks if a user with the given email exists.
+
+        Args:
+            user_id: The unique identifier of the user.
+
+        Returns:
+            A User object if found, None otherwise.
+        """
+    
+    @abstractmethod
+    async def get_one(self, user_id: UUID) -> User:
+        """Retrieves a user by its identifier.
+
+        Args:
+            user_id: The unique identifier of the user.
+
+        Returns:
+            A User object.
+        
+        Note:
+            User must exist.
+        """
 
         pass
 
     @abstractmethod
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, email: str) -> User:
         """Retrieves a user by its email.
 
         Args:
             email: User email address.
 
         Returns:
-            A User object if found, None otherwise.
+            A User object.
+        
+        Note:
+            User must exist.
         """
         pass
 
@@ -46,18 +75,6 @@ class UserRepository(ABC):
 
         Returns:
             The persisted User object.
-        """
-        pass
-
-    @abstractmethod
-    async def update(self, user: User) -> User:
-        """Updates an existing user in the repository.
-
-        Args:
-            user: The User object with updated data.
-
-        Returns:
-            The updated User object.
         """
         pass
 

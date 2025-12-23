@@ -38,10 +38,8 @@ class SQLAlchemyReferenceRateRepository(ReferenceRateRepository):
         )
 
         result = await self._session.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def get_actual(self) -> ReferenceRateEntity | None:
-        pass
+        ref_rate = result.scalar_one_or_none()
+        return self._to_entity(ref_rate) if ref_rate else None
 
     @staticmethod
     def _to_entity(model: ReferenceRateModel) -> ReferenceRateEntity | None:

@@ -52,7 +52,7 @@ async def test_user_not_found(
 ) -> None:
     user_id_str = str(uuid4())
     use_case.token_handler.read_token = Mock(return_value=user_id_str)
-    use_case.user_repo.get_one = AsyncMock(return_value=None)
+    use_case.user_repo.get_user_if_exists = AsyncMock(return_value=None)
 
     token = "test_token"
     with pytest.raises(AuthenticationError, match="User not found"):
