@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, field_validator, Field
-from pydantic.functional_validators import AnyType
+from pydantic.v1.errors import PydanticTypeError
 
 
 class UserBase(BaseModel):
@@ -10,10 +10,10 @@ class UserBase(BaseModel):
 
     @field_validator("email", mode="before")
     @classmethod
-    def normalize_email(cls, v: AnyType) -> str:
+    def normalize_email(cls, v: object) -> str:
         if isinstance(v, str):
             return v.strip().lower()
-        return v
+        raise PydanticTypeError
 
 
 class UserCreate(UserBase):

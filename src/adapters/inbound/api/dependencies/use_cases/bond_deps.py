@@ -4,14 +4,12 @@ from fastapi import Depends
 
 from src.adapters.inbound.api.dependencies.event_publisher_deps import EventPublisherDep
 from src.adapters.inbound.api.dependencies.repo_deps import (
+    BondHolderRepoDep,
     BondRepoDep,
     UserRepoDep,
-    BondHolderRepoDep,
 )
 from src.adapters.inbound.api.dependencies.service_deps import get_bh_deletion_service
-from src.application.use_cases.bondholder.bh_add import (
-    ChangeBondHolderQuantityUseCase,
-)
+from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.application.use_cases.bondholder.bh_create import (
     BondHolderCreateUseCase,
 )
@@ -19,20 +17,21 @@ from src.application.use_cases.bondholder.bh_delete import (
     BondHolderDeleteUseCase,
 )
 from src.application.use_cases.bondholder.bh_get import (
-    BondHolderGetUseCase,
     BondHolderGetAllUseCase,
+    BondHolderGetUseCase,
 )
-from src.application.use_cases.bond_update import BondUpdateUseCase
+from src.application.use_cases.bondholder.bh_update_quantity import (
+    UpdateBondHolderQuantityUseCase,
+)
 from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
 
 
-def bond_add_to_bh_use_case(
+def update_bh_quantity_use_case(
     bond_repo: BondRepoDep,
-    user_repo: UserRepoDep,
     bondholder_repo: BondHolderRepoDep,
-) -> ChangeBondHolderQuantityUseCase:
-    return ChangeBondHolderQuantityUseCase(
-        bond_repo=bond_repo, user_repo=user_repo, bondholder_repo=bondholder_repo
+) -> UpdateBondHolderQuantityUseCase:
+    return UpdateBondHolderQuantityUseCase(
+        bond_repo=bond_repo, bondholder_repo=bondholder_repo
     )
 
 
@@ -42,7 +41,7 @@ def bond_update_use_case(
     return BondUpdateUseCase(bond_repo=bond_repo)
 
 
-def create_bondholder_use_case(
+def bh_create_use_case(
     bond_repo: BondRepoDep,
     bondholder_repo: BondHolderRepoDep,
 ) -> BondHolderCreateUseCase:

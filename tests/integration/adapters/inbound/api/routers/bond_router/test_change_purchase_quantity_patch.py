@@ -53,10 +53,10 @@ def test_change_purchase_quantity_success(
     mock_use_case.execute.return_value = mock_updated_bondholder
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_add_to_bh_use_case,
+        update_bh_quantity_use_case,
     )
 
-    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
+    app.dependency_overrides[update_bh_quantity_use_case] = lambda: mock_use_case
 
     response = client.patch(
         f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
@@ -114,10 +114,10 @@ def test_change_purchase_quantity_not_found(
     mock_use_case.execute.side_effect = NotFoundError("BondHolder not found")
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_add_to_bh_use_case,
+        update_bh_quantity_use_case,
     )
 
-    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
+    app.dependency_overrides[update_bh_quantity_use_case] = lambda: mock_use_case
 
     response = client.patch(
         f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
@@ -138,10 +138,10 @@ def test_change_purchase_quantity_user_id_from_authentication(
     mock_use_case.execute.return_value = mock_updated_bondholder
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_add_to_bh_use_case,
+        update_bh_quantity_use_case,
     )
 
-    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
+    app.dependency_overrides[update_bh_quantity_use_case] = lambda: mock_use_case
 
     response = client.patch(
         f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
@@ -163,10 +163,10 @@ def test_change_purchase_quantity_response_structure(
     mock_use_case.execute.return_value = mock_updated_bondholder
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_add_to_bh_use_case,
+        update_bh_quantity_use_case,
     )
 
-    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
+    app.dependency_overrides[update_bh_quantity_use_case] = lambda: mock_use_case
 
     response = client.patch(
         f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
@@ -219,10 +219,10 @@ def test_change_purchase_quantity_updates_last_update(
     mock_use_case.execute.return_value = mock_response
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_add_to_bh_use_case,
+        update_bh_quantity_use_case,
     )
 
-    app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
+    app.dependency_overrides[update_bh_quantity_use_case] = lambda: mock_use_case
 
     response = client.patch(
         f"api/bonds/{valid_purchase_id}/quantity", json=valid_add_request
@@ -265,7 +265,9 @@ def test_change_purchase_quantity_wrong_data_types(
         "quantity": "five",
     }
 
-    response = client.patch(f"api/bonds/{valid_purchase_id}/quantity", json=invalid_request)
+    response = client.patch(
+        f"api/bonds/{valid_purchase_id}/quantity", json=invalid_request
+    )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
@@ -299,10 +301,10 @@ def test_change_purchase_quantity_multiple_operations(
         mock_use_case.execute.return_value = mock_response
 
         from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-            bond_add_to_bh_use_case,
+            update_bh_quantity_use_case,
         )
 
-        app.dependency_overrides[bond_add_to_bh_use_case] = lambda: mock_use_case
+        app.dependency_overrides[update_bh_quantity_use_case] = lambda: mock_use_case
 
         response = client.patch(
             f"api/bonds/{valid_purchase_id}/quantity", json=request_data

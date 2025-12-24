@@ -29,8 +29,6 @@ class BondHolderDeleteUseCase(BondHolderBaseUseCase):
         if bondholder.user_id != user_id:
             raise AuthorizationError("Permission denied")
         user = await self.user_repo.get_one(user_id=user_id)
-        if not user:
-            raise AuthorizationError("User not found")
 
         bondholder.mark_as_deleted(user_email=user.email)
         events = bondholder.collect_events()

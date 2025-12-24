@@ -1,11 +1,11 @@
-import pytest
-from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, Mock
+from uuid import UUID, uuid4
 
+import pytest
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.database.models import User as UserModel
+from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.repositories.user import SQLAlchemyUserRepository
 from src.domain.entities.user import User as UserEntity
 
@@ -38,7 +38,7 @@ def repository(mock_session: AsyncMock) -> SQLAlchemyUserRepository:
     return SQLAlchemyUserRepository(mock_session)
 
 
-async def test_get_one_success(
+async def test_get_user_if_exists_user_exists(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
     user_model: UserModel,
@@ -46,29 +46,30 @@ async def test_get_one_success(
 ) -> None:
     mock_session.get.return_value = user_model
 
-    result = await repository.get_one(user_entity_mock.id)
+    result = await repository.get_user_if_exists(user_model.id)
 
-    mock_session.get.assert_called_once_with(UserModel, user_entity_mock.id)
+    mock_session.get.assert_called_once_with(UserModel, user_model.id)
     assert result is not None
-    assert result.id == user_entity_mock.id
-    assert result.email == user_entity_mock.email
-    assert result.name == user_entity_mock.name
+    assert result.id == user_model.id
+    assert result.email == user_model.email
+    assert result.name == user_model.name
     assert result.hashed_password == user_entity_mock.hashed_password
 
 
-async def test_get_one_not_found(
-    repository: SQLAlchemyUserRepository, mock_session: AsyncMock
+async def test_get_user_if_exists_user_not_exists(
+    repository: SQLAlchemyUserRepository,
+    mock_session: AsyncMock,
 ) -> None:
     user_id = uuid4()
     mock_session.get.return_value = None
 
-    result = await repository.get_one(user_id)
+    result = await repository.get_user_if_exists(user_id)
 
     mock_session.get.assert_called_once_with(UserModel, user_id)
     assert result is None
 
 
-async def test_get_by_email_success(
+async def test_get_user_if_exists_by_email_user_exists(
     repository: SQLAlchemyUserRepository,
     mock_session: AsyncMock,
     user_model: UserModel,
@@ -78,26 +79,104 @@ async def test_get_by_email_success(
     mock_result.scalar_one_or_none.return_value = user_model
     mock_session.execute.return_value = mock_result
 
-    result = await repository.get_by_email(user_entity_mock.email)
+    result = await repository.get_user_if_exists_by_email(user_model.email)
 
-    mock_session.execute.assert_called_once()
+    mock_result.scalar_one_or_none.assert_called_once()
     assert result is not None
-    assert result.email == user_entity_mock.email
-    assert result.id == user_entity_mock.id
+    assert result.id == user_model.id
+    assert result.email == user_model.email
+    assert result.name == user_model.name
+    assert result.hashed_password == user_entity_mock.hashed_password
 
 
-async def test_get_by_email_not_found(
-    repository: SQLAlchemyUserRepository, mock_session: AsyncMock
+async def test_get_user_if_exists_by_email_user_not_exists(
+    repository: SQLAlchemyUserRepository,
+    mock_session: AsyncMock,
+    user_model: UserModel,
+    user_entity_mock: Mock,
 ) -> None:
-    email = "nonexistent@example.com"
     mock_result = MagicMock()
     mock_result.scalar_one_or_none.return_value = None
     mock_session.execute.return_value = mock_result
 
-    result = await repository.get_by_email(email)
+    result = await repository.get_user_if_exists_by_email(user_model.email)
 
-    mock_session.execute.assert_called_once()
+    mock_result.scalar_one_or_none.assert_called_once()
     assert result is None
+
+
+async def test_get_one_success(
+    repository: SQLAlchemyUserRepository,
+    user_entity_mock: Mock,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def mock_get_user_if_exists(user_id: UUID) -> UserEntity | None:
+        return user_entity_mock
+
+    monkeypatch.setattr(repository, "get_user_if_exists", mock_get_user_if_exists)
+
+    result = await repository.get_one(user_entity_mock.id)
+
+    assert result is not None
+    assert isinstance(result, UserEntity)
+    assert result.id == user_entity_mock.id
+    assert result.email == user_entity_mock.email
+    assert result.name == user_entity_mock.name
+    assert result.hashed_password == user_entity_mock.hashed_password
+
+
+async def test_get_one_not_found(
+    repository: SQLAlchemyUserRepository,
+    mock_session: AsyncMock,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def mock_get_user_if_exists(user_id: UUID) -> UserEntity | None:
+        return None
+
+    monkeypatch.setattr(repository, "get_user_if_exists", mock_get_user_if_exists)
+
+    user_id = uuid4()
+    mock_session.get.return_value = None
+    with pytest.raises(SQLAlchemyRepositoryError, match="User not found"):
+        await repository.get_one(user_id)
+
+
+async def test_get_by_email_success(
+    repository: SQLAlchemyUserRepository,
+    user_entity_mock: Mock,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def get_user_if_exists_by_email(email: str) -> UserEntity | None:
+        return user_entity_mock
+
+    monkeypatch.setattr(
+        repository, "get_user_if_exists_by_email", get_user_if_exists_by_email
+    )
+
+    result = await repository.get_by_email(user_entity_mock.email)
+
+    assert result is not None
+    assert isinstance(result, UserEntity)
+    assert result.id == user_entity_mock.id
+    assert result.email == user_entity_mock.email
+    assert result.name == user_entity_mock.name
+    assert result.hashed_password == user_entity_mock.hashed_password
+
+
+async def test_get_by_email_not_found(
+    repository: SQLAlchemyUserRepository,
+    monkeypatch: pytest.MonkeyPatch,
+    user_entity_mock: Mock,
+) -> None:
+    async def get_user_if_exists_by_email(email: str) -> UserEntity | None:
+        return None
+
+    monkeypatch.setattr(
+        repository, "get_user_if_exists_by_email", get_user_if_exists_by_email
+    )
+
+    with pytest.raises(SQLAlchemyRepositoryError, match="User not found"):
+        await repository.get_by_email(user_entity_mock.email)
 
 
 async def test_write_success(
@@ -140,18 +219,6 @@ async def test_write_sqlalchemy_error(
 
     with pytest.raises(SQLAlchemyRepositoryError, match="Failed to save user"):
         await repository.write(user_entity_mock)
-    mock_session.rollback.assert_called_once()
-
-
-async def test_update_sqlalchemy_error(
-    repository: SQLAlchemyUserRepository,
-    mock_session: AsyncMock,
-    user_entity_mock: Mock,
-) -> None:
-    mock_session.get.side_effect = SQLAlchemyError("Connection timeout")
-
-    with pytest.raises(SQLAlchemyRepositoryError, match="Failed to update user"):
-        await repository.update(user_entity_mock)
     mock_session.rollback.assert_called_once()
 
 

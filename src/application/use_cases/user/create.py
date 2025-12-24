@@ -1,10 +1,10 @@
 from src.application.dto.user import UserCreateDTO, UserDTO
 from src.application.events.event_publisher import EventPublisher
 from src.application.use_cases.user.base import UserBaseUseCase
+from src.domain.entities.user import User as UserEntity
 from src.domain.events.base import DomainEvent
 from src.domain.exceptions import ConflictError
 from src.domain.ports.repositories.user import UserRepository
-from src.domain.entities.user import User as UserEntity
 from src.domain.ports.services.password_hasher import PasswordHasher
 
 
@@ -20,7 +20,7 @@ class UserCreateUseCase(UserBaseUseCase):
         self._event_publisher: EventPublisher = event_publisher
 
     async def execute(self, user_dto: UserCreateDTO) -> UserDTO:
-        user = await self.user_repo.get_by_email(user_dto.email)
+        user = await self.user_repo.get_user_if_exists_by_email(email=user_dto.email)
         if user:
             error_msg = "User already exists"
             raise ConflictError(error_msg)

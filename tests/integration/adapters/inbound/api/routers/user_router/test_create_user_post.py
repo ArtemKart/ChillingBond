@@ -62,7 +62,7 @@ def test_create_user_success(
     use_case: UserCreateUseCase,
     user_entity_mock: Mock,
 ) -> None:
-    use_case.user_repo.get_by_email.return_value = None  # type: ignore[attr-defined]
+    use_case.user_repo.get_user_if_exists_by_email.return_value = None  # type: ignore[attr-defined]
     use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
 
     app.dependency_overrides[user_create_use_case] = lambda: use_case
@@ -81,7 +81,7 @@ def test_create_user_user_already_exists(
     use_case: UserCreateUseCase,
     user_entity_mock: Mock,
 ) -> None:
-    use_case.user_repo.get_by_email.return_value = user_entity_mock  # type: ignore[attr-defined]
+    use_case.user_repo.get_user_if_exists_by_email.return_value = user_entity_mock  # type: ignore[attr-defined]
     app.dependency_overrides[user_create_use_case] = lambda: use_case
 
     r = client.post("api/users", json=user_create_valid_data)
@@ -100,7 +100,7 @@ def test_create_user_email_normalization(
         "password": "SecurePass123!",
         "name": "Test User",
     }
-    use_case.user_repo.get_by_email.return_value = None  # type: ignore[attr-defined]
+    use_case.user_repo.get_user_if_exists_by_email.return_value = None  # type: ignore[attr-defined]
     use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
 
     app.dependency_overrides[user_create_use_case] = lambda: use_case
@@ -149,7 +149,7 @@ def test_create_user_without_name(
 ) -> None:
     data_without_name = {"email": "test@example.com", "password": "SecurePass123!"}
     user_entity_mock.name = None
-    use_case.user_repo.get_by_email.return_value = None  # type: ignore[attr-defined]
+    use_case.user_repo.get_user_if_exists_by_email.return_value = None  # type: ignore[attr-defined]
     use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
 
     app.dependency_overrides[user_create_use_case] = lambda: use_case

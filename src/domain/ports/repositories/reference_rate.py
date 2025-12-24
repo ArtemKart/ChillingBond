@@ -15,7 +15,3 @@ class ReferenceRateRepository(ABC):
     @abstractmethod
     async def get_by_date(self, target_date: date) -> ReferenceRate | None:
         pass
-
-    @abstractmethod
-    async def get_actual(self) -> ReferenceRate | None:
-        pass
