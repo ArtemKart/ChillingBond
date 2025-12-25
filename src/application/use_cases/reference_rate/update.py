@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-
-from src.application.events.event_publisher import EventPublisher
 from src.domain.ports.repositories.reference_rate import ReferenceRateRepository
 from src.domain.ports.services.reference_rate_provider import ReferenceRateProvider
 from src.domain.entities.reference_rate import ReferenceRate as ReferenceRateEntity
@@ -17,19 +15,16 @@ class UpdateReferenceRateUseCase:
     1. Fetch current rate from external provider
     2. Get latest rate from database
     3. Compare them
-    4. If different - publish ReferenceRateHasChanged event
-    5. Event handler will save the new rate to DB
+    4. If different - save the new rate to DB
     """
 
     def __init__(
         self,
         reference_rate_repo: ReferenceRateRepository,
         rate_provider: ReferenceRateProvider,
-        event_publisher: EventPublisher,
     ) -> None:
         self._ref_rate_repo = reference_rate_repo
         self._rate_provider = rate_provider
-        self._event_publisher = event_publisher
 
     async def execute(self) -> "UpdateReferenceRatesResult":
         try:
@@ -59,7 +54,7 @@ class UpdateReferenceRateUseCase:
             return UpdateReferenceRatesResult(
                 success=True,
                 rate_changed=True,
-                message="New rate detected and event published",
+                message="New rate detected and saved.",
                 rate_value=current_rate_value,
                 effective_date=current_effective_date,
             )

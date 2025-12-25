@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from src.domain.events import DomainEvent
+from src.domain.events.base import DomainEvent
 
 
 @dataclass

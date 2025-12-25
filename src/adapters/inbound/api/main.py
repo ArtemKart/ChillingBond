@@ -1,10 +1,12 @@
 import logging
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Final
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+
 from starlette.middleware.cors import CORSMiddleware
 
 from src.adapters.di_container import setup_event_publisher
@@ -18,8 +20,6 @@ from src.adapters.inbound.api.routers.calculation_router import calculation_rout
 from src.adapters.inbound.api.routers.internal_router import internal_router
 from src.adapters.inbound.api.routers.login_router import login_router
 from src.adapters.inbound.api.routers.user_router import user_router
-from src.adapters.outbound.apscheduler import APScheduler
-from src.adapters.config import get_config
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.exceptions import DomainError
 from src.setup_logging import setup_logging
@@ -36,20 +36,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     logging.info("✅ Event Publisher initialized")
 
-    scheduler = APScheduler()
-    config = get_config()
-    scheduler.schedule_every_n_days_http(
-        url=f"{config.API_URL}/internal/update-reference-rates",
-        days=3,
-        task_id="nbp_reference_rate_updater",
-    )
-    scheduler.start()
-    logger.info("✅ Scheduler started")
-
     yield
-
-    scheduler.shutdown()
-    logger.info("✅ Scheduler stopped")
 
 
 app: Final = FastAPI(lifespan=lifespan)
@@ -66,7 +53,7 @@ app.include_router(user_router, prefix="/api")
 app.include_router(bond_router, prefix="/api")
 app.include_router(login_router, prefix="/api")
 app.include_router(calculation_router, prefix="/api")
-app.include_router(internal_router, prefix="")  # TODO
+app.include_router(internal_router)
 
 
 @app.get("/health")

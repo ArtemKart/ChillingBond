@@ -15,10 +15,12 @@ class APScheduler:
         self._scheduler = AsyncIOScheduler()
 
     @staticmethod
-    async def _http_task(url: str, task_id: str) -> None:
+    async def _http_task(
+        url: str, task_id: str, method: str, headers: dict = None
+    ) -> None:
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.get(url)
+                response = await client.request(method, url, headers=headers or {})
                 response.raise_for_status()
                 logger.info(
                     f"HTTP task completed with status code: {response.status_code}"
@@ -32,23 +34,23 @@ class APScheduler:
         self,
         url: str,
         days: int,
+        method: str,
         task_id: str,
-        hour: int = 0,
-        minute: int = 0,
+        headers: dict = None,
     ) -> None:
         """Schedule an HTTP request to run every N days at specified time."""
         from apscheduler.triggers.interval import IntervalTrigger
         from datetime import time, datetime, timedelta
 
         now = datetime.now()
-        next_run = datetime.combine(now.date(), time(hour, minute))
+        next_run = datetime.combine(now.date(), time(0, 0))
         if next_run <= now:
             next_run += timedelta(days=1)
 
         self._scheduler.add_job(
             self._http_task,
             trigger=IntervalTrigger(days=days, start_date=next_run),
-            args=[url, task_id],
+            args=[url, task_id, method, headers],
             id=task_id,
             name=task_id,
             replace_existing=True,
