@@ -1,0 +1,92 @@
+---
+name: Manual Version Bump
+
+"on":
+    workflow_dispatch:
+        inputs:
+            bump-type:
+                description: "Version bump type"
+                required: true
+                type: choice
+                options:
+                    - patch
+                    - minor
+                    - major
+
+jobs:
+    bump-version:
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+
+            - name: Install python-semantic-release
+              run: pip install python-semantic-release>=9.0.0
+
+            - name: Configure git
+              run: |
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "GitHub Action"
+
+            - name: Run semantic-release
+              run: |
+                  semantic-release version \
+                    --bump ${{ inputs.bump-type }} \
+                    --no-commit \
+                    --no-tag
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Get new version
+              id: version
+              run: |
+                  NEW_VERSION=$(
+                    grep '^version = ' pyproject.toml |
+                    sed 's/version = "\(.*\)"/\1/'
+                  )
+                  echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+                  echo "New version: $NEW_VERSION"
+
+            - name: Commit and tag
+              run: |
+                  NEW_VERSION="${{ steps.version.outputs.new_version }}"
+                  git add pyproject.toml
+                  git commit -m "chore: bump version to $NEW_VERSION"
+                  git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
+                  git push origin main
+                  git push origin "v$NEW_VERSION"
+
+            - name: Create GitHub Release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: v${{ steps.version.outputs.new_version }}
+                  release_name: |-
+                    Release v${{ steps.version.outputs.new_version }}
+                  body: |
+                      ## Version ${{ steps.version.outputs.new_version }}
+
+                      **Bump type:** ${{ inputs.bump-type }}
+
+                      See commits for detailed changes.
+                  draft: false
+                  prerelease: false
+
+            - name: Print summary
+              run: |
+                  echo "=== Version Bump Complete ==="
+                  echo "New version: ${{ steps.version.outputs.new_version }}"
+                  echo "Bump type: ${{ inputs.bump-type }}"
+                  echo "=============================="
