@@ -1,8 +1,11 @@
 from datetime import date
+from sqlite3 import IntegrityError
 
 from sqlalchemy import select, and_, or_
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.entities.reference_rate import ReferenceRate as ReferenceRateEntity
 from src.domain.ports.repositories.reference_rate import ReferenceRateRepository
 from src.adapters.outbound.database.models import ReferenceRate as ReferenceRateModel
@@ -11,6 +14,28 @@ from src.adapters.outbound.database.models import ReferenceRate as ReferenceRate
 class SQLAlchemyReferenceRateRepository(ReferenceRateRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    async def save(self, ref_rate: ReferenceRateEntity) -> ReferenceRateEntity:
+        """
+        Save a ReferenceRate entity to the database.
+
+        Args:
+            ref_rate: ReferenceRate entity to be saved
+        """
+        try:
+            model = self._to_model(ref_rate)
+            self._session.add(model)
+            await self._session.commit()
+            await self._session.refresh(model)
+            return self._to_entity(model)
+        except IntegrityError as e:
+            error_msg = "ReferenceRate already exists or constraint violated"
+            await self._session.rollback()
+            raise SQLAlchemyRepositoryError(error_msg) from e
+        except SQLAlchemyError as e:
+            error_msg = "Failed to save ReferenceRate"
+            await self._session.rollback()
+            raise SQLAlchemyRepositoryError(error_msg) from e
 
     async def get_by_date(self, target_date: date) -> ReferenceRateEntity | None:
         """
@@ -40,14 +65,35 @@ class SQLAlchemyReferenceRateRepository(ReferenceRateRepository):
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_actual(self) -> ReferenceRateEntity | None:
-        pass
+    async def get_latest(self) -> ReferenceRateEntity | None:
+        """
+        Retrieve the most recently added reference rate.
+        Returns:
+            ReferenceRate object if found, None otherwise
+        """
+        stmt = (
+            select(ReferenceRateModel)
+            .order_by(ReferenceRateModel.start_date.desc())
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return self._to_entity(model) if model else None
 
     @staticmethod
-    def _to_entity(model: ReferenceRateModel) -> ReferenceRateEntity | None:
+    def _to_entity(model: ReferenceRateModel) -> ReferenceRateEntity:
         return ReferenceRateEntity(
             id=model.id,
             value=model.value,
             start_date=model.start_date,
             end_date=model.end_date,
+        )
+
+    @staticmethod
+    def _to_model(entity: ReferenceRateEntity) -> ReferenceRateModel:
+        return ReferenceRateModel(
+            id=entity.id,
+            value=entity.value,
+            start_date=entity.start_date,
+            end_date=entity.end_date,
         )
