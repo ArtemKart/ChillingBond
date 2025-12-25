@@ -1,7 +1,7 @@
 import logging
 
 from src.domain.events.bondholder_events import BondHolderDeletedEvent
-from src.domain.services.email_sender import EmailSender
+from src.domain.ports.services.email_sender import EmailSender
 
 
 logger = logging.getLogger(__name__)
