@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from datetime import datetime
 from decimal import Decimal
 
 from src.domain.ports.repositories.reference_rate import ReferenceRateRepository
@@ -46,6 +47,9 @@ class UpdateReferenceRateUseCase:
                     rate_value=latest_rate.value,
                     effective_date=latest_rate.start_date,
                 )
+            if latest_rate:
+                latest_rate.end_date = datetime.today()
+                await self._ref_rate_repo.update(latest_rate)
             reference_rate = ReferenceRateEntity.create(
                 value=current_rate_value,
                 start_date=current_effective_date,

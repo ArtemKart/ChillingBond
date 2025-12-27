@@ -1,5 +1,4 @@
 import logging
-import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Final
@@ -17,7 +16,6 @@ from src.adapters.inbound.api.exception_handlers import (
 )
 from src.adapters.inbound.api.routers.bond_router import bond_router
 from src.adapters.inbound.api.routers.calculation_router import calculation_router
-from src.adapters.inbound.api.routers.internal_router import internal_router
 from src.adapters.inbound.api.routers.login_router import login_router
 from src.adapters.inbound.api.routers.user_router import user_router
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
@@ -53,7 +51,6 @@ app.include_router(user_router, prefix="/api")
 app.include_router(bond_router, prefix="/api")
 app.include_router(login_router, prefix="/api")
 app.include_router(calculation_router, prefix="/api")
-app.include_router(internal_router)
 
 
 @app.get("/health")

@@ -23,3 +23,7 @@ class ReferenceRateRepository(ABC):
     @abstractmethod
     async def get_latest(self) -> ReferenceRate | None:
         pass
+    
+    @abstractmethod
+    async def update(self, ref_rate: ReferenceRate) -> ReferenceRate:
+        pass

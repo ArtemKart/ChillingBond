@@ -1,0 +1,16 @@
+FROM python:3.13-slim
+
+ARG PROJECT_DIR=/home/scheduler
+WORKDIR $PROJECT_DIR
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+COPY pyproject.toml alembic.ini logging.yml uv.lock ./
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    uv sync --frozen && rm -rf /root/.cache/pip
+
+COPY src ./src
+
+ENV PATH="/home/scheduler/.venv/bin:$PATH"

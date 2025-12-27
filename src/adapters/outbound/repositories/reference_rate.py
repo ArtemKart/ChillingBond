@@ -63,7 +63,8 @@ class SQLAlchemyReferenceRateRepository(ReferenceRateRepository):
         )
 
         result = await self._session.execute(stmt)
-        return result.scalar_one_or_none()
+        result = result.scalar_one_or_none()
+        return self._to_entity(result) if result else None
 
     async def get_latest(self) -> ReferenceRateEntity | None:
         """
@@ -79,7 +80,16 @@ class SQLAlchemyReferenceRateRepository(ReferenceRateRepository):
         result = await self._session.execute(stmt)
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
-
+        
+    
+    async def update(self, ref_rate: ReferenceRateEntity) -> ReferenceRateEntity:
+        model = await self._session.get(ReferenceRateModel, ref_rate.id)
+        if not model:
+            raise SQLAlchemyRepositoryError("ReferenceRate not found")
+        self._update_model(model, ref_rate)
+        await self._session.commit()
+        return self._to_entity(model)
+    
     @staticmethod
     def _to_entity(model: ReferenceRateModel) -> ReferenceRateEntity:
         return ReferenceRateEntity(
@@ -97,3 +107,9 @@ class SQLAlchemyReferenceRateRepository(ReferenceRateRepository):
             start_date=entity.start_date,
             end_date=entity.end_date,
         )
+        
+    @staticmethod
+    def _update_model(model: ReferenceRateModel, entity: ReferenceRateEntity) -> None:
+        model.value = entity.value
+        model.start_date = entity.start_date
+        model.end_date = entity.end_date

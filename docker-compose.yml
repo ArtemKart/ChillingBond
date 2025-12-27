@@ -80,6 +80,31 @@ services:
         restart: always
         volumes:
             - ./logs/nginx:/var/log/nginx
+        healthcheck:
+            test: ["CMD-SHELL", "curl -fsS http://localhost/ || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 20s
+
+    scheduler:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile_scheduler
+        container_name: chillingbond-scheduler
+        env_file: .env
+        environment:
+            API_URL: http://backend:8000
+            POSTGRES_HOST: database
+        command: uv run python -m src.adapters.inbound.scheduler.start_scheduler
+        depends_on:
+            database:
+                condition: service_healthy
+            backend:
+                condition: service_started
+        networks:
+            - app_net
+        restart: always
 
 volumes:
     postgres-data:
