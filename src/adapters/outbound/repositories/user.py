@@ -13,20 +13,28 @@ from src.adapters.outbound.database.models import User as UserModel
 class SQLAlchemyUserRepository(UserRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
-
-    async def get_one(self, user_id: UUID) -> UserEntity | None:
+        
+    async def get_user_if_exists(self, user_id: UUID) -> UserEntity | None:
         model = await self._session.get(UserModel, user_id)
-        if model:
-            return self._to_entity(model)
-        return None
-
-    async def get_by_email(self, email: str) -> UserEntity | None:
+        return self._to_entity(model) if model else None
+        
+    async def get_user_if_exists_by_email(self, email: str) -> UserEntity | None:
         stmt = select(UserModel).where(UserModel.email == email)
         result = await self._session.execute(stmt)
         user = result.scalar_one_or_none()
-        if not user:
-            return None
-        return self._to_entity(user)
+        return self._to_entity(user) if user else None
+    
+    async def get_one(self, user_id: UUID) -> UserEntity:
+        user_entity = await self.get_user_if_exists(user_id=user_id)
+        if not user_entity:
+            raise SQLAlchemyRepositoryError("User not found")
+        return user_entity
+
+    async def get_by_email(self, email: str) -> UserEntity:
+        user_entity = await self.get_user_if_exists_by_email(email=email)
+        if not user_entity:
+            raise SQLAlchemyRepositoryError("User not found")
+        return user_entity
 
     async def write(self, user: UserEntity) -> UserEntity:
         try:
@@ -41,18 +49,6 @@ class SQLAlchemyUserRepository(UserRepository):
             raise SQLAlchemyRepositoryError(error_msg) from e
         except SQLAlchemyError as e:
             error_msg = "Failed to save user"
-            await self._session.rollback()
-            raise SQLAlchemyRepositoryError(error_msg) from e
-
-    async def update(self, user: UserEntity) -> UserEntity:
-        try:
-            model = await self._session.get(UserModel, user.id)
-            self._update_model(model, user)
-            await self._session.commit()
-            await self._session.refresh(model)
-            return self._to_entity(model)
-        except SQLAlchemyError as e:
-            error_msg = "Failed to update user"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 

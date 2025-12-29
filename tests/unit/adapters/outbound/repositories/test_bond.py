@@ -25,19 +25,6 @@ def bond_model(bond_entity_mock: Mock) -> BondModel:
 
 
 @pytest.fixture
-def mock_session() -> AsyncMock:
-    session = AsyncMock()
-    session.get = AsyncMock()
-    session.execute = AsyncMock()
-    session.add = MagicMock()
-    session.delete = AsyncMock()
-    session.commit = AsyncMock()
-    session.rollback = AsyncMock()
-    session.refresh = AsyncMock()
-    return session
-
-
-@pytest.fixture
 def repository(mock_session: AsyncMock) -> SQLAlchemyBondRepository:
     return SQLAlchemyBondRepository(mock_session)
 

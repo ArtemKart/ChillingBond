@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Generator
+from typing import Generator
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4, UUID
 
@@ -17,11 +17,6 @@ from src.adapters.inbound.api.dependencies.repo_deps import (
     bondholder_repository,
 )
 from src.adapters.inbound.api.main import app
-
-
-@pytest_asyncio.fixture
-async def mock_database_session() -> AsyncGenerator[AsyncMock, None]:
-    yield AsyncMock()
 
 
 @pytest_asyncio.fixture
@@ -54,7 +49,7 @@ def mock_config_globally() -> Generator[Mock, None, None]:
 
 @pytest_asyncio.fixture
 async def client(
-    mock_database_session: AsyncMock,
+    mock_session: AsyncMock,
     mock_current_user: UUID,
     mock_user_repo: AsyncMock,
     mock_bondholder_repo: AsyncMock,
@@ -62,7 +57,7 @@ async def client(
     mock_config_globally: Mock,
     mock_event_publisher: AsyncMock,
 ) -> TestClient:
-    app.dependency_overrides[SessionDep] = lambda: mock_database_session
+    app.dependency_overrides[SessionDep] = lambda: mock_session
     app.dependency_overrides[ConfigDep] = lambda: mock_config_globally
     app.dependency_overrides[current_user] = lambda: mock_current_user
     app.dependency_overrides[user_repository] = lambda: mock_user_repo

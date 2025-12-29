@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 from src.application.dto.token import TokenDTO
 from src.application.use_cases.user.login import UserLoginUseCase
@@ -39,7 +40,7 @@ async def test_success_returns_token(
     user_entity_mock: Mock,
     sample_token: Mock,
 ) -> None:
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = True
     mock_token_handler.create_token.return_value = sample_token
 
@@ -48,7 +49,9 @@ async def test_success_returns_token(
     assert isinstance(result, TokenDTO)
     assert result.token == sample_token.token
     assert result.type == sample_token.type
-    mock_user_repo.get_by_email.assert_called_once_with(sample_form_data.username)
+    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
+        sample_form_data.username
+    )
     user_entity_mock.verify_password.assert_called_once_with(
         hasher=mock_hasher,
         plain_password=sample_form_data.password,
@@ -61,12 +64,14 @@ async def test_success_returns_token(
 async def test_user_not_found_raises_validation_error(
     use_case: UserLoginUseCase, mock_user_repo: AsyncMock, sample_form_data: Mock
 ) -> None:
-    mock_user_repo.get_by_email.return_value = None
+    mock_user_repo.get_user_if_exists_by_email.return_value = None
 
     with pytest.raises(AuthenticationError, match="Incorrect username or password"):
         await use_case.execute(sample_form_data)
 
-    mock_user_repo.get_by_email.assert_called_once_with(sample_form_data.username)
+    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
+        sample_form_data.username
+    )
 
 
 async def test_incorrect_password_raises_validation_error(
@@ -76,13 +81,15 @@ async def test_incorrect_password_raises_validation_error(
     sample_form_data: Mock,
     user_entity_mock: Mock,
 ) -> None:
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = False
 
     with pytest.raises(AuthenticationError, match="Incorrect username or password"):
         await use_case.execute(sample_form_data)
 
-    mock_user_repo.get_by_email.assert_called_once_with(sample_form_data.username)
+    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
+        sample_form_data.username
+    )
     user_entity_mock.verify_password.assert_called_once_with(
         hasher=mock_hasher,
         plain_password=sample_form_data.password,
@@ -101,14 +108,16 @@ async def test_with_different_credentials(
     form_data.username = "another@example.com"
     form_data.password = "AnotherPassword456!"
 
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = True
     mock_token_handler.create_token.return_value = sample_token
 
     result = await use_case.execute(form_data)
 
     assert result.token == sample_token.token
-    mock_user_repo.get_by_email.assert_called_once_with(form_data.username)
+    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
+        form_data.username
+    )
     user_entity_mock.verify_password.assert_called_once_with(
         hasher=mock_hasher, plain_password=form_data.password
     )
@@ -125,7 +134,7 @@ async def test_converts_user_id_to_string(
     user.id = 12345
     user.verify_password = Mock(return_value=True)
 
-    mock_user_repo.get_by_email.return_value = user
+    mock_user_repo.get_user_if_exists_by_email.return_value = user
     mock_token_handler.create_token.return_value = sample_token
 
     await use_case.execute(sample_form_data)
@@ -148,7 +157,7 @@ async def test_handles_uuid_user_id(
     user.id = user_id
     user.verify_password = Mock(return_value=True)
 
-    mock_user_repo.get_by_email.return_value = user
+    mock_user_repo.get_user_if_exists_by_email.return_value = user
     mock_token_handler.create_token.return_value = sample_token
 
     await use_case.execute(sample_form_data)
@@ -163,7 +172,7 @@ async def test_does_not_create_token_on_failed_auth(
     sample_form_data: Mock,
     user_entity_mock: Mock,
 ) -> None:
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = False
 
     with pytest.raises(AuthenticationError, match="Incorrect username or password"):
@@ -180,11 +189,9 @@ async def test_pass_hasher_to_verify_password(
     sample_token: Mock,
 ) -> None:
     custom_hasher = AsyncMock(spec=PasswordHasher)
-    custom_use_case = UserLoginUseCase(
-        mock_user_repo, custom_hasher, mock_token_handler
-    )
+    custom_use_case = UserLoginUseCase(mock_user_repo, custom_hasher, mock_token_handler)
 
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = True
     mock_token_handler.create_token.return_value = sample_token
 

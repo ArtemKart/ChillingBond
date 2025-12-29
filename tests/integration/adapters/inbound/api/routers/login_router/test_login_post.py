@@ -38,7 +38,7 @@ def test_login_success(
     mock_hasher: Mock,
     mock_token_handler: Mock,
 ) -> None:
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = True
 
     mock_token = Mock()
@@ -54,7 +54,7 @@ def test_login_success(
     data = response.json()
     
     assert data['message'] == 'Successfully authenticated'
-    mock_user_repo.get_by_email.assert_called_once_with("test@example.com")
+    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with("test@example.com")
     user_entity_mock.verify_password.assert_called_once_with(
         hasher=mock_hasher, plain_password="correct_password"
     )
@@ -64,7 +64,7 @@ def test_login_success(
 
 
 def test_login_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> None:
-    mock_user_repo.get_by_email.return_value = None
+    mock_user_repo.get_user_if_exists_by_email.return_value = None
 
     form_data = {"username": "nonexistent@example.com", "password": "any_password"}
 
@@ -73,7 +73,7 @@ def test_login_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Incorrect username or password"
 
-    mock_user_repo.get_by_email.assert_called_once_with("nonexistent@example.com")
+    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with("nonexistent@example.com")
 
 
 def test_login_incorrect_password(
@@ -82,7 +82,7 @@ def test_login_incorrect_password(
     user_entity_mock: Mock,
     mock_hasher: Mock,
 ) -> None:
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = False
 
     form_data = {"username": "test@example.com", "password": "wrong_password"}
@@ -92,7 +92,7 @@ def test_login_incorrect_password(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json()["detail"] == "Incorrect username or password"
 
-    mock_user_repo.get_by_email.assert_called_once_with("test@example.com")
+    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with("test@example.com")
     user_entity_mock.verify_password.assert_called_once_with(
         hasher=mock_hasher, plain_password="wrong_password"
     )
@@ -124,7 +124,7 @@ def test_login_response_structure(
     user_entity_mock: Mock,
     mock_token_handler: Mock,
 ) -> None:
-    mock_user_repo.get_by_email.return_value = user_entity_mock
+    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
     user_entity_mock.verify_password.return_value = True
 
     mock_token = Mock()

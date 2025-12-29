@@ -24,5 +24,4 @@ class AuthenticationError(DomainError):
 
 class AuthorizationError(DomainError):
     """Raised when user doesn't have permission to access resource"""
-
     pass

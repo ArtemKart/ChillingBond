@@ -9,9 +9,9 @@ from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
     bh_delete_use_case,
     bh_get_all_use_case,
     bh_get_use_case,
-    bond_add_to_bh_use_case,
+    update_bh_quantity_use_case,
     bond_update_use_case,
-    create_bondholder_use_case,
+    bh_create_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 from src.adapters.inbound.api.schemas.bond import (
@@ -26,12 +26,12 @@ from src.adapters.inbound.api.schemas.bondholder import (
 )
 from src.application.dto.bond import BondCreateDTO, BondUpdateDTO
 from src.application.dto.bondholder import (
-    BondHolderChangeQuantityDTO,
+    BondHolderUpdateQuantityDTO,
     BondHolderCreateDTO,
 )
 from src.application.use_cases.bond_update import BondUpdateUseCase
-from src.application.use_cases.bondholder.bh_add import (
-    ChangeBondHolderQuantityUseCase,
+from src.application.use_cases.bondholder.bh_update_quantity import (
+    UpdateBondHolderQuantityUseCase,
 )
 from src.application.use_cases.bondholder.bh_create import (
     BondHolderCreateUseCase,
@@ -57,7 +57,7 @@ bond_router = APIRouter(prefix="/bonds", tags=["bondholder"])
 async def create_bond_purchase(
     bondholder_data: BondHolderCreateRequest,
     user_id: Annotated[UUID, Depends(current_user)],
-    use_case: Annotated[BondHolderCreateUseCase, Depends(create_bondholder_use_case)],
+    use_case: Annotated[BondHolderCreateUseCase, Depends(bh_create_use_case)],
 ):
     bondholder_dto = BondHolderCreateDTO(
         user_id=user_id,
@@ -134,15 +134,15 @@ async def get_bond(
     status_code=status.HTTP_200_OK,
     description="Change bond quantity in bond holder",
 )
-async def change_purchase_quantity(
+async def update_purchase_quantity(
     purchase_id: UUID,
     bond_data: BondHolderChangeRequest,
     use_case: Annotated[
-        ChangeBondHolderQuantityUseCase, Depends(bond_add_to_bh_use_case)
+        UpdateBondHolderQuantityUseCase, Depends(update_bh_quantity_use_case)
     ],
     user_id: Annotated[UUID, Depends(current_user)],
 ):
-    dto = BondHolderChangeQuantityDTO(
+    dto = BondHolderUpdateQuantityDTO(
         id=purchase_id,
         user_id=user_id,
         new_quantity=bond_data.new_quantity,

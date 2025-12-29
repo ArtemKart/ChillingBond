@@ -23,7 +23,7 @@ class BondHolderDTO:
 
 
 @dataclass
-class BondHolderChangeQuantityDTO:
+class BondHolderUpdateQuantityDTO:
     id: UUID
     user_id: UUID
     new_quantity: int

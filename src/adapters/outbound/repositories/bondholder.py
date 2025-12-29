@@ -25,9 +25,9 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         result = await self._session.execute(stmt)
         return [self._to_entity(model) for model in result.scalars().all()]
 
-    async def write(self, bondholder: BondHolderEntity) -> BondHolderEntity:
+    async def write(self, entity: BondHolderEntity) -> BondHolderEntity:
         try:
-            model = self._to_model(bondholder)
+            model = self._to_model(entity)
             self._session.add(model)
             await self._session.commit()
             await self._session.refresh(model)
@@ -41,10 +41,12 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def update(self, bondholder: BondHolderEntity) -> BondHolderEntity:
+    async def update(self, entity: BondHolderEntity) -> BondHolderEntity:
         try:
-            model = await self._session.get(BondHolderModel, bondholder.id)
-            self._update_model(model, bondholder)
+            model = await self._session.get(BondHolderModel, entity.id)
+            if not model:
+                raise SQLAlchemyRepositoryError("BondHolder not found")
+            self._update_model(model, entity)
             await self._session.commit()
             await self._session.refresh(model)
             return self._to_entity(model)
