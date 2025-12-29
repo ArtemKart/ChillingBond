@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from src.domain.entities.user import User
+from src.domain.events import UserCreated
 from src.domain.ports.services.password_hasher import PasswordHasher
 
 
@@ -48,3 +49,18 @@ def test_verify_password_return_false(hasher: Mock) -> None:
         name="name",
     )
     assert not user.verify_password(hasher=hasher, plain_password=plain_password)
+
+
+def test_collect_events(hasher: Mock) -> None:
+    user = User.create(
+        email="test_email@email.com",
+        plain_password="plain_password1",
+        hasher=hasher,
+        name="name",
+    )
+    events = user.collect_events()
+    assert len(events) == 1
+    event = events[0]
+    assert isinstance(event, UserCreated)
+    assert event.user_id == user.id
+    assert event.email == str(user.email)

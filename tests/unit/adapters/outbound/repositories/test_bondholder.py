@@ -24,18 +24,6 @@ def bondholder_model(bondholder_entity_mock: Mock) -> BondHolderModel:
 
 
 @pytest.fixture
-def mock_session() -> AsyncMock:
-    session = AsyncMock()
-    session.get = AsyncMock()
-    session.execute = AsyncMock()
-    session.add = MagicMock()
-    session.commit = AsyncMock()
-    session.rollback = AsyncMock()
-    session.refresh = AsyncMock()
-    return session
-
-
-@pytest.fixture
 def repository(mock_session: AsyncMock) -> SQLAlchemyBondHolderRepository:
     return SQLAlchemyBondHolderRepository(mock_session)
 
@@ -197,6 +185,19 @@ async def test_update_sqlalchemy_error(
     ):
         await repository.update(bondholder_entity_mock)
     mock_session.rollback.assert_called_once()
+
+
+async def test_update_model_not_found(
+    repository: SQLAlchemyBondHolderRepository,
+    mock_session: AsyncMock,
+    bondholder_entity_mock: Mock,
+) -> None:
+    mock_session.get.return_value = None
+
+    with pytest.raises(
+        SQLAlchemyRepositoryError, match="BondHolder not found"
+    ):
+        await repository.update(bondholder_entity_mock)
 
 
 async def test_to_entity_conversion(

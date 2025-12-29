@@ -45,7 +45,6 @@ class BondHolder:
         purchase_date: date,
         last_update: datetime | None = None,
     ) -> Self:
-        pass
         bh = cls(
             id=uuid4(),
             bond_id=bond_id,

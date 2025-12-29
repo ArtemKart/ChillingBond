@@ -53,9 +53,16 @@ class Bond:
         return bond
 
     def validate(self) -> None:
+        self._validate_types()
         self._validate_nominal_value()
         self._validate_maturity_period()
         self._validate_initial_interest_rate()
+
+    def _validate_types(self) -> None:
+        for field, f_type in self.__annotations__.items():
+            v = getattr(self, field)
+            if not isinstance(v, f_type):
+                raise ValidationError(f"Bond {field} must be of type {f_type.__name__}.")
 
     def _validate_nominal_value(self) -> None:
         if self.nominal_value <= 0:

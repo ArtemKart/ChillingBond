@@ -55,10 +55,10 @@ def test_create_bond_purchase_success(
     mock_use_case.execute.return_value = mock_use_case_response
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        create_bondholder_use_case,
+        bh_create_use_case,
     )
 
-    app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
+    app.dependency_overrides[bh_create_use_case] = lambda: mock_use_case
 
     response = client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_201_CREATED
@@ -151,10 +151,10 @@ def test_create_bond_purchase_use_case_exception(
     )
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        create_bondholder_use_case,
+        bh_create_use_case,
     )
 
-    app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
+    app.dependency_overrides[bh_create_use_case] = lambda: mock_use_case
 
     response = client.post("api/bonds", json=valid_bond_data)
 
@@ -174,10 +174,10 @@ def test_create_bond_purchase_with_decimal_values(
     mock_use_case.execute.return_value = mock_use_case_response
 
     from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        create_bondholder_use_case,
+        bh_create_use_case,
     )
 
-    app.dependency_overrides[create_bondholder_use_case] = lambda: mock_use_case
+    app.dependency_overrides[bh_create_use_case] = lambda: mock_use_case
 
     response = client.post("api/bonds", json=valid_bond_data)
 

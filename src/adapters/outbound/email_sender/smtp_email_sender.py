@@ -4,7 +4,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from src.domain.services.email_sender import EmailSender
+from src.domain.ports.services.email_sender import EmailSender
 
 logger = logging.getLogger(__name__)
 

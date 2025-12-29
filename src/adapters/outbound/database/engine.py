@@ -1,7 +1,6 @@
 from collections.abc import AsyncGenerator
 from typing import Optional
 
-from sqlalchemy import Engine
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
@@ -11,7 +10,7 @@ _engine: Optional[AsyncEngine] = None
 _session_maker: Optional[sessionmaker] = None
 
 
-def get_engine() -> AsyncEngine | Engine:
+def get_engine() -> AsyncEngine:
     global _engine
     if _engine is None:
         config = get_config()

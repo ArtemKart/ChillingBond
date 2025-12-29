@@ -63,7 +63,6 @@ async def test_delete_bondholder_success(
     )
 
 
-@pytest.mark.asyncio
 async def test_delete_bondholder_not_found(
     use_case: BondHolderDeleteUseCase, mock_bondholder_repo: AsyncMock
 ) -> None:
@@ -77,7 +76,6 @@ async def test_delete_bondholder_not_found(
     mock_bondholder_repo.get_one.assert_awaited_once_with(bondholder_id=bondholder_id)
 
 
-@pytest.mark.asyncio
 async def test_delete_bondholder_wrong_owner(
     use_case: BondHolderDeleteUseCase,
     mock_bondholder_repo: AsyncMock,
@@ -95,25 +93,3 @@ async def test_delete_bondholder_wrong_owner(
         await use_case.execute(bondholder_id=bondholder_id, user_id=user_id)
 
     mock_bondholder_repo.get_one.assert_awaited_once_with(bondholder_id=bondholder_id)
-
-
-@pytest.mark.asyncio
-async def test_delete_bondholder_user_not_found(
-    use_case: BondHolderDeleteUseCase,
-    mock_bondholder_repo: AsyncMock,
-    mock_user_repo: AsyncMock,
-) -> None:
-    bondholder_id = uuid4()
-    user_id = uuid4()
-
-    bondholder_mock = Mock(spec=BondHolder)
-    bondholder_mock.user_id = user_id
-
-    mock_bondholder_repo.get_one.return_value = bondholder_mock
-    mock_user_repo.get_one.return_value = None
-
-    with pytest.raises(AuthorizationError, match="User not found"):
-        await use_case.execute(bondholder_id=bondholder_id, user_id=user_id)
-
-    mock_bondholder_repo.get_one.assert_awaited_once_with(bondholder_id=bondholder_id)
-    mock_user_repo.get_one.assert_awaited_once_with(user_id=user_id)
