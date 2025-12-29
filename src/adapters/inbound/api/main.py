@@ -5,6 +5,7 @@ from typing import Final
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+
 from starlette.middleware.cors import CORSMiddleware
 
 from src.adapters.di_container import setup_event_publisher

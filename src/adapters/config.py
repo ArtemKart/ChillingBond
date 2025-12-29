@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import URL
 
 from src import ROOTDIR
 
@@ -19,6 +18,9 @@ class Config(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
 
+    API_URL: str
+    INTERNAL_API_KEY: str
+
     model_config = SettingsConfigDict(
         env_file=ROOTDIR / ".env",
         env_file_encoding="utf-8",
@@ -34,7 +36,7 @@ class Config(BaseSettings):
         )
 
     @property
-    def database_migration_url(self) -> URL:
+    def database_migration_url(self) -> str:
         return (
             f"{self.DRIVER}://{self.DB_MIGRATION_USER}:"
             f"{self.DB_MIGRATION_PASSWORD}@{self.POSTGRES_HOST}:"

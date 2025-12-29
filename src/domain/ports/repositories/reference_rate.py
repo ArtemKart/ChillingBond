@@ -13,5 +13,17 @@ class ReferenceRateRepository(ABC):
     """
 
     @abstractmethod
+    async def save(self, ref_rate: ReferenceRate) -> ReferenceRate:
+        pass
+
+    @abstractmethod
     async def get_by_date(self, target_date: date) -> ReferenceRate | None:
+        pass
+
+    @abstractmethod
+    async def get_latest(self) -> ReferenceRate | None:
+        pass
+    
+    @abstractmethod
+    async def update(self, ref_rate: ReferenceRate) -> ReferenceRate:
         pass
