@@ -102,7 +102,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
     };
 
     const handleChange = (field: string, value: string | number) => {
-        setEditedBond((prev) => ({
+        setEditedBond((prev: typeof editedBond) => ({
             ...prev,
             [field]: value,
         }));
@@ -115,7 +115,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
         >
             <div
                 className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
                 <BondModalHeader
                     series={isEditing ? editedBond.series : bond.series}
