@@ -52,7 +52,7 @@ export function BondsList({
                                                     Номинал:
                                                 </span>{" "}
                                                 {bond.nominal_value.toLocaleString()}{" "}
-                                                ₽
+                                                PLN
                                             </div>
                                             <div>
                                                 <span className="font-medium">
