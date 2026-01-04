@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from setup_logging import setup_logging
 from src.application.dto.bondholder import BondHolderDTO
 from src.application.use_cases.bondholder.base import BondHolderBaseUseCase
 from src.domain.exceptions import NotFoundError, AuthorizationError
