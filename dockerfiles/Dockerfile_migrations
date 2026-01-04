@@ -12,3 +12,5 @@ RUN uv sync --frozen && rm -rf /root/.cache/pip
 ENV PATH="/home/app/.venv/bin:$PATH"
 
 COPY src ./src
+
+CMD ["uv", "run", "alembic", "upgrade", "head"]
