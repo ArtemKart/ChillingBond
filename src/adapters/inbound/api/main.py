@@ -1,12 +1,14 @@
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+import time
 from typing import Final
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 
 from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
 
 from src.adapters.config import get_config
 from src.adapters.di_container import setup_event_publisher
@@ -50,6 +52,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
 
 app.include_router(user_router, prefix="/api")
 app.include_router(bond_router, prefix="/api")
