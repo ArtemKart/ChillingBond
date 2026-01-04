@@ -8,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 
 from starlette.middleware.cors import CORSMiddleware
 
+from src.adapters.config import get_config
 from src.adapters.di_container import setup_event_publisher
 from src.adapters.inbound.api.exception_handlers import (
     domain_exception_handler,
@@ -28,6 +29,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging()
     logger = logging.getLogger(__name__)
     logger.info("Application started")
+
+    config = get_config()
+    logger.info(f"🔍 DATABASE_URL: {config.database_app_url}")
 
     event_publisher = setup_event_publisher()
     app.state.event_publisher = event_publisher

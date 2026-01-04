@@ -29,7 +29,7 @@ class UserRepository(ABC):
         Checks if a user with the given email exists.
 
         Args:
-            user_id: The unique identifier of the user.
+            email: User email address.
 
         Returns:
             A User object if found, None otherwise.
