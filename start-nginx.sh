@@ -10,9 +10,9 @@ echo "BACKEND_PORT from env: [${BACKEND_PORT}]"
 echo "FRONTEND_PORT from env: [${FRONTEND_PORT}]"
 
 export BACKEND_HOST=${BACKEND_HOST:-backend.railway.internal}
-export BACKEND_PORT=${BACKEND_PORT:-8000}
+export BACKEND_PORT=${BACKEND_PORT:-8080}
 export FRONTEND_HOST=${FRONTEND_HOST:-frontend.railway.internal}
-export FRONTEND_PORT=${FRONTEND_PORT:-3000}
+export FRONTEND_PORT=${FRONTEND_PORT:-8080}
 export PORT=${PORT:-80}
 
 echo ""
