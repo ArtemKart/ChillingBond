@@ -5,7 +5,7 @@ WORKDIR $PROJECT_DIR
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY pyproject.toml alembic.ini logging.yml uv.lock ./
+COPY pyproject.toml logging.yml uv.lock ./
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/* && \
