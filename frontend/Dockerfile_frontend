@@ -19,6 +19,10 @@ COPY --from=deps /app/node_modules ./node_modules
 
 COPY . ./
 
+RUN echo "=== Contents of /app ===" && ls -la
+RUN echo "=== Contents of lib/ ===" && ls -la lib/ || echo "lib/ not found!"
+RUN echo "=== tsconfig.json ===" && cat tsconfig.json | grep -A 3 baseUrl
+
 RUN npm run build
 
 FROM node:20-alpine AS runner
