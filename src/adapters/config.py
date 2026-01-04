@@ -15,8 +15,6 @@ class Config(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
 
-    API_URL: str
-    INTERNAL_API_KEY: str
 
     model_config = SettingsConfigDict(
         env_file=ROOTDIR / ".env",
