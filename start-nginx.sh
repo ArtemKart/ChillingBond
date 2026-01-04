@@ -7,6 +7,7 @@ export FRONTEND_HOST=${FRONTEND_HOST:-frontend.railway.internal}
 export FRONTEND_PORT=${FRONTEND_PORT:-3000}
 export PORT=${PORT:-80}
 
+
 echo "🚀 Starting Nginx..."
 echo "BACKEND_HOST: ${BACKEND_HOST}"
 echo "BACKEND_PORT: ${BACKEND_PORT}"
