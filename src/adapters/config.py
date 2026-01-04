@@ -10,6 +10,7 @@ class Config(BaseSettings):
     DB_MIGRATION_USER: str
     DB_MIGRATION_PASSWORD: str
 
+    DATABASE_URL: str | None = None
     DRIVER: str
     POSTGRES_HOST: str
     POSTGRES_PORT: str
@@ -19,7 +20,6 @@ class Config(BaseSettings):
     ALGORITHM: str = "HS256"
 
     API_URL: str
-    INTERNAL_API_KEY: str
 
     model_config = SettingsConfigDict(
         env_file=ROOTDIR / ".env",
@@ -29,6 +29,8 @@ class Config(BaseSettings):
 
     @property
     def database_app_url(self) -> str:
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         return (
             f"{self.DRIVER}://{self.DB_APP_USER}:"
             f"{self.DB_APP_PASSWORD}@{self.POSTGRES_HOST}:"
