@@ -18,11 +18,11 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 local_config = get_config()
-config.set_section_option(
-    "alembic",
-    "sqlalchemy.url",
-    local_config.database_migration_url,
-)
+# config.set_section_option(
+#     "alembic",
+#     "sqlalchemy.url",
+#     local_config.database_migration_url,
+# )
 
 
 def run_migrations_offline() -> None:

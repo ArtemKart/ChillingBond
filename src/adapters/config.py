@@ -7,9 +7,6 @@ class Config(BaseSettings):
     DB_APP_USER: str
     DB_APP_PASSWORD: str
 
-    DB_MIGRATION_USER: str
-    DB_MIGRATION_PASSWORD: str
-
     DRIVER: str
     POSTGRES_HOST: str
     POSTGRES_PORT: str
@@ -32,14 +29,6 @@ class Config(BaseSettings):
         return (
             f"{self.DRIVER}://{self.DB_APP_USER}:"
             f"{self.DB_APP_PASSWORD}@{self.POSTGRES_HOST}:"
-            f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
-
-    @property
-    def database_migration_url(self) -> str:
-        return (
-            f"{self.DRIVER}://{self.DB_MIGRATION_USER}:"
-            f"{self.DB_MIGRATION_PASSWORD}@{self.POSTGRES_HOST}:"
             f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
