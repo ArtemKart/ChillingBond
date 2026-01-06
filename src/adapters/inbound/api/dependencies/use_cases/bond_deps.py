@@ -37,8 +37,9 @@ def update_bh_quantity_use_case(
 
 def bond_update_use_case(
     bond_repo: BondRepoDep,
+    bondholder_repo: BondHolderRepoDep,
 ) -> BondUpdateUseCase:
-    return BondUpdateUseCase(bond_repo=bond_repo)
+    return BondUpdateUseCase(bond_repo=bond_repo, bh_repo=bondholder_repo)
 
 
 def bh_create_use_case(

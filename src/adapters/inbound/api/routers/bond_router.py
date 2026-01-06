@@ -181,7 +181,7 @@ async def update_bond(
             else None
         ),
     )
-    return await use_case.execute(dto=dto, bond_id=purchase_id)  # type: ignore [return-value]
+    return await use_case.execute(dto=dto, bh_id=purchase_id)  # type: ignore [return-value]
 
 
 @bond_router.delete(
