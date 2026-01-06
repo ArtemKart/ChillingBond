@@ -5,9 +5,6 @@ from fastapi import status
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from adapters.inbound.api.dependencies.use_cases.bond_deps import (
-    update_bh_quantity_use_case,
-)
 from adapters.outbound.repositories.bond import SQLAlchemyBondRepository
 from adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
 from application.use_cases.bondholder.bh_update_quantity import (
@@ -70,7 +67,7 @@ async def test_unauthorized(
 ) -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 
-    app.dependency_overrides.pop(current_user, None)
+    app.dependency_overrides.pop(current_user, None)  # noqa
 
     response = await client.patch(
         f"api/bonds/{t_bondholder.id}/quantity", json=valid_json
@@ -83,8 +80,6 @@ async def test_bondholder_not_found(
     use_case: UpdateBondHolderQuantityUseCase,
     valid_json: dict[str, int],
 ) -> None:
-    app.dependency_overrides[update_bh_quantity_use_case] = lambda: use_case
-
     response = await client.patch(f"api/bonds/{uuid4()}/quantity", json=valid_json)
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -97,8 +92,6 @@ async def test_response_structure(
     valid_json: dict[str, int],
     use_case: UpdateBondHolderQuantityUseCase,
 ) -> None:
-    app.dependency_overrides[update_bh_quantity_use_case] = lambda: use_case
-
     response = await client.patch(
         f"api/bonds/{t_bondholder.id}/quantity", json=valid_json
     )
@@ -131,8 +124,6 @@ async def test_last_update(
     use_case: UpdateBondHolderQuantityUseCase,
 ) -> None:
     old_last_update = t_bondholder.last_update
-
-    app.dependency_overrides[update_bh_quantity_use_case] = lambda: use_case
 
     response = await client.patch(
         f"api/bonds/{t_bondholder.id}/quantity", json=valid_json

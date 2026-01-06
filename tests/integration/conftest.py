@@ -8,7 +8,6 @@ from datetime import date
 
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import (
@@ -203,7 +202,7 @@ async def client(
     bond_repo: SQLAlchemyBondRepository,
     bondholder_repo: SQLAlchemyBondHolderRepository,
     event_publisher: EventPublisher,
-) -> TestClient:
+) -> AsyncClient:
     app.dependency_overrides[SessionDep] = lambda: t_session
     app.dependency_overrides[ConfigDep] = lambda: mock_config_globally
     app.dependency_overrides[current_user] = lambda: t_current_user

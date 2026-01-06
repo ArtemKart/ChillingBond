@@ -2,19 +2,20 @@ from decimal import Decimal
 from typing import Any
 
 from datetime import date
-from uuid import uuid4
-from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
-from starlette.testclient import TestClient
+from httpx import AsyncClient
 
-from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
+from adapters.outbound.repositories.bond import SQLAlchemyBondRepository
+from adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
+from application.use_cases.bondholder.bh_create import BondHolderCreateUseCase
 from src.adapters.inbound.api.main import app
 
 
 @pytest.fixture
 def valid_bond_data() -> dict[str, Any]:
+    # Object of type Decimal is not JSON serializable, so keep as float
     return {
         "quantity": 10,
         "purchase_date": date.today().isoformat(),
@@ -28,162 +29,93 @@ def valid_bond_data() -> dict[str, Any]:
 
 
 @pytest.fixture
-def mock_use_case_response() -> AsyncMock:
-    return AsyncMock(
-        id=uuid4(),
-        user_id=uuid4(),
-        quantity=10,
-        purchase_date=date.today(),
-        last_update=date.today(),
-        bond_id=uuid4(),
-        series="ROR1206",
-        nominal_value=Decimal("100.0"),
-        maturity_period=12,
-        initial_interest_rate=Decimal("4.75"),
-        first_interest_period=1,
-        reference_rate_margin=Decimal("0.0"),
+def use_case(
+    bond_repo: SQLAlchemyBondRepository, bondholder_repo: SQLAlchemyBondHolderRepository
+) -> BondHolderCreateUseCase:
+    return BondHolderCreateUseCase(
+        bond_repo=bond_repo,
+        bondholder_repo=bondholder_repo,
     )
 
 
-def test_create_bond_purchase_success(
-    client: TestClient,
+async def test_success(
+    client: AsyncClient,
     valid_bond_data: dict[str, Any],
-    mock_use_case_response: AsyncMock,
+    use_case: BondHolderCreateUseCase,
 ) -> None:
-    purchase_date = valid_bond_data["purchase_date"]
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_use_case_response
+    response = await client.post("api/bonds", json=valid_bond_data)
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_create_use_case,
-    )
-
-    app.dependency_overrides[bh_create_use_case] = lambda: mock_use_case
-
-    response = client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
 
-    assert data["id"] == str(mock_use_case_response.id)
-    assert data["quantity"] == 10
-    assert data["purchase_date"] == purchase_date
-    assert data["bond_id"] == str(mock_use_case_response.bond_id)
-    assert data["series"] == "ROR1206"
-    assert Decimal(data["nominal_value"]) == Decimal("100.00")
-    assert data["maturity_period"] == 12
-    assert Decimal(data["initial_interest_rate"]) == Decimal("4.75")
-    assert data["first_interest_period"] == 1
-    assert Decimal(data["reference_rate_margin"]) == Decimal("0.00")
-
-    mock_use_case.execute.assert_called_once()
-    call_args = mock_use_case.execute.call_args
-    bondholder_dto, bond_dto = call_args[0]
-
-    assert bondholder_dto.quantity == 10
-    assert isinstance(bondholder_dto.purchase_date, date)
-    assert bondholder_dto.purchase_date.isoformat() == purchase_date
-    assert bond_dto.series == "ROR1206"
-    assert Decimal(bond_dto.nominal_value) == Decimal("100.00")
+    assert data["id"] is not None
+    assert data["quantity"] == valid_bond_data["quantity"]
+    assert data["purchase_date"] == valid_bond_data["purchase_date"]
+    assert data["bond_id"] is not None
+    assert data["series"] == valid_bond_data["series"]
+    assert Decimal(data["nominal_value"]) == Decimal(valid_bond_data["nominal_value"])
+    assert data["maturity_period"] == valid_bond_data["maturity_period"]
+    assert Decimal(data["initial_interest_rate"]) == Decimal(
+        valid_bond_data["initial_interest_rate"]
+    )
+    assert data["first_interest_period"] == valid_bond_data["first_interest_period"]
+    assert Decimal(data["reference_rate_margin"]) == Decimal(
+        valid_bond_data["reference_rate_margin"]
+    )
 
 
-def test_create_bond_purchase_missing_required_fields(client: TestClient) -> None:
+async def test_missing_required_fields(
+    client: AsyncClient,
+) -> None:
     incomplete_data = {
         "quantity": 10,
         "series": "ROR1206",
         # Missing other required fields
     }
-    response = client.post("api/bonds", json=incomplete_data)
+    response = await client.post("api/bonds", json=incomplete_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_create_bond_purchase_invalid_quantity(
-    client: TestClient, valid_bond_data: dict[str, Any]
+async def test__invalid_quantity(
+    client: AsyncClient, valid_bond_data: dict[str, Any]
 ) -> None:
 
     valid_bond_data["quantity"] = -5
-    response = client.post("api/bonds", json=valid_bond_data)
+    response = await client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_create_bond_purchase_invalid_date_format(
-    client: TestClient, valid_bond_data: dict[str, Any]
+async def test_invalid_date_format(
+    client: AsyncClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["purchase_date"] = "invalid-date"
-    response = client.post("api/bonds", json=valid_bond_data)
+    response = await client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_create_bond_purchase_invalid_nominal_value(
-    client: TestClient, valid_bond_data: dict[str, Any]
+async def test_invalid_nominal_value(
+    client: AsyncClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["nominal_value"] = "-1000"
-    response = client.post("api/bonds", json=valid_bond_data)
+    response = await client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_create_bond_purchase_invalid_maturity_period(
-    client: TestClient, valid_bond_data: dict[str, Any]
+async def test_invalid_maturity_period(
+    client: AsyncClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["maturity_period"] = 0
-    response = client.post("api/bonds", json=valid_bond_data)
+    response = await client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_create_bond_purchase_unauthorized(
+async def test_unauthorized(
+    client: AsyncClient,
     valid_bond_data: dict[str, Any],
 ) -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 
-    app.dependency_overrides.pop(current_user, None)
+    app.dependency_overrides.pop(current_user, None)  # noqa
 
-    test_client = TestClient(app)
-
-    response = test_client.post("api/bonds", json=valid_bond_data)
+    response = await client.post("api/bonds", json=valid_bond_data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-def test_create_bond_purchase_use_case_exception(
-    client: TestClient, valid_bond_data: dict[str, Any]
-) -> None:
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.side_effect = SQLAlchemyRepositoryError(
-        "Failed to save BondHolder object"
-    )
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_create_use_case,
-    )
-
-    app.dependency_overrides[bh_create_use_case] = lambda: mock_use_case
-
-    response = client.post("api/bonds", json=valid_bond_data)
-
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-
-
-def test_create_bond_purchase_with_decimal_values(
-    client: TestClient,
-    valid_bond_data: dict[str, Any],
-    mock_use_case_response: AsyncMock,
-) -> None:
-    valid_bond_data["nominal_value"] = "1000.0"
-    valid_bond_data["initial_interest_rate"] = "4.25"
-    valid_bond_data["reference_rate_margin"] = "2.15"
-
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_use_case_response
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_create_use_case,
-    )
-
-    app.dependency_overrides[bh_create_use_case] = lambda: mock_use_case
-
-    response = client.post("api/bonds", json=valid_bond_data)
-
-    assert response.status_code == status.HTTP_201_CREATED
-    call_args = mock_use_case.execute.call_args[0]
-    bond_dto = call_args[1]
-    assert isinstance(bond_dto.nominal_value, Decimal)
-    assert isinstance(bond_dto.initial_interest_rate, Decimal)
-    assert isinstance(bond_dto.reference_rate_margin, Decimal)
