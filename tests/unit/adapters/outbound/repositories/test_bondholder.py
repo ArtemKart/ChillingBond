@@ -9,6 +9,7 @@ from src.adapters.outbound.database.models import BondHolder as BondHolderModel
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
+from src.domain.exceptions import NotFoundError
 
 
 @pytest.fixture
@@ -196,9 +197,8 @@ async def test_update_model_not_found(
     bondholder_entity_mock: Mock,
 ) -> None:
     mock_session.get.return_value = None
-
-    model = await repository.update(bondholder_entity_mock)
-    assert not model
+    with pytest.raises(NotFoundError, match="BondHolder not found"):
+        await repository.update(bondholder_entity_mock)
 
 
 async def test_to_entity_conversion(

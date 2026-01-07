@@ -5,9 +5,9 @@ from fastapi import status
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from adapters.outbound.repositories.bond import SQLAlchemyBondRepository
-from adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
-from application.use_cases.bondholder.bh_update_quantity import (
+from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
+from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
+from src.application.use_cases.bondholder.bh_update_quantity import (
     UpdateBondHolderQuantityUseCase,
 )
 from src.adapters.inbound.api.main import app

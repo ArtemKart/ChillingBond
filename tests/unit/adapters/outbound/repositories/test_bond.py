@@ -36,7 +36,7 @@ async def test_get_one_success(
     bond_entity_mock: Mock,
 ) -> None:
     mock_session.get.return_value = bond_model
-    result = await repository.get_one_or_none(bond_entity_mock.id)
+    result = await repository.get_one(bond_entity_mock.id)
 
     mock_session.get.assert_called_once_with(BondModel, bond_entity_mock.id)
     assert result is not None
@@ -51,7 +51,7 @@ async def test_get_one_not_found(
     bond_id = uuid4()
     mock_session.get.return_value = None
 
-    result = await repository.get_one_or_none(bond_id)
+    result = await repository.get_one(bond_id)
 
     mock_session.get.assert_called_once_with(BondModel, bond_id)
     assert result is None
@@ -67,7 +67,7 @@ async def test_get_by_series_success(
     mock_result.scalar_one_or_none.return_value = bond_model
     mock_session.execute.return_value = mock_result
 
-    result = await repository.get_by_series_or_none(bond_entity_mock.series)
+    result = await repository.get_by_series(bond_entity_mock.series)
 
     mock_session.execute.assert_called_once()
     assert result is not None
@@ -83,7 +83,7 @@ async def test_get_by_series_not_found(
     mock_result.scalar_one_or_none.return_value = None
     mock_session.execute.return_value = mock_result
 
-    result = await repository.get_by_series_or_none(series)
+    result = await repository.get_by_series(series)
 
     mock_session.execute.assert_called_once()
     assert result is None

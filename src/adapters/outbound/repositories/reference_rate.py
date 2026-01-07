@@ -5,7 +5,7 @@ from sqlalchemy import select, and_, or_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from domain.exceptions import NotFoundError
+from src.domain.exceptions import NotFoundError
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.entities.reference_rate import ReferenceRate as ReferenceRateEntity
 from src.domain.ports.repositories.reference_rate import ReferenceRateRepository

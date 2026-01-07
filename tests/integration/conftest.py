@@ -19,12 +19,12 @@ from sqlalchemy.ext.asyncio import (
 )
 from testcontainers.postgres import PostgresContainer
 
-from adapters.outbound.database import Base
-from adapters.outbound.repositories.bond import SQLAlchemyBondRepository
-from adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
-from adapters.outbound.repositories.user import SQLAlchemyUserRepository
-from adapters.outbound.security.bcrypt_hasher import BcryptPasswordHasher
-from application.events.event_publisher import EventPublisher
+from src.adapters.outbound.database import Base
+from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
+from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
+from src.adapters.outbound.repositories.user import SQLAlchemyUserRepository
+from src.adapters.outbound.security.bcrypt_hasher import BcryptPasswordHasher
+from src.application.events.event_publisher import EventPublisher
 from src.adapters.config import set_config, reset_config
 from src.adapters.inbound.api.dependencies import SessionDep, ConfigDep
 from src.adapters.inbound.api.dependencies.current_user_deps import current_user
@@ -78,7 +78,7 @@ async def engine() -> AsyncGenerator[AsyncEngine, None]:
     )
     container.start()
     db_url = container.get_connection_url(driver="asyncpg")
-    engine = create_async_engine(db_url, echo=True, poolclass=NullPool)
+    engine = create_async_engine(db_url, echo=False, poolclass=NullPool)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     try:
@@ -135,7 +135,7 @@ def mock_config_globally() -> Generator[Mock, None, None]:
 
 @pytest.fixture
 def plain_pass() -> str:
-    return "plain_password"
+    return "plain_password123"
 
 
 @pytest_asyncio.fixture

@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.domain.exceptions import ConflictError, NotFoundError
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.entities.bond import Bond as BondEntity
 from src.adapters.outbound.database.models import Bond as BondModel
@@ -14,27 +15,19 @@ class SQLAlchemyBondRepository(BondRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_one_or_none(self, bond_id: UUID) -> BondEntity | None:
+    async def get_one(self, bond_id: UUID) -> BondEntity | None:
         model = await self._session.get(BondModel, bond_id)
-        if model:
-            return self._to_entity(model)
-        return None
+        return self._to_entity(model) if model else None
 
-    async def get_by_series_or_none(self, series: str) -> BondEntity | None:
+    async def get_by_series(self, series: str) -> BondEntity | None:
         res = await self._session.execute(
             select(BondModel).where(BondModel.series == series)
         )
         model = res.scalar_one_or_none()
-        if not model:
-            return None
-        return self._to_entity(model)
+        return self._to_entity(model) if model else None
 
-    async def write(self, bond: BondEntity) -> BondEntity | None:
+    async def write(self, bond: BondEntity) -> BondEntity:
         try:
-            model = await self.get_one_or_none(bond.id)
-            if model:
-                return None
-
             model = self._to_model(bond)
             self._session.add(model)
             await self._session.commit()
@@ -49,11 +42,12 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def update(self, bond: BondEntity) -> BondEntity | None:
+    async def update(self, bond: BondEntity) -> BondEntity:
         try:
-            model = await self.get_one_or_none(bond.id)
+            model = await self._session.get(BondModel, bond.id)
             if not model:
-                return None
+                raise NotFoundError("Bond not found")
+
             self._update_model(model, bond)
             await self._session.commit()
             await self._session.refresh(model)
@@ -63,14 +57,12 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def delete(self, bond_id: UUID) -> BondEntity | None:
+    async def delete(self, bond_id: UUID) -> None:
         try:
             model = await self._session.get(BondModel, bond_id)
             if model:
                 await self._session.delete(model)
                 await self._session.commit()
-                return self._to_entity(model)
-            return None
         except SQLAlchemyError as e:
             error_msg = "Failed to delete bond"
             await self._session.rollback()

@@ -25,11 +25,11 @@ class BondHolderRepository(ABC):
         pass
 
     @abstractmethod
-    async def update(self, entity: BondHolder) -> BondHolder | None:
+    async def update(self, entity: BondHolder) -> BondHolder:
         pass
 
     @abstractmethod
-    async def delete(self, bondholder_id: UUID) -> None:
+    async def delete(self, bondholder_id: UUID) -> BondHolder:
         pass
 
     @abstractmethod

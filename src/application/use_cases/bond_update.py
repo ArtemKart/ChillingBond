@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from uuid import UUID
 
-from domain.ports.repositories.bondholder import BondHolderRepository
+from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.application.dto.bond import BondDTO, BondUpdateDTO
 from src.domain.exceptions import NotFoundError
 from src.domain.ports.repositories.bond import BondRepository
@@ -19,7 +19,7 @@ class BondUpdateUseCase:
         bh = await self.bh_repo.get_one(bondholder_id=bh_id)
         if not bh:
             raise NotFoundError("BondHolder not found")
-        bond = await self.bond_repo.get_one_or_none(bond_id=bh.bond_id)
+        bond = await self.bond_repo.get_one(bond_id=bh.bond_id)
         update_attr = {k: v for k, v in asdict(dto).items() if v}
         for attr, value in update_attr.items():
             setattr(bond, attr, value)

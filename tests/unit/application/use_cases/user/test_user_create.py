@@ -41,7 +41,7 @@ async def test_success_creates_new_user(
     user_entity_mock: Mock,
     sample_user_dto: Mock,
 ) -> None:
-    mock_user_repo.get_user_if_exists_by_email.return_value = None
+    mock_user_repo.get_user_by_email.return_value = None
     mock_user_repo.write.return_value = user_entity_mock
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
@@ -52,9 +52,6 @@ async def test_success_creates_new_user(
         result = await use_case.execute(sample_user_create_dto)
 
     assert result == sample_user_dto
-    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
-        email=sample_user_create_dto.email
-    )
     mock_create.assert_called_once_with(
         email=sample_user_create_dto.email,
         plain_password=sample_user_create_dto.password,
@@ -63,23 +60,6 @@ async def test_success_creates_new_user(
     )
     mock_user_repo.write.assert_called_once_with(user_entity_mock)
     use_case.to_dto.assert_called_once_with(user_entity_mock)
-
-
-async def test_user_already_exists_raises_validation_error(
-    use_case: UserCreateUseCase,
-    mock_user_repo: AsyncMock,
-    sample_user_create_dto: Mock,
-    user_entity_mock: Mock,
-) -> None:
-    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
-
-    with pytest.raises(ConflictError, match="User already exists"):
-        await use_case.execute(sample_user_create_dto)
-
-    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
-        email=sample_user_create_dto.email
-    )
-    mock_user_repo.write.assert_not_called()
 
 
 async def test_with_different_user_data(
@@ -94,7 +74,7 @@ async def test_with_different_user_data(
     user_dto.password = "AnotherPassword456!"
     user_dto.name = "Another User"
 
-    mock_user_repo.get_user_if_exists_by_email.return_value = None
+    mock_user_repo.get_user_by_email.return_value = None
     mock_user_repo.write.return_value = user_entity_mock
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
@@ -105,9 +85,6 @@ async def test_with_different_user_data(
         result = await use_case.execute(user_dto)
 
     assert result == sample_user_dto
-    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
-        email="another@example.com"
-    )
     mock_create.assert_called_once_with(
         email="another@example.com",
         plain_password="AnotherPassword456!",
@@ -123,7 +100,7 @@ async def test_hasher_is_passed_correctly(
     sample_user_create_dto: Mock,
     user_entity_mock: Mock,
 ) -> None:
-    mock_user_repo.get_user_if_exists_by_email.return_value = None
+    mock_user_repo.get_user_by_email.return_value = None
     mock_user_repo.write.return_value = user_entity_mock
     use_case.to_dto = Mock(return_value=Mock(spec=UserDTO))
 
@@ -146,7 +123,7 @@ async def test_returns_dto_from_written_entity(
     written_entity = Mock(spec=UserEntity, id="written-456")
     expected_dto = Mock(spec=UserDTO, id="written-456")
 
-    mock_user_repo.get_user_if_exists_by_email.return_value = None
+    mock_user_repo.get_user_by_email.return_value = None
     mock_user_repo.write.return_value = written_entity
     use_case.to_dto = Mock(return_value=expected_dto)
 
@@ -172,7 +149,7 @@ async def test_with_minimal_user_data(
     minimal_dto.password = "Pass123!"
     minimal_dto.name = None
 
-    mock_user_repo.get_user_if_exists_by_email.return_value = None
+    mock_user_repo.get_user_by_email.return_value = None
     mock_user_repo.write.return_value = user_entity_mock
     use_case.to_dto = Mock(return_value=sample_user_dto)
 
@@ -188,21 +165,4 @@ async def test_with_minimal_user_data(
         plain_password="Pass123!",
         hasher=mock_hasher,
         name=None,
-    )
-
-
-async def test_handles_email_case_sensitivity(
-    use_case: UserCreateUseCase,
-    mock_user_repo: AsyncMock,
-    sample_user_create_dto: Mock,
-    user_entity_mock: Mock,
-) -> None:
-    sample_user_create_dto.email = "TEST@EXAMPLE.COM"
-    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
-
-    with pytest.raises(ConflictError, match="User already exists"):
-        await use_case.execute(sample_user_create_dto)
-
-    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with(
-        email="TEST@EXAMPLE.COM"
     )

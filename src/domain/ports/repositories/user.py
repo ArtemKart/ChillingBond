@@ -13,7 +13,7 @@ class UserRepository(ABC):
     """
 
     @abstractmethod
-    async def get_user_or_none(self, user_id: UUID) -> User | None:
+    async def get_user(self, user_id: UUID) -> User | None:
         """
         Checks if a user with the given UUID exists.
 
@@ -23,9 +23,10 @@ class UserRepository(ABC):
         Returns:
             A User object if found, None otherwise.
         """
+        pass
 
     @abstractmethod
-    async def get_user_or_none_by_email(self, email: str) -> User | None:
+    async def get_user_by_email(self, email: str) -> User | None:
         """
         Checks if a user with the given email exists.
 
@@ -35,9 +36,10 @@ class UserRepository(ABC):
         Returns:
             A User object if found, None otherwise.
         """
+        pass
 
     @abstractmethod
-    async def write(self, user: User) -> User | None:
+    async def write(self, user: User) -> None:
         """Creates a new user in the repository.
 
         Args:
@@ -49,7 +51,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    async def delete(self, user_id: UUID) -> User | None:
+    async def delete(self, user_id: UUID) -> None:
         """Deletes a user from the repository.
 
         Args:

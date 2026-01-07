@@ -1,70 +1,75 @@
-from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 from fastapi import status
-from starlette.testclient import TestClient
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.adapters.outbound.database.models import User as UserModel
+from src.adapters.outbound.security.bcrypt_hasher import BcryptPasswordHasher
 
 
-def test_get_user_success(
-    client: TestClient, mock_user_repo: AsyncMock, user_entity_mock: Mock
+async def test_success(client: AsyncClient, t_user: UserModel) -> None:
+
+    r = await client.get(f"api/users/{t_user.id}")
+
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
+    assert data["id"] == str(t_user.id)
+    assert data["email"] == t_user.email
+    assert data["name"] == t_user.name
+
+
+async def test_user_not_found(client: AsyncClient) -> None:
+    r = await client.get(f"api/users/{uuid4()}")
+
+    assert r.status_code == status.HTTP_404_NOT_FOUND
+    assert r.json()["detail"] == "User not found"
+
+
+async def test_invalid_uuid(
+    client: AsyncClient,
 ) -> None:
-    user_id = user_entity_mock.id
-    mock_user_repo.get_one.return_value = user_entity_mock
-
-    response = client.get(f"api/users/{user_id}")
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["id"] == str(user_entity_mock.id)
-    assert data["email"] == user_entity_mock.email
-    assert data["name"] == user_entity_mock.name
-
-    mock_user_repo.get_one.assert_called_once_with(user_id)
+    r = await client.get("api/users/invalid-uuid")
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_get_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> None:
-    user_id = uuid4()
-    mock_user_repo.get_one.return_value = None
-
-    response = client.get(f"api/users/{user_id}")
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "User not found"
-
-    mock_user_repo.get_one.assert_called_once_with(user_id)
-
-
-def test_get_user_invalid_uuid(client: TestClient, mock_user_repo: AsyncMock) -> None:
-
-    response = client.get("api/users/invalid-uuid")
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-    mock_user_repo.get_one.assert_not_called()
-
-
-def test_get_user_with_none_name(
-    client: TestClient, mock_user_repo: AsyncMock, user_entity_mock: Mock
+async def test_with_none_name(
+    client: AsyncClient, t_session: AsyncSession, plain_pass: str
 ) -> None:
-    user_entity_mock.name = None
-    mock_user_repo.get_one.return_value = user_entity_mock
+    u = UserModel(
+        id=uuid4(),
+        email="test@email.com",
+        password=BcryptPasswordHasher().hash(plain_pass),
+        name=None,
+    )
+    t_session.add(u)
+    await t_session.commit()
+    await t_session.refresh(u)
 
-    response = client.get(f"api/users/{user_entity_mock.id}")
+    r = await client.get(f"api/users/{u.id}")
 
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["id"] == str(user_entity_mock.id)
-    assert data["email"] == user_entity_mock.email
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
+    assert data["id"] == str(u.id)
+    assert data["email"] == u.email
     assert data["name"] is None
 
 
-def test_get_user_email_normalized(
-    client: TestClient, mock_user_repo: AsyncMock, user_entity_mock: Mock
+async def test_email_normalized(
+    client: AsyncClient, t_session: AsyncSession, plain_pass: str
 ) -> None:
-    user_entity_mock.email = "Test@Example.COM"
-    mock_user_repo.get_one.return_value = user_entity_mock
+    u = UserModel(
+        id=uuid4(),
+        email="TeST@eMaIl.CoM",
+        password=BcryptPasswordHasher().hash(plain_pass),
+        name=None,
+    )
+    t_session.add(u)
+    await t_session.commit()
+    await t_session.refresh(u)
 
-    response = client.get(f"api/users/{user_entity_mock.id}")
+    r = await client.get(f"api/users/{u.id}")
 
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
     assert data["email"] == data["email"].strip().lower()

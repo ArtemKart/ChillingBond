@@ -13,7 +13,7 @@ class BondRepository(ABC):
     """
 
     @abstractmethod
-    async def get_one_or_none(self, bond_id: UUID) -> Bond | None:
+    async def get_one(self, bond_id: UUID) -> Bond | None:
         """Retrieves a bond by its identifier.
 
         Args:
@@ -25,7 +25,7 @@ class BondRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_by_series_or_none(self, series: str) -> Bond | None:
+    async def get_by_series(self, series: str) -> Bond | None:
         """Retrieves a bond by series.
         Args:
             series: The unique series identifier.
@@ -36,26 +36,26 @@ class BondRepository(ABC):
         pass
 
     @abstractmethod
-    async def write(self, bond: Bond) -> Bond | None:
+    async def write(self, bond: Bond) -> Bond:
         """Creates a new bond in the repository.
 
         Args:
             bond: The Bond object to persist.
 
         Returns:
-            The persisted Bond object if found, None otherwise.
+            The persisted Bond object if created, None otherwise.
         """
         pass
 
     @abstractmethod
-    async def update(self, bond: Bond) -> Bond | None:
+    async def update(self, bond: Bond) -> Bond:
         """Updates an existing bond in the repository.
 
         Args:
             bond: The Bond object with updated data.
 
         Returns:
-            The updated Bond object if found, None otherwise.
+            The updated Bond object if updated, None otherwise.
         """
         pass
 
@@ -67,6 +67,6 @@ class BondRepository(ABC):
             bond_id: The unique identifier of the bondholder to delete.
 
         Returns:
-            The deleted Bond object if found, None otherwise.
+            The deleted Bond object if deleted, None otherwise.
         """
         pass

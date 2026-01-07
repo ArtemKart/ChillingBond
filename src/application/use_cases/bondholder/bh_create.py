@@ -22,7 +22,7 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
     async def execute(
         self, bh_dto: BondHolderCreateDTO, b_dto: BondCreateDTO
     ) -> BondHolderDTO:
-        bond = await self.bond_repo.get_by_series_or_none(b_dto.series)
+        bond = await self.bond_repo.get_by_series(b_dto.series)
         if bond:
             new_bh = BondHolderEntity.create(
                 bond_id=bond.id,
@@ -31,6 +31,8 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
                 purchase_date=bh_dto.purchase_date,
             )
             new_bh = await self.bondholder_repo.write(new_bh)
+            if not new_bh:
+                raise
             return self.to_dto(bondholder=new_bh, bond=bond)
 
         new_bond = BondEntity.create(
@@ -42,7 +44,8 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
             reference_rate_margin=b_dto.reference_rate_margin,
         )
         new_bond = await self.bond_repo.write(new_bond)
-
+        if not new_bond:
+            raise
         new_bh = BondHolderEntity.create(
             bond_id=new_bond.id,
             user_id=bh_dto.user_id,

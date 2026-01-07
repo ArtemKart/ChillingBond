@@ -20,7 +20,7 @@ class BondHolderGetUseCase(BondHolderBaseUseCase):
             raise NotFoundError("BondHolder not found")
         if not bondholder.user_id == user_id:
             raise AuthorizationError("Permission denied")
-        bond = await self.bond_repo.get_one_or_none(bond_id=bondholder.bond_id)
+        bond = await self.bond_repo.get_one(bond_id=bondholder.bond_id)
         if not bond:
             raise NotFoundError("Bond connected to BondHolder not found")
         return self.to_dto(bondholder=bondholder, bond=bond)
@@ -37,7 +37,7 @@ class BondHolderGetAllUseCase(BondHolderBaseUseCase):
         bh_list = await self.bondholder_repo.get_all(user_id=user_id)
         dto_list: list[BondHolderDTO] = []
         for bh in bh_list:
-            bond = await self.bond_repo.get_one_or_none(bond_id=bh.bond_id)
+            bond = await self.bond_repo.get_one(bond_id=bh.bond_id)
             if not bond:
                 raise NotFoundError("Bond connected to BondHolder not found")
             dto_list.append(self.to_dto(bondholder=bh, bond=bond))

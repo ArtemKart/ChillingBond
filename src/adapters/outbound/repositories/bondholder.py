@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from domain.exceptions import NotFoundError
+from src.domain.exceptions import NotFoundError
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
@@ -17,20 +17,15 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
 
     async def get_one(self, bondholder_id: UUID) -> BondHolderEntity | None:
         model = await self._session.get(BondHolderModel, bondholder_id)
-        if model:
-            return self._to_entity(model)
-        return None
+        return self._to_entity(model) if model else None
 
     async def get_all(self, user_id: UUID) -> list[BondHolderEntity]:
         stmt = select(BondHolderModel).where(BondHolderModel.user_id == user_id)
         result = await self._session.execute(stmt)
         return [self._to_entity(model) for model in result.scalars().all()]
 
-    async def write(self, entity: BondHolderEntity) -> BondHolderEntity | None:
+    async def write(self, entity: BondHolderEntity) -> BondHolderEntity:
         try:
-            model = await self.get_one(entity.id)
-            if model:
-                return None
             model = self._to_model(entity)
             self._session.add(model)
             await self._session.commit()
@@ -45,11 +40,11 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def update(self, entity: BondHolderEntity) -> BondHolderEntity | None:
+    async def update(self, entity: BondHolderEntity) -> BondHolderEntity:
         try:
             model = await self._session.get(BondHolderModel, entity.id)
             if not model:
-                return None
+                raise NotFoundError("BondHolder not found")
             self._update_model(model, entity)
             await self._session.commit()
             await self._session.refresh(model)
@@ -59,14 +54,12 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def delete(self, bondholder_id: UUID) -> BondHolderEntity | None:
+    async def delete(self, bondholder_id: UUID) -> None:
         try:
             model = await self._session.get(BondHolderModel, bondholder_id)
             if model:
                 await self._session.delete(model)
                 await self._session.commit()
-                return self._to_entity(model)
-            return None
         except SQLAlchemyError as e:
             error_msg = "Failed to delete bondholder"
             await self._session.rollback()

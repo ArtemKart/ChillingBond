@@ -48,12 +48,12 @@ async def test_delete_bondholder_success(
     user_mock.email = user_email
 
     mock_bondholder_repo.get_one.return_value = bondholder_mock
-    mock_user_repo.get_one.return_value = user_mock
+    mock_user_repo.get_user.return_value = user_mock
 
     await use_case.execute(bondholder_id=bondholder_id, user_id=user_id)
 
     mock_bondholder_repo.get_one.assert_awaited_once_with(bondholder_id=bondholder_id)
-    mock_user_repo.get_one.assert_awaited_once_with(user_id=user_id)
+    mock_user_repo.get_user.assert_awaited_once_with(user_id=user_id)
     bondholder_mock.mark_as_deleted.assert_called_once_with(user_email=user_email)
     bh_del_service_mock.delete_with_cleanup.assert_awaited_once_with(
         bondholder_id=bondholder_id, bond_id=bond_id

@@ -37,7 +37,7 @@ async def test_create_user_user_already_exists(
     )
 
     assert r.status_code == status.HTTP_409_CONFLICT
-    assert r.json()["detail"] == "User already exists"
+    assert r.json()["detail"] == "User with given email address already exists"
 
 
 async def test_create_user_email_normalization(

@@ -40,7 +40,7 @@ async def test_current_user_success(
 
     monkeypatch.setattr(use_case, "execute", mock_execute)
     result = await current_user(use_case=use_case, access_token=access_token)
-    assert result == mock_user_dto
+    assert result == mock_user_dto.id
 
 
 async def test_current_user_no_token(
