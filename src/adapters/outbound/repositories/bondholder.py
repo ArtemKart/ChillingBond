@@ -4,6 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from domain.exceptions import NotFoundError
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
@@ -25,8 +26,11 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         result = await self._session.execute(stmt)
         return [self._to_entity(model) for model in result.scalars().all()]
 
-    async def write(self, entity: BondHolderEntity) -> BondHolderEntity:
+    async def write(self, entity: BondHolderEntity) -> BondHolderEntity | None:
         try:
+            model = await self.get_one(entity.id)
+            if model:
+                return None
             model = self._to_model(entity)
             self._session.add(model)
             await self._session.commit()
@@ -41,11 +45,11 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def update(self, entity: BondHolderEntity) -> BondHolderEntity:
+    async def update(self, entity: BondHolderEntity) -> BondHolderEntity | None:
         try:
             model = await self._session.get(BondHolderModel, entity.id)
             if not model:
-                raise SQLAlchemyRepositoryError("BondHolder not found")
+                return None
             self._update_model(model, entity)
             await self._session.commit()
             await self._session.refresh(model)
@@ -55,12 +59,14 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def delete(self, bondholder_id: UUID) -> None:
+    async def delete(self, bondholder_id: UUID) -> BondHolderEntity | None:
         try:
             model = await self._session.get(BondHolderModel, bondholder_id)
             if model:
                 await self._session.delete(model)
                 await self._session.commit()
+                return self._to_entity(model)
+            return None
         except SQLAlchemyError as e:
             error_msg = "Failed to delete bondholder"
             await self._session.rollback()

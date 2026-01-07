@@ -20,7 +20,7 @@ class UserLoginUseCase(UserBaseUseCase):
         self.token_handler: TokenHandler = token_handler
 
     async def execute(self, form_data: OAuth2PasswordRequestForm) -> TokenDTO:
-        user = await self.user_repo.get_user_if_exists_by_email(form_data.username)
+        user = await self.user_repo.get_user_or_none_by_email(form_data.username)
         if not user or not user.verify_password(
             hasher=self.hasher, plain_password=form_data.password
         ):

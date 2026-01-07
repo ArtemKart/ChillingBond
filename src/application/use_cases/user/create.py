@@ -20,7 +20,7 @@ class UserCreateUseCase(UserBaseUseCase):
         self._event_publisher: EventPublisher = event_publisher
 
     async def execute(self, user_dto: UserCreateDTO) -> UserDTO:
-        user = await self.user_repo.get_user_if_exists_by_email(email=user_dto.email)
+        user = await self.user_repo.get_user_or_none_by_email(email=user_dto.email)
         if user:
             error_msg = "User already exists"
             raise ConflictError(error_msg)

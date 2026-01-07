@@ -43,10 +43,10 @@ async def test_success(
     valid_bond_data: dict[str, Any],
     use_case: BondHolderCreateUseCase,
 ) -> None:
-    response = await client.post("api/bonds", json=valid_bond_data)
+    r = await client.post("api/bonds", json=valid_bond_data)
 
-    assert response.status_code == status.HTTP_201_CREATED
-    data = response.json()
+    assert r.status_code == status.HTTP_201_CREATED
+    data = r.json()
 
     assert data["id"] is not None
     assert data["quantity"] == valid_bond_data["quantity"]
@@ -72,8 +72,8 @@ async def test_missing_required_fields(
         "series": "ROR1206",
         # Missing other required fields
     }
-    response = await client.post("api/bonds", json=incomplete_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    r = await client.post("api/bonds", json=incomplete_data)
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test__invalid_quantity(
@@ -81,32 +81,32 @@ async def test__invalid_quantity(
 ) -> None:
 
     valid_bond_data["quantity"] = -5
-    response = await client.post("api/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    r = await client.post("api/bonds", json=valid_bond_data)
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_invalid_date_format(
     client: AsyncClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["purchase_date"] = "invalid-date"
-    response = await client.post("api/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    r = await client.post("api/bonds", json=valid_bond_data)
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_invalid_nominal_value(
     client: AsyncClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["nominal_value"] = "-1000"
-    response = await client.post("api/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    r = await client.post("api/bonds", json=valid_bond_data)
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_invalid_maturity_period(
     client: AsyncClient, valid_bond_data: dict[str, Any]
 ) -> None:
     valid_bond_data["maturity_period"] = 0
-    response = await client.post("api/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    r = await client.post("api/bonds", json=valid_bond_data)
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_unauthorized(
@@ -117,5 +117,5 @@ async def test_unauthorized(
 
     app.dependency_overrides.pop(current_user, None)  # noqa
 
-    response = await client.post("api/bonds", json=valid_bond_data)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    r = await client.post("api/bonds", json=valid_bond_data)
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED

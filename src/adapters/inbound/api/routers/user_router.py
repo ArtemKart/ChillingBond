@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
+from adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.dependencies.repo_deps import UserRepoDep
 from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_create_use_case,
@@ -46,8 +47,4 @@ async def get_user(
 @user_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: UUID, repo: UserRepoDep):
     user = await repo.get_one(user_id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    await repo.delete(user_id)
+    await repo.delete(user.id)

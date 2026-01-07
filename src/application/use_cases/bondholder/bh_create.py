@@ -22,7 +22,7 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
     async def execute(
         self, bh_dto: BondHolderCreateDTO, b_dto: BondCreateDTO
     ) -> BondHolderDTO:
-        bond = await self.bond_repo.get_by_series(b_dto.series)
+        bond = await self.bond_repo.get_by_series_or_none(b_dto.series)
         if bond:
             new_bh = BondHolderEntity.create(
                 bond_id=bond.id,

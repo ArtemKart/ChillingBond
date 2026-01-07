@@ -13,31 +13,22 @@ from src.adapters.outbound.database.models import User as UserModel
 class SQLAlchemyUserRepository(UserRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
-        
-    async def get_user_if_exists(self, user_id: UUID) -> UserEntity | None:
+
+    async def get_user_or_none(self, user_id: UUID) -> UserEntity | None:
         model = await self._session.get(UserModel, user_id)
         return self._to_entity(model) if model else None
-        
-    async def get_user_if_exists_by_email(self, email: str) -> UserEntity | None:
+
+    async def get_user_or_none_by_email(self, email: str) -> UserEntity | None:
         stmt = select(UserModel).where(UserModel.email == email)
         result = await self._session.execute(stmt)
         user = result.scalar_one_or_none()
         return self._to_entity(user) if user else None
-    
-    async def get_one(self, user_id: UUID) -> UserEntity:
-        user_entity = await self.get_user_if_exists(user_id=user_id)
-        if not user_entity:
-            raise SQLAlchemyRepositoryError("User not found")
-        return user_entity
 
-    async def get_by_email(self, email: str) -> UserEntity:
-        user_entity = await self.get_user_if_exists_by_email(email=email)
-        if not user_entity:
-            raise SQLAlchemyRepositoryError("User not found")
-        return user_entity
-
-    async def write(self, user: UserEntity) -> UserEntity:
+    async def write(self, user: UserEntity) -> UserEntity | None:
         try:
+            model = self.get_user_or_none(user.id)
+            if model:
+                return None
             model = self._to_model(user)
             self._session.add(model)
             await self._session.commit()
@@ -52,12 +43,14 @@ class SQLAlchemyUserRepository(UserRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def delete(self, user_id: UUID) -> None:
+    async def delete(self, user_id: UUID) -> UserEntity | None:
         try:
             model = await self._session.get(UserModel, user_id)
             if model:
                 await self._session.delete(model)
                 await self._session.commit()
+                return self._to_entity(model)
+            return None
         except SQLAlchemyError as e:
             error_msg = "Failed to delete user"
             await self._session.rollback()

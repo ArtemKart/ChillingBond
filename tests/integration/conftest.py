@@ -23,6 +23,7 @@ from adapters.outbound.database import Base
 from adapters.outbound.repositories.bond import SQLAlchemyBondRepository
 from adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
 from adapters.outbound.repositories.user import SQLAlchemyUserRepository
+from adapters.outbound.security.bcrypt_hasher import BcryptPasswordHasher
 from application.events.event_publisher import EventPublisher
 from src.adapters.config import set_config, reset_config
 from src.adapters.inbound.api.dependencies import SessionDep, ConfigDep
@@ -39,6 +40,9 @@ from src.adapters.inbound.api.main import app
 from src.adapters.outbound.database.models import User as UserModel
 from src.adapters.outbound.database.models import Bond as BondModel
 from src.adapters.outbound.database.models import BondHolder as BondHolderModel
+
+
+hasher = BcryptPasswordHasher()
 
 
 async def _write_to_db(session: AsyncSession, obj: Base) -> None:
@@ -129,16 +133,27 @@ def mock_config_globally() -> Generator[Mock, None, None]:
     reset_config()
 
 
+@pytest.fixture
+def plain_pass() -> str:
+    return "plain_password"
+
+
 @pytest_asyncio.fixture
-async def t_current_user(t_session: AsyncSession) -> UUID:
+async def t_current_user(t_session: AsyncSession, plain_pass: str) -> UUID:
     user = UserModel(
         id=uuid4(),
         email="test_email@mail.com",
-        password="hashed_password",
+        password=hasher.hash(plain_pass),
         name="Test User",
     )
     await _write_to_db(t_session, user)
+    assert hasher.verify(plain_pass, user.password)
     return user.id
+
+
+@pytest.fixture
+async def t_user(t_session: AsyncSession, t_current_user: UUID) -> UserModel:
+    return await t_session.get(UserModel, t_current_user)
 
 
 @pytest_asyncio.fixture

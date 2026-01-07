@@ -1,169 +1,87 @@
-from typing import Any
-from unittest.mock import AsyncMock, Mock
-from uuid import uuid4
-
 import pytest
 from starlette import status
-from starlette.testclient import TestClient
+from httpx import AsyncClient
 
-from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
-    user_create_use_case,
-)
-from src.adapters.inbound.api.main import app
-from src.application.dto.user import UserDTO
-from src.application.use_cases.user.create import UserCreateUseCase
 from src.adapters.outbound.database.models import User as UserModel
 
 
 @pytest.fixture
-def user_create_valid_data(user_entity_mock: Mock) -> dict[str, Any]:
+async def user_valid_json() -> dict[str, str]:
     return {
-        "email": user_entity_mock.email,
-        "name": user_entity_mock.name,
-        "password": user_entity_mock.hashed_password,
+        "email": "test_email@email.com",
+        "name": "test_name",
+        "password": "plain_password123",
     }
 
 
-@pytest.fixture
-def use_case(
-    mock_hasher: Mock,
-    mock_user_repo: AsyncMock,
-    mock_event_publisher: AsyncMock,
-) -> UserCreateUseCase:
-    return UserCreateUseCase(
-        hasher=mock_hasher,
-        user_repo=mock_user_repo,
-        event_publisher=mock_event_publisher,
-    )
-
-
-@pytest.fixture
-def use_case_return_mock() -> Mock:
-    mock = Mock(spec=UserDTO)
-    mock.id = uuid4()
-    mock.email = "test@email.com"
-    mock.name = "test user"
-    return mock
-
-
-@pytest.fixture
-def user_model_mock() -> Mock:
-    mock = Mock(spec=UserModel)
-    mock.id = uuid4()
-    mock.email = "test@email.com"
-    mock.password = "test_password"
-    mock.name = "test user"
-    return mock
-
-
-def test_create_user_success(
-    client: TestClient,
-    user_create_valid_data: dict[str, Any],
-    use_case: UserCreateUseCase,
-    user_entity_mock: Mock,
+async def test_create_user_success(
+    client: AsyncClient,
+    user_valid_json: dict[str, str],
 ) -> None:
-    use_case.user_repo.get_user_if_exists_by_email.return_value = None  # type: ignore[attr-defined]
-    use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
-
-    app.dependency_overrides[user_create_use_case] = lambda: use_case
-
-    r = client.post("api/users", json=user_create_valid_data)
+    r = await client.post("api/users", json=user_valid_json)
 
     assert r.status_code == status.HTTP_201_CREATED
-    assert r.json()["id"] == str(user_entity_mock.id)
-    assert r.json()["email"] == user_entity_mock.email
-    assert r.json()["name"] == user_entity_mock.name
+    data = r.json()
+    assert data["id"] is not None
+    assert data["email"] == user_valid_json["email"]
+    assert data["name"] == user_valid_json["name"]
 
 
-def test_create_user_user_already_exists(
-    client: TestClient,
-    user_create_valid_data: dict[str, Any],
-    use_case: UserCreateUseCase,
-    user_entity_mock: Mock,
+async def test_create_user_user_already_exists(
+    client: AsyncClient, t_user: UserModel, plain_pass: str
 ) -> None:
-    use_case.user_repo.get_user_if_exists_by_email.return_value = user_entity_mock  # type: ignore[attr-defined]
-    app.dependency_overrides[user_create_use_case] = lambda: use_case
 
-    r = client.post("api/users", json=user_create_valid_data)
+    r = await client.post(
+        "api/users",
+        json={"email": t_user.email, "name": t_user.name, "password": plain_pass},
+    )
 
     assert r.status_code == status.HTTP_409_CONFLICT
     assert r.json()["detail"] == "User already exists"
 
 
-def test_create_user_email_normalization(
-    client: TestClient,
-    use_case: UserCreateUseCase,
-    user_entity_mock: Mock,
+async def test_create_user_email_normalization(
+    client: AsyncClient,
 ) -> None:
     data_with_uppercase_email = {
         "email": "  TEST@EXAMPLE.COM  ",
         "password": "SecurePass123!",
         "name": "Test User",
     }
-    use_case.user_repo.get_user_if_exists_by_email.return_value = None  # type: ignore[attr-defined]
-    use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
+    r = await client.post("api/users", json=data_with_uppercase_email)
 
-    app.dependency_overrides[user_create_use_case] = lambda: use_case
-
-    response = client.post("api/users", json=data_with_uppercase_email)
-
-    assert response.status_code == status.HTTP_201_CREATED
-    response_data = response.json()
-    assert response_data["email"] == "test@example.com"
+    assert r.status_code == status.HTTP_201_CREATED
+    assert r.json()["email"] == "test@example.com"
 
 
-def test_create_user_invalid_email(
-    client: TestClient, user_create_valid_data: dict[str, str]
+async def test_create_user_invalid_email(
+    client: AsyncClient, user_valid_json: dict[str, str]
 ) -> None:
-    invalid_data = {**user_create_valid_data, "email": "invalid-email"}
-    response = client.post("api/users", json=invalid_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    r = await client.post(
+        "api/users", json={**user_valid_json, "email": "invalid-email"}
+    )
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_create_user_missing_email(
-    client: TestClient, user_create_valid_data: dict[str, str]
+@pytest.mark.parametrize(
+    "key",
+    [
+        pytest.param("email", id="missing email"),
+        pytest.param("password", id="missing password"),
+        pytest.param("name", id="missing name"),
+    ],
+)
+async def test_missing_field(
+    client: AsyncClient, user_valid_json: dict[str, str], key: str
 ) -> None:
-    data_without_email = {
-        "password": user_create_valid_data["password"],
-        "name": user_create_valid_data["name"],
-    }
-    response = client.post("api/users", json=data_without_email)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    data_without_field = user_valid_json.pop(key, None)
+    r = await client.post("api/users", json=data_without_field)
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_create_user_missing_password(
-    client: TestClient, user_create_valid_data: dict[str, str]
+async def test_create_user_empty_password(
+    client: AsyncClient, user_valid_json: dict[str, str]
 ) -> None:
-    data_without_password = {
-        "email": user_create_valid_data["email"],
-        "name": user_create_valid_data["name"],
-    }
-    response = client.post("api/users", json=data_without_password)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-
-def test_create_user_without_name(
-    client: TestClient,
-    use_case: UserCreateUseCase,
-    user_entity_mock: Mock,
-) -> None:
-    data_without_name = {"email": "test@example.com", "password": "SecurePass123!"}
-    user_entity_mock.name = None
-    use_case.user_repo.get_user_if_exists_by_email.return_value = None  # type: ignore[attr-defined]
-    use_case.user_repo.write.return_value = user_entity_mock  # type: ignore[attr-defined]
-
-    app.dependency_overrides[user_create_use_case] = lambda: use_case
-
-    response = client.post("api/users", json=data_without_name)
-
-    assert response.status_code == status.HTTP_201_CREATED
-    response_data = response.json()
-    assert response_data["name"] is None
-
-
-def test_create_user_empty_password(
-    client: TestClient, user_create_valid_data: dict[str, str]
-) -> None:
-    invalid_data = {**user_create_valid_data, "password": ""}
-    response = client.post("api/users", json=invalid_data)
+    invalid_data = {**user_valid_json, "password": ""}
+    response = await client.post("api/users", json=invalid_data)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

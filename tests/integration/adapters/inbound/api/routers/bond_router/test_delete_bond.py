@@ -24,9 +24,9 @@ async def test_delete_bond(
 ) -> None:
     await _check_bondholder_exists(t_session, t_bondholder.id)
 
-    response = await client.delete(f"api/bonds/{t_bondholder.id}")
+    r = await client.delete(f"api/bonds/{t_bondholder.id}")
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert r.status_code == status.HTTP_204_NO_CONTENT
 
     bondholder = await t_session.get(BondholderModel, t_bondholder.id)
     assert bondholder is None
@@ -55,9 +55,9 @@ async def test_keep_bond(
     await t_session.commit()
     await t_session.refresh(second_bh)
 
-    response = await client.delete(f"api/bonds/{t_bondholder.id}")
+    r = await client.delete(f"api/bonds/{t_bondholder.id}")
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert r.status_code == status.HTTP_204_NO_CONTENT
 
     bond = await t_session.get(BondModel, bond_id)
     assert bond
@@ -71,8 +71,8 @@ async def test_bondholder_not_found_idempotent(
     bondholder = await t_session.get(BondholderModel, non_existent_id)
     assert not bondholder
 
-    response = await client.delete(f"api/bonds/{non_existent_id}")
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    r = await client.delete(f"api/bonds/{non_existent_id}")
+    assert r.status_code == status.HTTP_204_NO_CONTENT
 
 
 async def test_authorization_error(
@@ -104,7 +104,7 @@ async def test_authorization_error(
     await t_session.commit()
     await t_session.refresh(bondholder)
 
-    response = await client.delete(f"api/bonds/{bondholder.id}")
+    r = await client.delete(f"api/bonds/{bondholder.id}")
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json()["detail"] == "Permission denied"
+    assert r.status_code == status.HTTP_403_FORBIDDEN
+    assert r.json()["detail"] == "Permission denied"

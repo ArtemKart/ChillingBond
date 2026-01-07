@@ -14,13 +14,13 @@ class SQLAlchemyBondRepository(BondRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_one(self, bond_id: UUID) -> BondEntity | None:
+    async def get_one_or_none(self, bond_id: UUID) -> BondEntity | None:
         model = await self._session.get(BondModel, bond_id)
         if model:
             return self._to_entity(model)
         return None
 
-    async def get_by_series(self, series: str) -> BondEntity | None:
+    async def get_by_series_or_none(self, series: str) -> BondEntity | None:
         res = await self._session.execute(
             select(BondModel).where(BondModel.series == series)
         )
@@ -29,8 +29,12 @@ class SQLAlchemyBondRepository(BondRepository):
             return None
         return self._to_entity(model)
 
-    async def write(self, bond: BondEntity) -> BondEntity:
+    async def write(self, bond: BondEntity) -> BondEntity | None:
         try:
+            model = await self.get_one_or_none(bond.id)
+            if model:
+                return None
+
             model = self._to_model(bond)
             self._session.add(model)
             await self._session.commit()
@@ -45,9 +49,11 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def update(self, bond: BondEntity) -> BondEntity:
+    async def update(self, bond: BondEntity) -> BondEntity | None:
         try:
-            model = await self._session.get(BondModel, bond.id)
+            model = await self.get_one_or_none(bond.id)
+            if not model:
+                return None
             self._update_model(model, bond)
             await self._session.commit()
             await self._session.refresh(model)
@@ -57,12 +63,14 @@ class SQLAlchemyBondRepository(BondRepository):
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
 
-    async def delete(self, bond_id: UUID) -> None:
+    async def delete(self, bond_id: UUID) -> BondEntity | None:
         try:
             model = await self._session.get(BondModel, bond_id)
             if model:
                 await self._session.delete(model)
                 await self._session.commit()
+                return self._to_entity(model)
+            return None
         except SQLAlchemyError as e:
             error_msg = "Failed to delete bond"
             await self._session.rollback()

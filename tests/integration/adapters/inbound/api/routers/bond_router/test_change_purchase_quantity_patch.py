@@ -37,11 +37,9 @@ async def test_success(
     valid_json = {"new_quantity": 100}
     assert valid_json["new_quantity"] != t_bondholder.quantity
 
-    response = await client.patch(
-        f"api/bonds/{t_bondholder.id}/quantity", json=valid_json
-    )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    r = await client.patch(f"api/bonds/{t_bondholder.id}/quantity", json=valid_json)
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert data["id"] == str(t_bondholder.id)
     assert data["quantity"] == valid_json["new_quantity"]
@@ -56,8 +54,8 @@ async def test_invalid_purchase_id(
 ) -> None:
     invalid_id = "not-a-valid-uuid"
 
-    response = await client.patch(f"api/bonds/{invalid_id}/quantity", json=valid_json)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    r = await client.patch(f"api/bonds/{invalid_id}/quantity", json=valid_json)
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_unauthorized(
@@ -69,10 +67,8 @@ async def test_unauthorized(
 
     app.dependency_overrides.pop(current_user, None)  # noqa
 
-    response = await client.patch(
-        f"api/bonds/{t_bondholder.id}/quantity", json=valid_json
-    )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    r = await client.patch(f"api/bonds/{t_bondholder.id}/quantity", json=valid_json)
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 async def test_bondholder_not_found(
@@ -80,10 +76,10 @@ async def test_bondholder_not_found(
     use_case: UpdateBondHolderQuantityUseCase,
     valid_json: dict[str, int],
 ) -> None:
-    response = await client.patch(f"api/bonds/{uuid4()}/quantity", json=valid_json)
+    r = await client.patch(f"api/bonds/{uuid4()}/quantity", json=valid_json)
 
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "Bond holder not found"
+    assert r.status_code == status.HTTP_404_NOT_FOUND
+    assert r.json()["detail"] == "Bond holder not found"
 
 
 async def test_response_structure(
@@ -92,12 +88,10 @@ async def test_response_structure(
     valid_json: dict[str, int],
     use_case: UpdateBondHolderQuantityUseCase,
 ) -> None:
-    response = await client.patch(
-        f"api/bonds/{t_bondholder.id}/quantity", json=valid_json
-    )
+    r = await client.patch(f"api/bonds/{t_bondholder.id}/quantity", json=valid_json)
 
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     required_fields = [
         "id",
@@ -125,12 +119,10 @@ async def test_last_update(
 ) -> None:
     old_last_update = t_bondholder.last_update
 
-    response = await client.patch(
-        f"api/bonds/{t_bondholder.id}/quantity", json=valid_json
-    )
+    r = await client.patch(f"api/bonds/{t_bondholder.id}/quantity", json=valid_json)
 
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     new_last_update = data["last_update"]
 
@@ -144,12 +136,12 @@ async def test_invalid_json(
     client: AsyncClient,
     t_bondholder: BondholderModel,
 ) -> None:
-    response = await client.patch(
+    r = await client.patch(
         f"api/bonds/{t_bondholder.id}/quantity",
         content="invalid json",
         headers={"Content-Type": "application/json"},
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 async def test_wrong_data_types(
@@ -160,8 +152,6 @@ async def test_wrong_data_types(
         "quantity": "five",
     }
 
-    response = await client.patch(
-        f"api/bonds/{t_bondholder.id}/quantity", json=invalid_json
-    )
+    r = await client.patch(f"api/bonds/{t_bondholder.id}/quantity", json=invalid_json)
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
