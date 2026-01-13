@@ -1,23 +1,26 @@
-from decimal import Decimal
 from typing import Any
-from uuid import uuid4, UUID
-from unittest.mock import AsyncMock
+from uuid import uuid4
 
 import pytest
 from fastapi import status
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.main import app
+from src.adapters.outbound.database.models import Bond as BondModel
+from src.adapters.outbound.database.models import BondHolder as BondHolderModel
 
 
 @pytest.fixture
-def valid_bond_id() -> UUID:
-    return uuid4()
+def partial_upd_request() -> dict[str, float]:
+    return {
+        "nominal_value": 2000.00,
+        "initial_interest_rate": 7.0,
+    }
 
 
 @pytest.fixture
-def valid_update_request() -> dict[str, Any]:
+def valid_upd_json() -> dict[str, Any]:
     return {
         "nominal_value": 100.00,
         "series": "ROR1000",
@@ -28,232 +31,149 @@ def valid_update_request() -> dict[str, Any]:
     }
 
 
-@pytest.fixture
-def partial_update_request() -> dict[str, float]:
-    return {
-        "nominal_value": 2000.00,
-        "initial_interest_rate": 7.0,
-    }
-
-
-@pytest.fixture
-def mock_updated_bond() -> AsyncMock:
-    return AsyncMock(
-        id=uuid4(),
-        nominal_value=1500.00,
-        series="ROR0000",
-        maturity_period=18,
-        initial_interest_rate=6.5,
-        first_interest_period=4,
-        reference_rate_margin=1.5,
-    )
-
-
-def test_update_bond_success_full_update(
-    client: TestClient,
-    valid_bond_id: UUID,
-    valid_update_request: dict,
-    mock_updated_bond: AsyncMock,
+async def test_success_full_update(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
+    valid_upd_json: dict[str, Any],
+    t_session: AsyncSession,
 ) -> None:
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_updated_bond
+    bond = await t_session.get(BondModel, t_bondholder.bond_id)
+    assert bond
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=valid_upd_json
     )
 
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
-    response = client.put(
-        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-
-    assert data["nominal_value"] == 1500.00
-    assert data["series"] == "ROR0000"
-    assert data["maturity_period"] == 18
-    assert data["initial_interest_rate"] == 6.5
-    assert data["first_interest_period"] == 4
-    assert data["reference_rate_margin"] == 1.5
-
-    mock_use_case.execute.assert_called_once()
-    call_args = mock_use_case.execute.call_args
-
-    assert call_args.kwargs["bond_id"] == valid_bond_id
-    dto = call_args.kwargs["dto"]
-    assert dto.nominal_value == 100.00
-    assert dto.series == "ROR1000"
-    assert dto.maturity_period == 18
+    assert data["nominal_value"] == float(bond.nominal_value)
+    assert data["series"] == bond.series
+    assert data["maturity_period"] == bond.maturity_period
+    assert data["initial_interest_rate"] == float(bond.initial_interest_rate)
+    assert data["first_interest_period"] == bond.first_interest_period
+    assert data["reference_rate_margin"] == float(bond.reference_rate_margin)
 
 
-def test_update_bond_success_partial_update(
-    client: TestClient,
-    valid_bond_id: UUID,
-    partial_update_request: dict,
+async def test_success_partial_update(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
+    t_session: AsyncSession,
+    partial_upd_request: dict[str, float],
 ) -> None:
-    mock_response = AsyncMock(
-        id=uuid4(),
-        nominal_value=2000.00,
-        series="ROR0000",
-        maturity_period=12,
-        initial_interest_rate=7.0,
-        first_interest_period=3,
-        reference_rate_margin=1.2,
+
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=partial_upd_request
     )
 
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_response
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
-    )
-
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(
-        f"api/bonds/{valid_bond_id}/specification", json=partial_update_request
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-
-    assert data["nominal_value"] == 2000.00
-    assert data["initial_interest_rate"] == 7.0
-
-    call_args = mock_use_case.execute.call_args
-    dto = call_args.kwargs["dto"]
-    assert dto.nominal_value == 2000.00
-    assert dto.initial_interest_rate == 7.0
+    assert data["nominal_value"] == partial_upd_request["nominal_value"]
+    assert data["initial_interest_rate"] == partial_upd_request["initial_interest_rate"]
 
 
-def test_update_bond_not_found(
-    client: TestClient,
-    valid_bond_id: UUID,
-    valid_update_request: dict,
+async def test_bondholder_not_found(
+    client: AsyncClient,
+    valid_upd_json: dict[str, Any],
 ) -> None:
-    from src.domain.exceptions import NotFoundError
+    r = await client.put(f"api/bonds/{uuid4()}/specification", json=valid_upd_json)
 
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.side_effect = NotFoundError("Bond not found")
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
-    )
-
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(
-        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
-    )
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert r.status_code == status.HTTP_404_NOT_FOUND
+    assert r.json()["detail"] == "BondHolder not found"
 
 
-def test_update_bond_invalid_uuid(
-    client: TestClient,
-    valid_update_request: dict,
+async def test_invalid_uuid(
+    client: AsyncClient,
+    valid_upd_json: dict[str, Any],
 ) -> None:
-    invalid_id = "not-a-valid-uuid"
-
-    response = client.put(
-        f"api/bonds/{invalid_id}/specification", json=valid_update_request
+    r = await client.put(
+        "api/bonds/not-a-valid-uuid/specification", json=valid_upd_json
     )
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-
-def test_update_bond_unauthorized() -> None:
-    bond_id = uuid4()
-    update_request = {
-        "nominal_value": 1500.00,
-        "series": "ROR9999",
-    }
-
+async def test_unauthorized(
+    client: AsyncClient,
+    partial_upd_request: dict[str, float],
+) -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 
-    app.dependency_overrides.pop(current_user, None)
-    test_client = TestClient(app)
+    app.dependency_overrides.pop(current_user, None)  # noqa
 
-    response = test_client.put(f"api/bonds/{bond_id}/specification", json=update_request)
+    r = await client.put(f"api/bonds/{uuid4()}/specification", json=partial_upd_request)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-def test_update_bond_missing_required_fields(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_missing_required_fields(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
-    empty_request: dict = {}
+    r = await client.put(f"api/bonds/{t_bondholder.id}/specification", json={})
 
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=empty_request)
-
-    assert response.status_code == status.HTTP_200_OK
+    assert r.status_code == status.HTTP_200_OK
 
 
-def test_update_bond_invalid_nominal_value(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_invalid_nominal_value(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     invalid_request = {
         "nominal_value": -1000.00,
         "series": "ROR5555",
     }
 
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=invalid_request
+    )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_update_bond_invalid_maturity_period(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_invalid_maturity_period(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     invalid_request = {
         "nominal_value": 1000.00,
         "maturity_period": -12,
     }
 
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=invalid_request
+    )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_update_bond_invalid_interest_rate(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_update_bond_invalid_interest_rate(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     invalid_request = {
         "nominal_value": 1000.00,
         "initial_interest_rate": -5.5,
     }
 
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=invalid_request
+    )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_update_bond_response_structure(
-    client: TestClient,
-    valid_bond_id: UUID,
-    valid_update_request: dict,
-    mock_updated_bond: AsyncMock,
+async def test_response_structure(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
+    valid_upd_json: dict[str, Any],
 ) -> None:
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_updated_bond
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=valid_upd_json
     )
-
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(
-        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
-    )
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     required_fields = [
         "nominal_value",
@@ -263,14 +183,13 @@ def test_update_bond_response_structure(
         "first_interest_period",
         "reference_rate_margin",
     ]
-
     for field in required_fields:
         assert field in data
 
 
-def test_update_bond_decimal_precision(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_decimal_precision(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     update_request = {
         "nominal_value": 1234.56,
@@ -278,44 +197,21 @@ def test_update_bond_decimal_precision(
         "reference_rate_margin": 2.15,
     }
 
-    mock_response = AsyncMock(
-        id=uuid4(),
-        nominal_value=1234.56,
-        series="ROR0000",
-        maturity_period=12,
-        initial_interest_rate=7.25,
-        first_interest_period=3,
-        reference_rate_margin=2.15,
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=update_request
     )
 
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_response
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
-    )
-
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert data["nominal_value"] == 1234.56
     assert data["initial_interest_rate"] == 7.25
     assert data["reference_rate_margin"] == 2.15
 
-    call_args = mock_use_case.execute.call_args
-    dto = call_args.kwargs["dto"]
-    assert isinstance(dto.nominal_value, Decimal)
-    assert isinstance(dto.initial_interest_rate, Decimal)
-    assert isinstance(dto.reference_rate_margin, Decimal)
 
-
-def test_update_bond_different_series(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_different_series(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     series_list = ["ROR0000", "ROR1111", "ROR2222", "ROR3333"]
 
@@ -325,49 +221,29 @@ def test_update_bond_different_series(
             "nominal_value": 1000.00,
         }
 
-        mock_response = AsyncMock(
-            id=uuid4(),
-            nominal_value=1000.00,
-            series=series,
-            maturity_period=12,
-            initial_interest_rate=5.5,
-            first_interest_period=3,
-            reference_rate_margin=1.2,
+        r = await client.put(
+            f"api/bonds/{t_bondholder.id}/specification", json=update_request
         )
 
-        mock_use_case = AsyncMock()
-        mock_use_case.execute.return_value = mock_response
-
-        from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-            bond_update_use_case,
-        )
-
-        app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-        response = client.put(
-            f"api/bonds/{valid_bond_id}/specification", json=update_request
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["series"] == series
+        assert r.status_code == status.HTTP_200_OK
+        assert r.json()["series"] == series
 
 
-def test_update_bond_invalid_json(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_invalid_json(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
-    response = client.put(
-        f"api/bonds/{valid_bond_id}/specification",
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification",
         content="invalid json",
         headers={"Content-Type": "application/json"},
     )
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-
-def test_update_bond_wrong_data_types(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_wrong_data_types(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     invalid_request = {
         "nominal_value": "one thousand",
@@ -375,118 +251,16 @@ def test_update_bond_wrong_data_types(
         "initial_interest_rate": "five percent",
     }
 
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=invalid_request)
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-
-
-def test_update_bond_only_nominal_value(
-    client: TestClient,
-    valid_bond_id: UUID,
-) -> None:
-    update_request = {
-        "nominal_value": 3000.00,
-    }
-
-    mock_response = AsyncMock(
-        id=uuid4(),
-        nominal_value=3000.00,
-        series="ROR0000",
-        maturity_period=12,
-        initial_interest_rate=5.5,
-        first_interest_period=3,
-        reference_rate_margin=1.2,
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=invalid_request
     )
 
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_response
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
-    )
-
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["nominal_value"] == 3000.00
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_update_bond_only_series(
-    client: TestClient,
-    valid_bond_id: UUID,
-) -> None:
-    update_request = {
-        "series": "ROR0000",
-    }
-
-    mock_response = AsyncMock(
-        id=uuid4(),
-        nominal_value=1000.00,
-        series="ROR9999",
-        maturity_period=12,
-        initial_interest_rate=5.5,
-        first_interest_period=3,
-        reference_rate_margin=1.2,
-    )
-
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_response
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
-    )
-
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["series"] == "ROR9999"
-
-
-def test_update_bond_multiple_updates_same_bond(
-    client: TestClient,
-    valid_bond_id: UUID,
-) -> None:
-    updates = [
-        ({"nominal_value": 1000.00}, 1000.00),
-        ({"nominal_value": 1500.00}, 1500.00),
-        ({"nominal_value": 2000.00}, 2000.00),
-    ]
-
-    for update_request, expected_value in updates:
-        mock_response = AsyncMock(
-            id=uuid4(),
-            nominal_value=expected_value,
-            series="ROR0000",
-            maturity_period=12,
-            initial_interest_rate=5.5,
-            first_interest_period=3,
-            reference_rate_margin=1.2,
-        )
-
-        mock_use_case = AsyncMock()
-        mock_use_case.execute.return_value = mock_response
-
-        from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-            bond_update_use_case,
-        )
-
-        app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-        response = client.put(
-            f"api/bonds/{valid_bond_id}/specification", json=update_request
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-        assert Decimal(str(response.json()["nominal_value"])) == expected_value
-
-
-def test_update_bond_with_all_fields_as_none(
-    client: TestClient,
-    valid_bond_id: UUID,
+async def test_with_all_fields_as_none(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     update_request = {
         "nominal_value": None,
@@ -497,15 +271,16 @@ def test_update_bond_with_all_fields_as_none(
         "reference_rate_margin": None,
     }
 
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=update_request
+    )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert r.status_code == status.HTTP_200_OK
 
 
-def test_update_bond_extra_fields_ignored(
-    client: TestClient,
-    valid_bond_id: UUID,
-    mock_updated_bond: AsyncMock,
+async def test_extra_fields_ignored(
+    client: AsyncClient,
+    t_bondholder: BondHolderModel,
 ) -> None:
     update_request = {
         "nominal_value": 1500.00,
@@ -514,40 +289,11 @@ def test_update_bond_extra_fields_ignored(
         "another_extra": 123,
     }
 
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_updated_bond
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
+    r = await client.put(
+        f"api/bonds/{t_bondholder.id}/specification", json=update_request
     )
 
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(f"api/bonds/{valid_bond_id}/specification", json=update_request)
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
     assert "extra_field" not in data
     assert "another_extra" not in data
-
-
-def test_update_bond_use_case_exception(
-    client: TestClient,
-    valid_bond_id: UUID,
-    valid_update_request: dict,
-) -> None:
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.side_effect = SQLAlchemyRepositoryError(
-        "Failed to update bond"
-    )
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bond_update_use_case,
-    )
-
-    app.dependency_overrides[bond_update_use_case] = lambda: mock_use_case
-
-    response = client.put(
-        f"api/bonds/{valid_bond_id}/specification", json=valid_update_request
-    )
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR

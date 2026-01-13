@@ -31,11 +31,8 @@ async def create_user(
 @user_router.get(
     "/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK
 )
-async def get_user(
-    user_id: UUID,
-    repo: UserRepoDep,
-):
-    user = await repo.get_one(user_id)
+async def get_user(user_id: UUID, repo: UserRepoDep):
+    user = await repo.get_user(user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -45,9 +42,9 @@ async def get_user(
 
 @user_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: UUID, repo: UserRepoDep):
-    user = await repo.get_one(user_id)
+    user = await repo.get_user(user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
-    await repo.delete(user_id)
+    await repo.delete(user.id)

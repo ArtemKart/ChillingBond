@@ -4,6 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.domain.exceptions import NotFoundError
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
@@ -16,9 +17,7 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
 
     async def get_one(self, bondholder_id: UUID) -> BondHolderEntity | None:
         model = await self._session.get(BondHolderModel, bondholder_id)
-        if model:
-            return self._to_entity(model)
-        return None
+        return self._to_entity(model) if model else None
 
     async def get_all(self, user_id: UUID) -> list[BondHolderEntity]:
         stmt = select(BondHolderModel).where(BondHolderModel.user_id == user_id)
@@ -45,7 +44,7 @@ class SQLAlchemyBondHolderRepository(BondHolderRepository):
         try:
             model = await self._session.get(BondHolderModel, entity.id)
             if not model:
-                raise SQLAlchemyRepositoryError("BondHolder not found")
+                raise NotFoundError("BondHolder not found")
             self._update_model(model, entity)
             await self._session.commit()
             await self._session.refresh(model)

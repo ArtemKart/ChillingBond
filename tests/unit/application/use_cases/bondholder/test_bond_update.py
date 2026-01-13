@@ -6,12 +6,13 @@ import pytest
 
 from src.application.dto.bond import BondDTO, BondUpdateDTO
 from src.application.use_cases.bond_update import BondUpdateUseCase
-from src.domain.exceptions import NotFoundError
 
 
 @pytest.fixture
-def use_case(mock_bond_repo: AsyncMock) -> BondUpdateUseCase:
-    return BondUpdateUseCase(mock_bond_repo)
+def use_case(
+    mock_bond_repo: AsyncMock, mock_bondholder_repo: AsyncMock
+) -> BondUpdateUseCase:
+    return BondUpdateUseCase(bond_repo=mock_bond_repo, bh_repo=mock_bondholder_repo)
 
 
 @pytest.fixture
@@ -30,9 +31,11 @@ async def test_success_with_partial_update(
     use_case: BondUpdateUseCase,
     mock_bond_repo: AsyncMock,
     bond_entity_mock: Mock,
+    bondholder_entity_mock: Mock,
+    mock_bondholder_repo: AsyncMock,
     sample_bond_update_dto: Mock,
 ) -> None:
-    bond_id = uuid4()
+    mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bond_repo.get_one.return_value = bond_entity_mock
     mock_bond_repo.update.return_value = bond_entity_mock
 
@@ -45,11 +48,15 @@ async def test_success_with_partial_update(
             "first_interest_period": sample_bond_update_dto.first_interest_period,
             "reference_rate_margin": sample_bond_update_dto.reference_rate_margin,
         }
-        result = await use_case.execute(sample_bond_update_dto, bond_id)
+        result = await use_case.execute(
+            sample_bond_update_dto, bondholder_entity_mock.id
+        )
 
     assert isinstance(result, BondDTO)
     assert result.nominal_value == sample_bond_update_dto.nominal_value
-    mock_bond_repo.get_one.assert_called_once_with(bond_id=bond_id)
+    mock_bond_repo.get_one.assert_called_once_with(
+        bond_id=bondholder_entity_mock.bond_id
+    )
     mock_bond_repo.update.assert_called_once_with(bond_entity_mock)
     assert bond_entity_mock.nominal_value == sample_bond_update_dto.nominal_value
 
@@ -119,20 +126,6 @@ async def test_success_with_no_updates(
     assert result.nominal_value == bond_entity_mock.nominal_value
     assert result.series == bond_entity_mock.series
     mock_bond_repo.update.assert_called_once_with(bond_entity_mock)
-
-
-async def test_bond_not_found(
-    use_case: BondUpdateUseCase, mock_bond_repo: AsyncMock, sample_bond_update_dto: Mock
-) -> None:
-    bond_id = uuid4()
-
-    mock_bond_repo.get_one.return_value = None
-
-    with pytest.raises(NotFoundError, match="Bond not found"):
-        await use_case.execute(sample_bond_update_dto, bond_id)
-
-    mock_bond_repo.get_one.assert_called_once_with(bond_id=bond_id)
-    mock_bond_repo.update.assert_not_called()
 
 
 async def test_filters_out_none_values(

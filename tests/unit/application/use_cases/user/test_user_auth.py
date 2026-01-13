@@ -30,7 +30,7 @@ async def test_happy_path(
 ) -> None:
     user_id_str = str(user_entity_mock.id)
     use_case.token_handler.read_token = Mock(return_value=user_id_str)
-    use_case.user_repo.get_one = AsyncMock(return_value=user_entity_mock)
+    use_case.user_repo.get_user = AsyncMock(return_value=user_entity_mock)
     use_case.to_dto = Mock(return_value=dto_from_user)
 
     token = "test_token"
@@ -52,7 +52,7 @@ async def test_user_not_found(
 ) -> None:
     user_id_str = str(uuid4())
     use_case.token_handler.read_token = Mock(return_value=user_id_str)
-    use_case.user_repo.get_user_if_exists = AsyncMock(return_value=None)
+    use_case.user_repo.get_user = AsyncMock(return_value=None)
 
     token = "test_token"
     with pytest.raises(AuthenticationError, match="User not found"):
@@ -63,7 +63,5 @@ async def test_invalid_token(use_case: UserAuthUseCase) -> None:
     use_case.token_handler.read_token = Mock(side_effect=PyJWTError())
 
     token = "test_token"
-    with pytest.raises(
-        InvalidTokenError, match="Invalid token"
-    ):
+    with pytest.raises(InvalidTokenError, match="Invalid token"):
         await use_case.execute(token=token)

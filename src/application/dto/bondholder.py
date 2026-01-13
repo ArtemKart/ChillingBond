@@ -3,6 +3,8 @@ from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
 
+from src.application.dto.user import UserDTO
+
 
 @dataclass
 class BondHolderDTO:
@@ -25,7 +27,7 @@ class BondHolderDTO:
 @dataclass
 class BondHolderUpdateQuantityDTO:
     id: UUID
-    user_id: UUID
+    user: UserDTO
     new_quantity: int
 
 

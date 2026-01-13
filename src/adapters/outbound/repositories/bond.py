@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.domain.exceptions import NotFoundError
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.entities.bond import Bond as BondEntity
 from src.adapters.outbound.database.models import Bond as BondModel
@@ -16,18 +17,19 @@ class SQLAlchemyBondRepository(BondRepository):
 
     async def get_one(self, bond_id: UUID) -> BondEntity | None:
         model = await self._session.get(BondModel, bond_id)
-        if model:
-            return self._to_entity(model)
-        return None
+        return self._to_entity(model) if model else None
+
+    async def get_many(self, ids: list[UUID]) -> list[BondEntity]:
+        stmt = select(BondModel).where(BondModel.id.in_(ids))
+        res = await self._session.scalars(stmt)
+        return [self._to_entity(o) for o in res]
 
     async def get_by_series(self, series: str) -> BondEntity | None:
         res = await self._session.execute(
             select(BondModel).where(BondModel.series == series)
         )
         model = res.scalar_one_or_none()
-        if not model:
-            return None
-        return self._to_entity(model)
+        return self._to_entity(model) if model else None
 
     async def write(self, bond: BondEntity) -> BondEntity:
         try:
@@ -48,6 +50,9 @@ class SQLAlchemyBondRepository(BondRepository):
     async def update(self, bond: BondEntity) -> BondEntity:
         try:
             model = await self._session.get(BondModel, bond.id)
+            if not model:
+                raise NotFoundError("Bond not found")
+
             self._update_model(model, bond)
             await self._session.commit()
             await self._session.refresh(model)

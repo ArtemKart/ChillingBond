@@ -22,10 +22,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "black>=25.9.0",
+    "locust>=2.43.0",
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
     "pytest-cov>=7.0.0",
+    "testcontainers[postgres]>=4.13.3",
 ]
 
 [tool.pytest.ini_options]

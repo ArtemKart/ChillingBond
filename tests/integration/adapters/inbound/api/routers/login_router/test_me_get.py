@@ -1,47 +1,46 @@
 from uuid import UUID
 
 from fastapi import status
-from starlette.testclient import TestClient
+from httpx import AsyncClient
+
+from src.application.dto.user import UserDTO
 
 
-def test_me_success(client: TestClient, mock_current_user: UUID) -> None:
-    response = client.get("api/login/me")
+async def test_me_success(client: AsyncClient, t_current_user: UserDTO) -> None:
+    r = await client.get("api/login/me")
 
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
     assert "id" in data
-    assert data["id"] == str(mock_current_user)
+    assert data["id"] == str(t_current_user.id)
 
 
-def test_me_returns_correct_uuid_format(client: TestClient) -> None:
-    response = client.get("api/login/me")
+async def test_me_returns_correct_uuid_format(client: AsyncClient) -> None:
+    r = await client.get("api/login/me")
 
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert UUID(data["id"])
 
 
-def test_me_without_authentication(client: TestClient) -> None:
+async def test_me_without_authentication(client: AsyncClient) -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
     from src.adapters.inbound.api.main import app
 
     if current_user in app.dependency_overrides:
         del app.dependency_overrides[current_user]
 
-    response = client.get("api/login/me")
+    r = await client.get("api/login/me")
 
-    assert response.status_code in [
-        status.HTTP_401_UNAUTHORIZED,
-        status.HTTP_403_FORBIDDEN,
-    ]
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-def test_me_response_structure(client: TestClient) -> None:
-    response = client.get("api/login/me")
+async def test_me_response_structure(client: AsyncClient) -> None:
+    r = await client.get("api/login/me")
 
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert len(data) == 1
     assert "id" in data
