@@ -34,11 +34,14 @@ class BondHolderGetAllUseCase(BondHolderBaseUseCase):
         self.bond_repo: BondRepository = bond_repo
 
     async def execute(self, user_id: UUID) -> list[BondHolderDTO]:
-        bh_list = await self.bondholder_repo.get_all(user_id=user_id)
+        bondholders = await self.bondholder_repo.get_all(user_id=user_id)
+        bond_ids = [bh.bond_id for bh in bondholders]
+        bonds = await self.bond_repo.get_many(bond_ids)
+        bonds_dict = {bond.id: bond for bond in bonds}
+
         dto_list: list[BondHolderDTO] = []
-        for bh in bh_list:
-            bond = await self.bond_repo.get_one(bond_id=bh.bond_id)
-            if not bond:
-                raise NotFoundError("Bond connected to BondHolder not found")
+        for bh in bondholders:
+            bond = bonds_dict.get(bh.bond_id)
             dto_list.append(self.to_dto(bondholder=bh, bond=bond))
+
         return sorted(dto_list, key=lambda h: h.purchase_date, reverse=True)

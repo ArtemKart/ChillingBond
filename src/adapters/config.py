@@ -1,25 +1,17 @@
+import secrets
+
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src import ROOTDIR
 
 
 class Config(BaseSettings):
-    DB_APP_USER: str
-    DB_APP_PASSWORD: str
+    APP_DATABASE_URL: str
+    MIGRATION_DATABASE_URL: str
 
-    DB_MIGRATION_USER: str
-    DB_MIGRATION_PASSWORD: str
-
-    DATABASE_URL: str | None = None
-    DRIVER: str
-    POSTGRES_HOST: str
-    POSTGRES_PORT: str
-    POSTGRES_DB: str
-
-    SECRET_KEY: str
+    SECRET_KEY: str = Field(default_factory=lambda: secrets.token_urlsafe(16))
     ALGORITHM: str = "HS256"
-
-    API_URL: str
 
     model_config = SettingsConfigDict(
         env_file=ROOTDIR / ".env",
@@ -29,21 +21,11 @@ class Config(BaseSettings):
 
     @property
     def database_app_url(self) -> str:
-        if self.DATABASE_URL:
-            return self.DATABASE_URL
-        return (
-            f"{self.DRIVER}://{self.DB_APP_USER}:"
-            f"{self.DB_APP_PASSWORD}@{self.POSTGRES_HOST}:"
-            f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
+        return self.APP_DATABASE_URL
 
     @property
     def database_migration_url(self) -> str:
-        return (
-            f"{self.DRIVER}://{self.DB_MIGRATION_USER}:"
-            f"{self.DB_MIGRATION_PASSWORD}@{self.POSTGRES_HOST}:"
-            f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
+        return self.APP_DATABASE_URL
 
 
 _config_instance: Config | None = None

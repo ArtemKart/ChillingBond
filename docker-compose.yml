@@ -1,7 +1,4 @@
 ---
-x-api-url: &api-url
-    NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost/api}
-
 services:
     database:
         image: postgres:17.0

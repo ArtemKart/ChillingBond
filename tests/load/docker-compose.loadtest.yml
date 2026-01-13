@@ -1,0 +1,45 @@
+---
+services:
+  backend:
+    environment:
+      APP_DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres-loadtest:5432/loadtest_db"
+      MIGRATION_DATABASE_URL: "dummy_url"
+    build:
+      context: ../../
+      dockerfile: dockerfiles/Dockerfile_backend
+    ports:
+      - "8000:8000"
+    container_name: backend
+    depends_on:
+      postgres-loadtest:
+        condition: service_healthy
+    networks:
+      - loadtest_network
+    restart: always
+
+  postgres-loadtest:
+    image: postgres:17.0
+    container_name: locust
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: loadtest_db
+    volumes:
+      - postgres_loadtest_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - loadtest_network
+
+volumes:
+  postgres_loadtest_data:
+    driver: local
+
+networks:
+  loadtest_network:
+    driver: bridge

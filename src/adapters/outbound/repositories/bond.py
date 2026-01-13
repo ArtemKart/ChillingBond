@@ -19,6 +19,11 @@ class SQLAlchemyBondRepository(BondRepository):
         model = await self._session.get(BondModel, bond_id)
         return self._to_entity(model) if model else None
 
+    async def get_many(self, ids: list[UUID]) -> list[BondEntity]:
+        stmt = select(BondModel).where(BondModel.id.in_(ids))
+        res = await self._session.scalars(stmt)
+        return [self._to_entity(o) for o in res]
+
     async def get_by_series(self, series: str) -> BondEntity | None:
         res = await self._session.execute(
             select(BondModel).where(BondModel.series == series)

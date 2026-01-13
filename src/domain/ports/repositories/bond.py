@@ -25,6 +25,17 @@ class BondRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_many(self, ids: list[UUID]) -> list[Bond]:
+        """Retrieves a list of bonds matching the given identifiers.
+
+        Args:
+            ids: The identifiers of the bonds to retrieve.
+
+        Returns:
+            A list of Bond objects matching the given identifiers.
+        """
+
+    @abstractmethod
     async def get_by_series(self, series: str) -> Bond | None:
         """Retrieves a bond by series.
         Args:
