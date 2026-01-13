@@ -5,7 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
-from src.adapters.inbound.api.dependencies.current_user_deps import current_user
+from src.adapters.inbound.api.dependencies.current_user_deps import (
+    current_user,
+    CurrentUserDep,
+)
 from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_login_use_case,
 )
@@ -17,11 +20,13 @@ login_router = APIRouter(tags=["login"])
 
 
 @login_router.get("/login/me", response_model=UUIDResponse)
-async def me(user_id: Annotated[UUID, Depends(current_user)]):
-    return UUIDResponse(id=user_id)
+async def me(user: CurrentUserDep):
+    return UUIDResponse(id=user.id)
 
 
-@login_router.post("/login/token", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+@login_router.post(
+    "/login/token", response_model=TokenResponse, status_code=status.HTTP_200_OK
+)
 async def login(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],

@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
 from src.application.dto.bondholder import BondHolderDTO
+from src.application.dto.user import UserDTO
 from src.application.use_cases.bondholder.bh_get import BondHolderGetUseCase
 from src.domain.exceptions import NotFoundError, AuthorizationError
 
@@ -18,13 +19,13 @@ async def test_happy_path(
     use_case: BondHolderGetUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
     bondholder_id: UUID = uuid4()
-    user_id: UUID = uuid4()
     bond_id: UUID = uuid4()
 
     mock_bondholder = Mock()
-    mock_bondholder.user_id = user_id
+    mock_bondholder.user_id = user_dto.id
     mock_bondholder.bond_id = bond_id
 
     mock_bond = Mock()
@@ -35,7 +36,7 @@ async def test_happy_path(
     mock_bond_repo.get_one.return_value = mock_bond
     use_case.to_dto = Mock(return_value=expected_dto)
 
-    result = await use_case.execute(bondholder_id, user_id)
+    result = await use_case.execute(bondholder_id, user_dto)
 
     assert result == expected_dto
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id)
@@ -44,24 +45,26 @@ async def test_happy_path(
 
 
 async def test_bondholder_not_found(
-    use_case: BondHolderGetUseCase, mock_bondholder_repo: AsyncMock
+    use_case: BondHolderGetUseCase,
+    mock_bondholder_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
     bondholder_id: UUID = uuid4()
-    user_id: UUID = uuid4()
 
     mock_bondholder_repo.get_one.return_value = None
 
     with pytest.raises(NotFoundError, match="BondHolder not found"):
-        await use_case.execute(bondholder_id, user_id)
+        await use_case.execute(bondholder_id, user_dto)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id)
 
 
 async def test_user_not_owner(
-    use_case: BondHolderGetUseCase, mock_bondholder_repo: AsyncMock
+    use_case: BondHolderGetUseCase,
+    mock_bondholder_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
     bondholder_id: UUID = uuid4()
-    user_id: UUID = uuid4()
     different_user_id: UUID = uuid4()
 
     mock_bondholder = Mock()
@@ -70,7 +73,7 @@ async def test_user_not_owner(
     mock_bondholder_repo.get_one.return_value = mock_bondholder
 
     with pytest.raises(AuthorizationError, match="Permission denied"):
-        await use_case.execute(bondholder_id, user_id)
+        await use_case.execute(bondholder_id, user_dto)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id)
 
@@ -79,20 +82,20 @@ async def test_bond_not_found(
     use_case: BondHolderGetUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
     bondholder_id: UUID = uuid4()
-    user_id: UUID = uuid4()
     bond_id: UUID = uuid4()
 
     mock_bondholder = Mock()
-    mock_bondholder.user_id = user_id
+    mock_bondholder.user_id = user_dto.id
     mock_bondholder.bond_id = bond_id
 
     mock_bondholder_repo.get_one.return_value = mock_bondholder
     mock_bond_repo.get_one.return_value = None
 
     with pytest.raises(NotFoundError, match="Bond connected to BondHolder not found"):
-        await use_case.execute(bondholder_id, user_id)
+        await use_case.execute(bondholder_id, user_dto)
 
     mock_bondholder_repo.get_one.assert_called_once_with(bondholder_id)
     mock_bond_repo.get_one.assert_called_once_with(bond_id=bond_id)

@@ -31,10 +31,7 @@ async def create_user(
 @user_router.get(
     "/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK
 )
-async def get_user(
-    user_id: UUID,
-    repo: UserRepoDep,
-):
+async def get_user(user_id: UUID, repo: UserRepoDep):
     user = await repo.get_user(user_id)
     if not user:
         raise HTTPException(
