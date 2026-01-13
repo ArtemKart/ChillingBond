@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from decimal import Decimal
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 import pytest_asyncio
 from httpx import AsyncClient
@@ -11,17 +11,18 @@ from starlette import status
 from src.adapters.inbound.api.main import app
 from src.adapters.outbound.database.models import Bond as BondModel
 from src.adapters.outbound.database.models import BondHolder as BondholderModel
+from src.application.dto.user import UserDTO
 
 
 @pytest_asyncio.fixture
 async def multiple_bondholders(
-    t_session: AsyncSession, t_current_user: UUID, t_bond: BondModel
+    t_session: AsyncSession, t_current_user: UserDTO, t_bond: BondModel
 ) -> list[BondholderModel]:
     n = 3
     bhs = [
         BondholderModel(
             id=uuid4(),
-            user_id=t_current_user,
+            user_id=t_current_user.id,
             bond_id=t_bond.id,
             quantity=10 * (i + 1),
             purchase_date=date.today(),
@@ -83,12 +84,12 @@ async def test_success_with_single_bond(
 async def test_empty_list(
     client: AsyncClient,
     t_session: AsyncSession,
-    t_current_user: UUID,
+    t_current_user: UserDTO,
 ) -> None:
 
     bhs = await t_session.execute(
         text("SELECT * FROM bondholder WHERE user_id = :t_current_user"),
-        {"t_current_user": str(t_current_user)},
+        {"t_current_user": str(t_current_user.id)},
     )
     bhs = bhs.scalars().all()
     assert not bhs

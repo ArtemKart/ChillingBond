@@ -7,6 +7,7 @@ import pytest
 
 from src.adapters.outbound.database.models import BondHolder
 from src.application.dto.bondholder import BondHolderDTO
+from src.application.dto.user import UserDTO
 from src.application.use_cases.bondholder.bh_get import BondHolderGetAllUseCase
 from src.domain.entities.bond import Bond
 
@@ -22,8 +23,8 @@ async def test_success_with_multiple_bondholders(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
-    user_id = uuid4()
     bond_ids = [uuid4(), uuid4(), uuid4()]
 
     today = datetime.today()
@@ -33,7 +34,7 @@ async def test_success_with_multiple_bondholders(
         Mock(bond_id=bond_ids[2], purchase_date=today - timedelta(days=3)),
     ]
 
-    mock_bonds = [Mock(id=uuid4()), Mock(id=uuid4()), Mock(id=uuid4())]
+    mock_bonds = [Mock(id=bond_ids[0]), Mock(id=bond_ids[1]), Mock(id=bond_ids[2])]
     expected_dtos = [
         Mock(spec=BondHolderDTO, purchase_date=today - timedelta(days=1)),
         Mock(spec=BondHolderDTO, purchase_date=today - timedelta(days=3)),
@@ -44,11 +45,11 @@ async def test_success_with_multiple_bondholders(
     mock_bond_repo.get_many.return_value = mock_bonds
     use_case.to_dto = Mock(side_effect=expected_dtos)
 
-    result = await use_case.execute(user_id)
+    result = await use_case.execute(user_dto)
 
     assert result == expected_dtos
     assert len(result) == 3
-    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
+    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_dto.id)
     mock_bond_repo.get_many.assert_called_once()
     assert use_case.to_dto.call_count == 3
 
@@ -57,15 +58,14 @@ async def test_success_with_empty_list(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
-    user_id = uuid4()
-
     mock_bondholder_repo.get_all.return_value = []
 
-    result = await use_case.execute(user_id)
+    result = await use_case.execute(user_dto)
 
     assert result == []
-    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
+    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_dto.id)
     mock_bond_repo.get_many.assert_not_called()
 
 
@@ -73,8 +73,8 @@ async def test_success_with_single_bondholder(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
-    user_id = uuid4()
     bond_id = uuid4()
 
     today = datetime.today()
@@ -86,11 +86,11 @@ async def test_success_with_single_bondholder(
     mock_bond_repo.get_many.return_value = mock_bonds
     use_case.to_dto = Mock(return_value=expected_dto)
 
-    result = await use_case.execute(user_id)
+    result = await use_case.execute(user_dto)
 
     assert result == [expected_dto]
     assert len(result) == 1
-    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
+    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_dto.id)
     mock_bond_repo.get_many.assert_called_once()
     use_case.to_dto.assert_called_once_with(
         bondholder=mock_bondholders[0], bond=mock_bonds[0]
@@ -101,14 +101,14 @@ async def test_preserves_order(
     use_case: BondHolderGetAllUseCase,
     mock_bondholder_repo: AsyncMock,
     mock_bond_repo: AsyncMock,
+    user_dto: UserDTO,
 ) -> None:
-    user_id = uuid4()
     bond_id = uuid4()
 
     bondholders = [
         BondHolder(
             id=uuid4(),
-            user_id=user_id,
+            user_id=user_dto.id,
             bond_id=bond_id,
             quantity=1,
             purchase_date=date(2025, 1, 15),
@@ -116,7 +116,7 @@ async def test_preserves_order(
         ),
         BondHolder(
             id=uuid4(),
-            user_id=user_id,
+            user_id=user_dto.id,
             bond_id=bond_id,
             quantity=1,
             purchase_date=date(2025, 11, 20),
@@ -124,7 +124,7 @@ async def test_preserves_order(
         ),
         BondHolder(
             id=uuid4(),
-            user_id=user_id,
+            user_id=user_dto.id,
             bond_id=bond_id,
             quantity=1,
             purchase_date=date(2025, 6, 1),
@@ -147,7 +147,7 @@ async def test_preserves_order(
     mock_bondholder_repo.get_all.return_value = bondholders
     mock_bond_repo.get_many.return_value = list(bonds)
 
-    result = await use_case.execute(user_id)
+    result = await use_case.execute(user_dto)
 
     assert result[0].purchase_date == date(2025, 11, 20)
     assert result[1].purchase_date == date(2025, 6, 1)

@@ -3,7 +3,7 @@ from asyncio import current_task
 from decimal import Decimal
 from typing import Generator, AsyncGenerator
 from unittest.mock import Mock
-from uuid import uuid4, UUID
+from uuid import uuid4
 from datetime import date
 
 import pytest
@@ -24,6 +24,7 @@ from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
 from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
 from src.adapters.outbound.repositories.user import SQLAlchemyUserRepository
 from src.adapters.outbound.security.bcrypt_hasher import BcryptPasswordHasher
+from src.application.dto.user import UserDTO
 from src.application.events.event_publisher import EventPublisher
 from src.adapters.config import set_config, reset_config
 from src.adapters.inbound.api.dependencies import SessionDep, ConfigDep
@@ -139,7 +140,7 @@ def plain_pass() -> str:
 
 
 @pytest_asyncio.fixture
-async def t_current_user(t_session: AsyncSession, plain_pass: str) -> UUID:
+async def t_current_user(t_session: AsyncSession, plain_pass: str) -> UserDTO:
     user = UserModel(
         id=uuid4(),
         email="test_email@mail.com",
@@ -148,12 +149,16 @@ async def t_current_user(t_session: AsyncSession, plain_pass: str) -> UUID:
     )
     await _write_to_db(t_session, user)
     assert hasher.verify(plain_pass, user.password)
-    return user.id
+    return UserDTO(
+        id=user.id,
+        email=user.email,
+        name=user.name,
+    )
 
 
 @pytest.fixture
-async def t_user(t_session: AsyncSession, t_current_user: UUID) -> UserModel:
-    return await t_session.get(UserModel, t_current_user)
+async def t_user(t_session: AsyncSession, t_current_user: UserDTO) -> UserModel:
+    return await t_session.get(UserModel, t_current_user.id)
 
 
 @pytest_asyncio.fixture
@@ -174,12 +179,12 @@ async def t_bond(t_session: AsyncSession) -> BondModel:
 @pytest_asyncio.fixture
 async def t_bondholder(
     t_session: AsyncSession,
-    t_current_user: UUID,
+    t_current_user: UserDTO,
     t_bond: BondModel,
 ) -> BondHolderModel:
     bondholder = BondHolderModel(
         id=uuid4(),
-        user_id=t_current_user,
+        user_id=t_current_user.id,
         bond_id=t_bond.id,
         quantity=10,
         purchase_date=date.today(),
@@ -212,7 +217,7 @@ def event_publisher() -> EventPublisher:
 @pytest_asyncio.fixture
 async def client(
     t_session: AsyncSession,
-    t_current_user: UUID,
+    t_current_user: UserModel,
     user_repo: SQLAlchemyUserRepository,
     bond_repo: SQLAlchemyBondRepository,
     bondholder_repo: SQLAlchemyBondHolderRepository,

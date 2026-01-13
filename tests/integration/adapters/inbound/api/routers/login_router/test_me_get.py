@@ -3,14 +3,16 @@ from uuid import UUID
 from fastapi import status
 from httpx import AsyncClient
 
+from src.application.dto.user import UserDTO
 
-async def test_me_success(client: AsyncClient, t_current_user: UUID) -> None:
+
+async def test_me_success(client: AsyncClient, t_current_user: UserDTO) -> None:
     r = await client.get("api/login/me")
 
     assert r.status_code == status.HTTP_200_OK
     data = r.json()
     assert "id" in data
-    assert data["id"] == str(t_current_user)
+    assert data["id"] == str(t_current_user.id)
 
 
 async def test_me_returns_correct_uuid_format(client: AsyncClient) -> None:
