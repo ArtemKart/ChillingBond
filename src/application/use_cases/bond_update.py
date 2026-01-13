@@ -20,6 +20,8 @@ class BondUpdateUseCase:
         if not bh:
             raise NotFoundError("BondHolder not found")
         bond = await self.bond_repo.get_one(bond_id=bh.bond_id)
+        if not bond:
+            raise NotFoundError("Bond not found")
         update_attr = {k: v for k, v in asdict(dto).items() if v}
         for attr, value in update_attr.items():
             setattr(bond, attr, value)

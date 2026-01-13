@@ -35,6 +35,8 @@ class BondHolderGetAllUseCase(BondHolderBaseUseCase):
 
     async def execute(self, user_id: UUID) -> list[BondHolderDTO]:
         bondholders = await self.bondholder_repo.get_all(user_id=user_id)
+        if not bondholders:
+            return []
         bond_ids = [bh.bond_id for bh in bondholders]
         bonds = await self.bond_repo.get_many(bond_ids)
         bonds_dict = {bond.id: bond for bond in bonds}
@@ -42,6 +44,7 @@ class BondHolderGetAllUseCase(BondHolderBaseUseCase):
         dto_list: list[BondHolderDTO] = []
         for bh in bondholders:
             bond = bonds_dict.get(bh.bond_id)
-            dto_list.append(self.to_dto(bondholder=bh, bond=bond))
+            if bond:
+                dto_list.append(self.to_dto(bondholder=bh, bond=bond))
 
         return sorted(dto_list, key=lambda h: h.purchase_date, reverse=True)

@@ -30,7 +30,7 @@ async def test_happy_path(
 ) -> None:
     user_id_str = str(user_entity_mock.id)
     use_case.token_handler.read_token = Mock(return_value=user_id_str)
-    use_case.user_repo.get_one = AsyncMock(return_value=user_entity_mock)
+    use_case.user_repo.get_user = AsyncMock(return_value=user_entity_mock)
     use_case.to_dto = Mock(return_value=dto_from_user)
 
     token = "test_token"

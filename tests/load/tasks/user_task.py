@@ -25,9 +25,6 @@ class UserTaskSet(TaskSet):
                 try:
                     created_user = r.json()
                     user_id = created_user.get("id")
-                    email = created_user.get("email")
-
-                    # logger.info(f"✅ Created user: {user_id} ({email})")
 
                     if not hasattr(self.user, "created_users"):
                         self.user.created_users = []
@@ -59,7 +56,6 @@ class UserTaskSet(TaskSet):
         ) as r:
             if r.status_code == 204:
                 self.user.created_users.remove(user_id)
-                # logger.info(f"🗑️ Deleted user: {user_id}")
                 r.success()
 
             elif r.status_code == 404:

@@ -4,7 +4,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
-from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.inbound.api.dependencies.repo_deps import UserRepoDep
 from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_create_use_case,

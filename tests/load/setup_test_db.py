@@ -54,16 +54,16 @@ async def setup_load_test_database():
         print("\n" + "=" * 60)
         print("✅ Load test database setup completed!")
         print("=" * 60)
-        print(f"\n📊 Statistics:")
+        print("\n📊 Statistics:")
         print(f"   Users: {user_count}")
         print(f"   Bonds: {bond_count}")
         print(f"   BondHolders: {bondholder_count}")
-        print(f"\n🔐 Test credentials:")
+        print("\n🔐 Test credentials:")
         print(f"   Email: loadtest0@example.com ... loadtest{NUM_USERS-1}@example.com")
-        print(f"   Password: LoadTest123!")
-        print(f"\n🚀 Ready to run load tests!")
+        print("   Password: LoadTest123!")
+        print("\n🚀 Ready to run load tests!")
         print(
-            f"   Command: locust -f tests/load/locustfile.py --host=http://localhost:8000"
+            "   Command: locust -f tests/load/locustfile.py --host=http://localhost:8000"
         )
 
     except Exception as e:

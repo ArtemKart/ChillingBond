@@ -39,7 +39,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    async def write(self, user: User) -> None:
+    async def write(self, user: User) -> User:
         """Creates a new user in the repository.
 
         Args:

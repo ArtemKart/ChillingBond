@@ -6,7 +6,6 @@ import pytest
 
 from src.application.dto.bond import BondDTO, BondUpdateDTO
 from src.application.use_cases.bond_update import BondUpdateUseCase
-from src.domain.exceptions import NotFoundError
 
 
 @pytest.fixture

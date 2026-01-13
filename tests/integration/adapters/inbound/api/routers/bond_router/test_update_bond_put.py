@@ -88,7 +88,7 @@ async def test_invalid_uuid(
     valid_upd_json: dict[str, Any],
 ) -> None:
     r = await client.put(
-        f"api/bonds/not-a-valid-uuid/specification", json=valid_upd_json
+        "api/bonds/not-a-valid-uuid/specification", json=valid_upd_json
     )
     assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 

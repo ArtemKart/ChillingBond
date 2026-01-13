@@ -64,7 +64,7 @@ async def test_invalid_token(
 async def test_invalid_uuid_format(
     client: AsyncClient,
 ) -> None:
-    r = await client.get(f"api/bonds/not-a-valid-uuid")
+    r = await client.get("api/bonds/not-a-valid-uuid")
     assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 

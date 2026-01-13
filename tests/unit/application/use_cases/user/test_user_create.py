@@ -5,7 +5,6 @@ import pytest
 from src.application.dto.user import UserCreateDTO, UserDTO
 from src.application.use_cases.user.create import UserCreateUseCase
 from src.domain.entities.user import User as UserEntity
-from src.domain.exceptions import ConflictError
 
 
 @pytest.fixture

@@ -29,7 +29,7 @@ class BondHolderRepository(ABC):
         pass
 
     @abstractmethod
-    async def delete(self, bondholder_id: UUID) -> BondHolder:
+    async def delete(self, bondholder_id: UUID) -> None:
         pass
 
     @abstractmethod

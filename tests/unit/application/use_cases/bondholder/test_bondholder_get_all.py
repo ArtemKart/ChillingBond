@@ -9,7 +9,6 @@ from src.adapters.outbound.database.models import BondHolder
 from src.application.dto.bondholder import BondHolderDTO
 from src.application.use_cases.bondholder.bh_get import BondHolderGetAllUseCase
 from src.domain.entities.bond import Bond
-from src.domain.exceptions import NotFoundError
 
 
 @pytest.fixture
@@ -34,7 +33,7 @@ async def test_success_with_multiple_bondholders(
         Mock(bond_id=bond_ids[2], purchase_date=today - timedelta(days=3)),
     ]
 
-    mock_bonds = [Mock(), Mock(), Mock()]
+    mock_bonds = [Mock(id=uuid4()), Mock(id=uuid4()), Mock(id=uuid4())]
     expected_dtos = [
         Mock(spec=BondHolderDTO, purchase_date=today - timedelta(days=1)),
         Mock(spec=BondHolderDTO, purchase_date=today - timedelta(days=3)),
@@ -42,7 +41,7 @@ async def test_success_with_multiple_bondholders(
     ]
 
     mock_bondholder_repo.get_all.return_value = mock_bondholders
-    mock_bond_repo.get_one.side_effect = mock_bonds
+    mock_bond_repo.get_many.return_value = mock_bonds
     use_case.to_dto = Mock(side_effect=expected_dtos)
 
     result = await use_case.execute(user_id)
@@ -50,10 +49,7 @@ async def test_success_with_multiple_bondholders(
     assert result == expected_dtos
     assert len(result) == 3
     mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
-    assert mock_bond_repo.get_one.call_count == 3
-    mock_bond_repo.get_one.assert_any_call(bond_id=bond_ids[0])
-    mock_bond_repo.get_one.assert_any_call(bond_id=bond_ids[1])
-    mock_bond_repo.get_one.assert_any_call(bond_id=bond_ids[2])
+    mock_bond_repo.get_many.assert_called_once()
     assert use_case.to_dto.call_count == 3
 
 
@@ -70,7 +66,7 @@ async def test_success_with_empty_list(
 
     assert result == []
     mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
-    mock_bond_repo.get_one.assert_not_called()
+    mock_bond_repo.get_many.assert_not_called()
 
 
 async def test_success_with_single_bondholder(
@@ -82,12 +78,12 @@ async def test_success_with_single_bondholder(
     bond_id = uuid4()
 
     today = datetime.today()
-    mock_bondholder = Mock(bond_id=bond_id)
-    mock_bond = Mock()
+    mock_bondholders = [Mock(bond_id=bond_id)]
+    mock_bonds = [Mock(id=bond_id)]
     expected_dto = Mock(spec=BondHolderDTO, purchase_date=today - timedelta(days=1))
 
-    mock_bondholder_repo.get_all.return_value = [mock_bondholder]
-    mock_bond_repo.get_one.return_value = mock_bond
+    mock_bondholder_repo.get_all.return_value = mock_bondholders
+    mock_bond_repo.get_many.return_value = mock_bonds
     use_case.to_dto = Mock(return_value=expected_dto)
 
     result = await use_case.execute(user_id)
@@ -95,54 +91,10 @@ async def test_success_with_single_bondholder(
     assert result == [expected_dto]
     assert len(result) == 1
     mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
-    mock_bond_repo.get_one.assert_called_once_with(bond_id=bond_id)
-    use_case.to_dto.assert_called_once_with(bondholder=mock_bondholder, bond=mock_bond)
-
-
-async def test_bond_not_found_first_item(
-    use_case: BondHolderGetAllUseCase,
-    mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock,
-) -> None:
-    user_id = uuid4()
-    bond_id = uuid4()
-
-    mock_bondholder = Mock(bond_id=bond_id)
-
-    mock_bondholder_repo.get_all.return_value = [mock_bondholder]
-    mock_bond_repo.get_one.return_value = None
-
-    with pytest.raises(NotFoundError, match="Bond connected to BondHolder not found"):
-        await use_case.execute(user_id)
-
-    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
-    mock_bond_repo.get_one.assert_called_once_with(bond_id=bond_id)
-
-
-async def test_bond_not_found_middle_item(
-    use_case: BondHolderGetAllUseCase,
-    mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock,
-) -> None:
-    user_id = uuid4()
-    bond_ids = [uuid4(), uuid4(), uuid4()]
-
-    mock_bondholders = [
-        Mock(bond_id=bond_ids[0]),
-        Mock(bond_id=bond_ids[1]),
-        Mock(bond_id=bond_ids[2]),
-    ]
-
-    mock_bondholder_repo.get_all.return_value = mock_bondholders
-    mock_bond_repo.get_one.side_effect = [Mock(), None, Mock()]
-    use_case.to_dto = Mock()
-
-    with pytest.raises(NotFoundError, match="Bond connected to BondHolder not found"):
-        await use_case.execute(user_id)
-
-    mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_id)
-    assert mock_bond_repo.get_one.call_count == 2
-    assert use_case.to_dto.call_count == 1
+    mock_bond_repo.get_many.assert_called_once()
+    use_case.to_dto.assert_called_once_with(
+        bondholder=mock_bondholders[0], bond=mock_bonds[0]
+    )
 
 
 async def test_preserves_order(
@@ -180,18 +132,20 @@ async def test_preserves_order(
         ),
     ]
 
-    bond = Bond(
-        id=bond_id,
-        series="001",
-        nominal_value=Decimal("1000.0"),
-        maturity_period=12,
-        initial_interest_rate=Decimal("5.0"),
-        first_interest_period=6,
-        reference_rate_margin=Decimal("1.0"),
-    )
+    bonds = [
+        Bond(
+            id=bond_id,
+            series="001",
+            nominal_value=Decimal("1000.0"),
+            maturity_period=12,
+            initial_interest_rate=Decimal("5.0"),
+            first_interest_period=6,
+            reference_rate_margin=Decimal("1.0"),
+        )
+    ]
 
     mock_bondholder_repo.get_all.return_value = bondholders
-    mock_bond_repo.get_one.return_value = bond
+    mock_bond_repo.get_many.return_value = list(bonds)
 
     result = await use_case.execute(user_id)
 
