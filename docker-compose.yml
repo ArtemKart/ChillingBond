@@ -49,7 +49,7 @@ services:
     frontend:
         build:
             context: .
-            dockerfile: dockerfiles/Dockerfile_frontend
+            dockerfile: frontend/Dockerfile_frontend
             args:
                 NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost}/api
         container_name: frontend
