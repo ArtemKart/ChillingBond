@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-export BACKEND_HOST=${BACKEND_HOST:-backend.railway.internal}
+export BACKEND_HOST=${BACKEND_HOST:-backend1.railway.internal}
 export BACKEND_PORT=${BACKEND_PORT:-8080}
-export FRONTEND_HOST=${FRONTEND_HOST:-frontend.railway.internal}
+export FRONTEND_HOST=${FRONTEND_HOST:-frontend1.railway.internal}
 export FRONTEND_PORT=${FRONTEND_PORT:-8080}
 export PORT=${PORT:-80}
 
