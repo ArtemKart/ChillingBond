@@ -14,14 +14,14 @@ export function SortControls({
 }: SortControlsProps) {
     const getCurrentLabel = () => {
         if (sortBy === "purchase_date" && sortOrder === "desc")
-            return "Самые новые";
+            return "newest";
         if (sortBy === "purchase_date" && sortOrder === "asc")
-            return "Самые старые";
+            return "oldest";
         if (sortBy === "current_value" && sortOrder === "desc")
-            return "Наиболее дорогие";
+            return "most expensive";
         if (sortBy === "current_value" && sortOrder === "asc")
-            return "Наиболее дешевые";
-        return "Сортировка";
+            return "least expensive";
+        return "Sorting";
     };
 
     return (

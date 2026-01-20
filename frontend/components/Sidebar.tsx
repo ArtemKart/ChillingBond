@@ -61,7 +61,7 @@ export function Sidebar({
                         <button
                             onClick={onToggle}
                             className="text-gray-500 hover:text-gray-700 transition-colors"
-                            aria-label="Закрыть панель"
+                            aria-label="Close panel"
                         >
                             <svg
                                 className="w-6 h-6"

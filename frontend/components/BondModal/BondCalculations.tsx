@@ -23,7 +23,6 @@ export default function BondCalculations({
     useEffect(() => {
         const fetchMonthlyIncome = async () => {
             try {
-                // The API currently returns a single number (Decimal) representing income
                 const result = await apiFetch<number>(
                     `/calculations/month-income?bondholder_id=${bondHolderId}`,
                     {
@@ -35,7 +34,7 @@ export default function BondCalculations({
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "Не удалось получить данные о доходе",
+                        : "Failed to retrieve income data.\n",
                 );
             } finally {
                 setLoading(false);
@@ -46,7 +45,6 @@ export default function BondCalculations({
     }, [bondHolderId]);
 
     const totalInvestment = nominalValue * quantity;
-    // Fallback calculation if API fails or is loading
     const calculatedMonthlyAverage =
         (totalInvestment * (initialInterestRate / 100)) / 12;
 

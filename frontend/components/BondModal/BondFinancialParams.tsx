@@ -118,7 +118,7 @@ export default function BondFinancialParams({
                                 className="font-semibold text-gray-900 w-24 bg-white border border-gray-300 rounded px-2 py-1 text-right"
                             />
                             <span className="font-semibold text-gray-900">
-                                pcs
+                                mo
                             </span>
                         </div>
                     ) : (

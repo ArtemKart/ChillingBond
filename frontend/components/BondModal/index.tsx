@@ -51,7 +51,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
     };
 
     const handleDelete = async () => {
-        if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
+        if (!confirm("Are you sure you want to delete this bond?")) return;
 
         try {
             await apiFetch(`/bonds/${bond.id}`, {
@@ -60,7 +60,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
             onUpdate();
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Ошибка удаления");
+            setError(err instanceof Error ? err.message : "Delete error");
         }
     };
 
@@ -95,7 +95,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
             onUpdate();
             setIsEditing(false);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Ошибка сохранения");
+            setError(err instanceof Error ? err.message : "Save Error");
         } finally {
             setIsSaving(false);
         }

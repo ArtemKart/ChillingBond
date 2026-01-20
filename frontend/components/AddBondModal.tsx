@@ -241,7 +241,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                First Interest Period (months)
+                                First Interest Period (mo)
                             </label>
                             <input
                                 type="number"
@@ -264,7 +264,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Maturity Period (months)
+                                Maturity Period (mo)
                             </label>
                             <input
                                 type="number"

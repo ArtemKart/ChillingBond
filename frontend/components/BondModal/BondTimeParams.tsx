@@ -34,12 +34,12 @@ export default function BondTimeParams({
                                 className="font-semibold text-gray-900 w-24 bg-white border border-gray-300 rounded px-2 py-1 text-right"
                             />
                             <span className="font-semibold text-gray-900">
-                                mon.
+                                mo
                             </span>
                         </div>
                     ) : (
                         <span className="font-semibold text-gray-900">
-                            {maturityPeriod} mon.
+                            {maturityPeriod} mo
                         </span>
                     )}
                 </div>

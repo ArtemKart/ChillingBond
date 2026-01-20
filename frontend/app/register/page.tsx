@@ -18,12 +18,12 @@ export default function RegisterPage() {
         setError("");
 
         if (password.length < 8) {
-            setError("Пароль должен содержать минимум 8 символов");
+            setError("Password must be at least 8 characters long.");
             return;
         }
 
         if (password !== confirmPassword) {
-            setError("Пароли не совпадают");
+            setError("Passwords do not match.");
             return;
         }
 
@@ -52,7 +52,7 @@ export default function RegisterPage() {
                     const errorData = await response.json();
                     errorMessage = errorData.detail || errorMessage;
                 } catch {
-                    errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
+                    errorMessage = `Error ${response.status}: ${response.statusText}`;
                 }
 
                 const friendlyMessages: Record<number, string> = {

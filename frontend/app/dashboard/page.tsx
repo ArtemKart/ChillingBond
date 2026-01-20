@@ -58,7 +58,7 @@ export default function Dashboard() {
               },
               {} as Record<string, BondHolderResponse[]>,
           )
-        : { "Все облигации": sortedBonds };
+        : { "All bonds": sortedBonds };
 
     const loadBonds = async () => {
         try {
@@ -68,7 +68,7 @@ export default function Dashboard() {
             if (err instanceof ApiError && err.status == 401) {
                 router.push("/login")
             }
-            setError(err instanceof Error ? err.message : "Ошибка загрузки");
+            setError(err instanceof Error ? err.message : "Loading error");
         } finally {
             setLoading(false);
         }
