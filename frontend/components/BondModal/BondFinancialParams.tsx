@@ -22,7 +22,7 @@ export default function BondFinancialParams({
             </h3>
             <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Номинальная стоимость</span>
+                    <span className="text-gray-600">Face value</span>
                     {isEditing ? (
                         <input
                             type="number"
@@ -73,7 +73,7 @@ export default function BondFinancialParams({
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Маржа к ставке</span>
+                    <span className="text-gray-600">Rate Margin</span>
                     {isEditing ? (
                         <div className="flex items-center gap-1">
                             <input
@@ -118,12 +118,12 @@ export default function BondFinancialParams({
                                 className="font-semibold text-gray-900 w-24 bg-white border border-gray-300 rounded px-2 py-1 text-right"
                             />
                             <span className="font-semibold text-gray-900">
-                                мес.
+                                pcs
                             </span>
                         </div>
                     ) : (
                         <span className="font-semibold text-gray-900">
-                            {firstInterestPeriod} мес.
+                            {firstInterestPeriod} pcs
                         </span>
                     )}
                 </div>

@@ -295,7 +295,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                             disabled={loading}
                             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-blue-400"
                         >
-                            {loading ? "Добавление..." : "Добавить"}
+                            {loading ? "Adding..." : "Add"}
                         </button>
                     </div>
                 </form>

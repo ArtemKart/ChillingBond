@@ -39,7 +39,7 @@ export function SortControls({
                 <option value="purchase_date-desc">newest</option>
                 <option value="purchase_date-asc">oldest</option>
                 <option value="current_value-desc">most expensive</option>
-                <option value="current_value-asc">least Expensive</option>
+                <option value="current_value-asc">least expensive</option>
             </select>
         </div>
     );

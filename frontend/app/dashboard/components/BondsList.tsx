@@ -42,7 +42,7 @@ export function BondsList({
                                                 Series {bond.series}
                                             </h3>
                                             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-semibold">
-                                                {bond.quantity} шт.
+                                                {bond.quantity} pcs
                                             </span>
                                         </div>
 

@@ -60,13 +60,13 @@ export default function BondCalculations({
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900">
-                Расчет доходности
+                Yield Calculation
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 bg-blue-50 rounded-lg">
                     <p className="text-xs text-blue-600 font-medium uppercase">
-                        Общий номинал
+                        Total Face Value
                     </p>
                     <p className="text-xl font-bold text-blue-900">
                         {totalInvestment.toLocaleString("ru-RU")} PLN
@@ -74,7 +74,7 @@ export default function BondCalculations({
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg">
                     <p className="text-xs text-green-600 font-medium uppercase">
-                        Доход в месяц
+                        Monthly Income
                     </p>
                     <div className="flex items-baseline gap-1">
                         <p className="text-xl font-bold text-green-900">
@@ -93,8 +93,7 @@ export default function BondCalculations({
 
             {error && (
                 <div className="text-amber-600 text-xs bg-amber-50 p-2 rounded border border-amber-100">
-                    Внимание: {error}. Показан расчет на основе начальной
-                    ставки.
+                    Due to service error, the calculation is based on the initial interest rate.
                 </div>
             )}
         </div>

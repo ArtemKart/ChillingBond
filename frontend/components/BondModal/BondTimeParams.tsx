@@ -20,7 +20,7 @@ export default function BondTimeParams({
             </h3>
             <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Срок погашения</span>
+                    <span className="text-gray-600">Maturity Period</span>
                     {isEditing ? (
                         <div className="flex items-center gap-1">
                             <input
@@ -34,20 +34,20 @@ export default function BondTimeParams({
                                 className="font-semibold text-gray-900 w-24 bg-white border border-gray-300 rounded px-2 py-1 text-right"
                             />
                             <span className="font-semibold text-gray-900">
-                                мес.
+                                mon.
                             </span>
                         </div>
                     ) : (
                         <span className="font-semibold text-gray-900">
-                            {maturityPeriod} мес.
+                            {maturityPeriod} mon.
                         </span>
                     )}
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Дата покупки</span>
+                    <span className="text-gray-600">Purchase date</span>
                     <span className="font-semibold text-gray-900">
-                        {new Date(purchaseDate).toLocaleDateString("ru-RU", {
+                        {new Date(purchaseDate).toLocaleDateString("en-EN", {
                             year: "numeric",
                             month: "long",
                             day: "numeric",

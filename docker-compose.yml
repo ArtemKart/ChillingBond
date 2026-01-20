@@ -33,56 +33,61 @@ services:
         networks:
             - app_net
 
-#    backend:
-#        env_file: .env
-#        build:
-#            context: .
-#            dockerfile: dockerfiles/Dockerfile_backend
-#        container_name: backend
-#        environment:
-#            POSTGRES_HOST: database
-#        depends_on:
-#            database:
-#                condition: service_healthy
-#        networks:
-#            - app_net
-#        restart: always
-#
-#    frontend:
-#        build:
-#            context: .
-#            dockerfile: frontend/Dockerfile_frontend
-#            args:
-#                NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost}/api
-#        container_name: frontend
-#        env_file: .env
-#        depends_on:
-#            - backend
-#        networks:
-#            - app_net
-#        restart: always
+    backend:
+        env_file: .env
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile_backend
+        container_name: backend
+        environment:
+            POSTGRES_HOST: database
+        depends_on:
+            database:
+                condition: service_healthy
+        networks:
+            - app_net
+        restart: always
 
-#    nginx:
-#        build:
-#            context: .
-#            dockerfile: dockerfiles/Dockerfile_nginx
-#        container_name: nginx
-#        ports:
-#            - "80:80"
-#        depends_on:
-#            - frontend
-#            - backend
-#        networks:
-#            - app_net
-#        restart: always
-#        volumes:
-#            - ./logs/nginx:/var/log/nginx
-#        healthcheck:
-#            test: ["CMD-SHELL", "curl -fsS http://localhost/ || exit 1"]
-#            interval: 10s
-#            timeout: 5s
-#            retries: 10
-#            start_period: 20s
+    frontend:
+        build:
+            context: .
+            dockerfile: frontend/Dockerfile_frontend
+            args:
+                NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost}/api
+        container_name: frontend
+        env_file: .env
+        depends_on:
+            - backend
+        networks:
+            - app_net
+        restart: always
+
+    nginx:
+        environment:
+          BACKEND_HOST: backend
+          BACKEND_PORT: 8000
+          FRONTEND_HOST: frontend
+          FRONTEND_PORT: 3000
+        build:
+            context: .
+            dockerfile: nginx/Dockerfile_nginx
+        container_name: nginx
+        ports:
+            - "80:80"
+        depends_on:
+            - frontend
+            - backend
+        networks:
+            - app_net
+        restart: always
+        volumes:
+            - ./logs/nginx:/var/log/nginx
+        healthcheck:
+            test: ["CMD-SHELL", "curl -fsS http://localhost/ || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 20s
 
 #    scheduler:
 #        build:

@@ -16,11 +16,11 @@ export default function BondBasicInfo({
     return (
         <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Основная информация
+                Basic Information
             </h3>
             <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500 mb-1">Серия</p>
+                    <p className="text-sm text-gray-500 mb-1">Series</p>
                     {isEditing ? (
                         <input
                             type="text"
@@ -36,7 +36,7 @@ export default function BondBasicInfo({
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500 mb-1">Количество</p>
+                    <p className="text-sm text-gray-500 mb-1">Quantity</p>
                     {isEditing ? (
                         <input
                             type="number"
@@ -49,7 +49,7 @@ export default function BondBasicInfo({
                         />
                     ) : (
                         <p className="text-xl font-bold text-blue-600">
-                            {quantity} шт.
+                            {quantity} pcs
                         </p>
                     )}
                 </div>
