@@ -94,6 +94,7 @@ async def test_write_success(
     mock_session: AsyncMock,
     bond_entity_mock: Mock,
 ) -> None:
+    mock_session.get.return_value = None
     mock_session.commit.return_value = None
     mock_session.refresh.return_value = None
 
@@ -111,6 +112,7 @@ async def test_write_integrity_error(
     mock_session: AsyncMock,
     bond_entity_mock: Mock,
 ) -> None:
+    mock_session.get.return_value = None
     mock_session.commit.side_effect = IntegrityError("", "", "")
     with pytest.raises(
         SQLAlchemyRepositoryError, match="Bond already exists or constraint violated"
@@ -124,6 +126,7 @@ async def test_write_sqlalchemy_error(
     mock_session: AsyncMock,
     bond_entity_mock: Mock,
 ) -> None:
+    mock_session.get.return_value = None
     mock_session.commit.side_effect = SQLAlchemyError("Database error")
 
     with pytest.raises(SQLAlchemyRepositoryError, match="Failed to save bond"):

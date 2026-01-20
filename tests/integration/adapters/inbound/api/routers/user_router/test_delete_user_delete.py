@@ -1,57 +1,41 @@
-from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 from fastapi import status
-from starlette.testclient import TestClient
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.adapters.outbound.database.models import User as UserModel
+from src.application.dto.user import UserDTO
 
 
-def test_delete_user_success(
-    client: TestClient, mock_user_repo: AsyncMock, user_entity_mock: Mock
-):
-    user_id = user_entity_mock.id
-    mock_user_repo.get_one.return_value = user_entity_mock
-    mock_user_repo.delete.return_value = None
+async def test_success(
+    client: AsyncClient,
+    t_current_user: UserDTO,
+    t_session: AsyncSession,
+) -> None:
+    r = await client.delete(f"api/users/{t_current_user.id}")
 
-    response = client.delete(f"api/users/{user_id}")
+    assert r.status_code == status.HTTP_204_NO_CONTENT
+    assert r.content == b""
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert response.content == b""
-    mock_user_repo.get_one.assert_called_once_with(user_id)
-    mock_user_repo.delete.assert_called_once_with(user_id)
-
-
-def test_delete_user_not_found(client: TestClient, mock_user_repo: AsyncMock):
-    user_id = uuid4()
-    mock_user_repo.get_one.return_value = None
-
-    response = client.delete(f"api/users/{user_id}")
-
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json()["detail"] == "User not found"
-    mock_user_repo.get_one.assert_called_once_with(user_id)
-    mock_user_repo.delete.assert_not_called()
+    u = await t_session.get(UserModel, t_current_user.id)
+    assert not u
 
 
-def test_delete_user_invalid_uuid(client: TestClient, mock_user_repo: AsyncMock):
-    response = client.delete("api/users/invalid-uuid")
+async def test_user_not_found(
+    client: AsyncClient,
+) -> None:
+    r = await client.delete(f"api/users/{uuid4()}")
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
-    mock_user_repo.get_one.assert_not_called()
-    mock_user_repo.delete.assert_not_called()
+    assert r.status_code == status.HTTP_404_NOT_FOUND
+    assert r.json()["detail"] == "User not found"
 
 
-def test_delete_user_calls_in_correct_order(
-    client: TestClient, mock_user_repo: AsyncMock, user_entity_mock: Mock
-):
-    user_id = user_entity_mock.id
-    mock_user_repo.get_one.return_value = user_entity_mock
-    mock_user_repo.delete.return_value = None
+async def test_delete_user_invalid_uuid(client: AsyncClient) -> None:
+    r = await client.delete("api/users/invalid-uuid")
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-    response = client.delete(f"api/users/{user_id}")
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-
-    assert mock_user_repo.get_one.call_count == 1
-    assert mock_user_repo.delete.call_count == 1
-
-    calls = [call[0] for call in mock_user_repo.method_calls]
-    assert calls.index("get_one") < calls.index("delete")
+async def test_user_does_not_exist(client: AsyncClient) -> None:
+    r = await client.delete(f"api/users/{uuid4()}")
+    assert r.status_code == status.HTTP_404_NOT_FOUND
+    assert r.json()["detail"] == "User not found"

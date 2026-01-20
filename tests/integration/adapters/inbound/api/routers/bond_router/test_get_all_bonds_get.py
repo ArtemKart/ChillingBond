@@ -1,210 +1,126 @@
-from datetime import date, datetime, timezone
+from datetime import date, timedelta
 from decimal import Decimal
-from unittest.mock import AsyncMock
-from uuid import uuid4, UUID
+from uuid import uuid4
 
-import pytest
+import pytest_asyncio
+from httpx import AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from starlette.testclient import TestClient
 
 from src.adapters.inbound.api.main import app
+from src.adapters.outbound.database.models import Bond as BondModel
+from src.adapters.outbound.database.models import BondHolder as BondholderModel
+from src.application.dto.user import UserDTO
 
 
-@pytest.fixture
-def mock_bondholder_response() -> AsyncMock:
-    return AsyncMock(
-        id=uuid4(),
-        quantity=10,
-        purchase_date=date.today(),
-        last_update=datetime.now(timezone.utc),
-        bond_id=uuid4(),
-        series="ROR1206",
-        nominal_value=Decimal("100.0"),
-        maturity_period=12,
-        initial_interest_rate=Decimal("4.75"),
-        first_interest_period=1,
-        reference_rate_margin=Decimal("0.0"),
-    )
-
-
-@pytest.fixture
-def mock_multiple_bondholders() -> list[AsyncMock]:
-    return [
-        AsyncMock(
+@pytest_asyncio.fixture
+async def multiple_bondholders(
+    t_session: AsyncSession, t_current_user: UserDTO, t_bond: BondModel
+) -> list[BondholderModel]:
+    n = 3
+    bhs = [
+        BondholderModel(
             id=uuid4(),
-            quantity=10,
+            user_id=t_current_user.id,
+            bond_id=t_bond.id,
+            quantity=10 * (i + 1),
             purchase_date=date.today(),
-            last_update=datetime.now(timezone.utc),
-            bond_id=uuid4(),
-            series="ROR1206",
-            nominal_value=Decimal("100.0"),
-            maturity_period=12,
-            initial_interest_rate=Decimal("4.75"),
-            first_interest_period=1,
-            reference_rate_margin=Decimal("0.0"),
-        ),
-        AsyncMock(
-            id=uuid4(),
-            quantity=5,
-            purchase_date=date.today(),
-            last_update=datetime.now(timezone.utc),
-            bond_id=uuid4(),
-            series="ROR0000",
-            nominal_value=Decimal("101.0"),
-            maturity_period=12,
-            initial_interest_rate=Decimal("5"),
-            first_interest_period=1,
-            reference_rate_margin=Decimal("0.1"),
-        ),
-        AsyncMock(
-            id=uuid4(),
-            quantity=15,
-            purchase_date=date.today(),
-            last_update=datetime.now(timezone.utc),
-            bond_id=uuid4(),
-            series="ROR1111",
-            nominal_value=Decimal("102.0"),
-            maturity_period=12,
-            initial_interest_rate=Decimal("3"),
-            first_interest_period=1,
-            reference_rate_margin=Decimal("0.3"),
-        ),
+            last_update=None,
+        )
+        for i in range(n)
     ]
+    t_session.add_all(bhs)
+    await t_session.commit()
+    [await t_session.refresh(bhs[i]) for i in range(n)]
+    return bhs
 
 
-def test_get_all_bonds_success_with_multiple_bonds(
-    client: TestClient,
-    mock_multiple_bondholders: list[AsyncMock],
-    mock_current_user: UUID,
+async def test_success_with_multiple_bonds(
+    client: AsyncClient,
+    multiple_bondholders: list[BondholderModel],
+    t_bond: BondModel,
 ) -> None:
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = mock_multiple_bondholders
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
-    )
+    r = await client.get("api/bonds")
 
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-
-    response = client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert isinstance(data, list)
     assert len(data) == 3
 
-    assert data[0]["id"] == str(mock_multiple_bondholders[0].id)
-    assert data[0]["quantity"] == 10
-    assert data[0]["series"] == "ROR1206"
-    assert Decimal(data[0]["nominal_value"]) == Decimal("100.00")
+    for i, bh in enumerate(multiple_bondholders):
+        assert data[i]["id"] == str(bh.id)
+        assert data[i]["bond_id"] == str(bh.bond_id)
+        assert data[i]["quantity"] == bh.quantity
+        assert data[0]["series"] == t_bond.series
+        assert data[0]["purchase_date"] == bh.purchase_date.isoformat()
+        assert data[0]["nominal_value"] == t_bond.nominal_value
+        assert data[0]["maturity_period"] == t_bond.maturity_period
+        assert data[0]["initial_interest_rate"] == t_bond.initial_interest_rate
+        assert data[0]["reference_rate_margin"] == t_bond.reference_rate_margin
+        assert data[0]["first_interest_period"] == t_bond.first_interest_period
 
-    assert data[1]["quantity"] == 5
-    assert data[1]["series"] == "ROR0000"
-    assert Decimal(data[1]["nominal_value"]) == Decimal("101.00")
 
-    mock_use_case.execute.assert_called_once_with(user_id=mock_current_user)
-
-
-def test_get_all_bonds_success_with_single_bond(
-    client: TestClient,
-    mock_bondholder_response: AsyncMock,
+async def test_success_with_single_bond(
+    client: AsyncClient,
+    t_bondholder: BondholderModel,
 ) -> None:
-    purchase_date = mock_bondholder_response.purchase_date
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = [mock_bondholder_response]
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
-    )
+    r = await client.get("api/bonds")
 
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-
-    response = client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert isinstance(data, list)
     assert len(data) == 1
-    assert data[0]["id"] == str(mock_bondholder_response.id)
+    assert data[0]["id"] == str(t_bondholder.id)
     assert data[0]["quantity"] == 10
-    assert data[0]["purchase_date"] == purchase_date.isoformat()
-    assert data[0]["bond_id"] == str(mock_bondholder_response.bond_id)
+    assert data[0]["purchase_date"] == t_bondholder.purchase_date.isoformat()
+    assert data[0]["bond_id"] == str(t_bondholder.bond_id)
 
 
-def test_get_all_bonds_empty_list(
-    client: TestClient,
-    mock_current_user: UUID,
+async def test_empty_list(
+    client: AsyncClient,
+    t_session: AsyncSession,
+    t_current_user: UserDTO,
 ) -> None:
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = []
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
+    bhs = await t_session.execute(
+        text("SELECT * FROM bondholder WHERE user_id = :t_current_user"),
+        {"t_current_user": str(t_current_user.id)},
     )
+    bhs = bhs.scalars().all()
+    assert not bhs
 
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
+    r = await client.get("api/bonds")
 
-    response = client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert isinstance(data, list)
     assert len(data) == 0
-    mock_use_case.execute.assert_called_once_with(user_id=mock_current_user)
 
 
-def test_get_all_bonds_unauthorized() -> None:
+async def test_unauthorized(client: AsyncClient) -> None:
     from src.adapters.inbound.api.dependencies.current_user_deps import current_user
 
-    app.dependency_overrides.pop(current_user, None)
-    test_client = TestClient(app)
+    app.dependency_overrides.pop(current_user, None)  # noqa
 
-    response = test_client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    r = await client.get("api/bonds")
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-def test_get_all_bonds_user_id_from_authentication(
-    client: TestClient,
-    mock_bondholder_response: AsyncMock,
-    mock_current_user: UUID,
+async def test_response_structure(
+    client: AsyncClient,
+    t_bondholder: BondholderModel,
 ) -> None:
-    expected_user_id = mock_current_user
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = [mock_bondholder_response]
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
-    )
+    r = await client.get("api/bonds")
 
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-
-    response = client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_200_OK
-    mock_use_case.execute.assert_called_once_with(user_id=expected_user_id)
-
-
-def test_get_all_bonds_response_structure(
-    client: TestClient,
-    mock_bondholder_response: AsyncMock,
-) -> None:
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = [mock_bondholder_response]
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
-    )
-
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-
-    response = client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     required_fields = [
         "id",
@@ -224,101 +140,45 @@ def test_get_all_bonds_response_structure(
         assert field in data[0]
 
 
-def test_get_all_bonds_decimal_precision(
-    client: TestClient,
+async def test_decimal_precision(
+    client: AsyncClient,
+    t_bondholder: BondholderModel,
+    t_bond: BondModel,
 ) -> None:
-    mock_response = AsyncMock(
-        id=uuid4(),
-        quantity=7,
-        purchase_date=date.today(),
-        last_update=date.today(),
-        bond_id=uuid4(),
-        series="ROR2222",
-        nominal_value=Decimal("1234.56"),
-        maturity_period=15,
-        initial_interest_rate=Decimal("7.25"),
-        first_interest_period=5,
-        reference_rate_margin=Decimal("2.15"),
-    )
+    r = await client.get("api/bonds")
 
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = [mock_response]
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
-    )
-
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-
-    response = client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
 
     assert Decimal(data[0]["nominal_value"]).quantize(Decimal("0.01")) == Decimal(
-        "1234.56"
+        t_bond.nominal_value
     )
     assert Decimal(data[0]["initial_interest_rate"]).quantize(
         Decimal("0.01")
-    ) == Decimal("7.25")
+    ) == Decimal(t_bond.initial_interest_rate)
     assert Decimal(data[0]["reference_rate_margin"]).quantize(
         Decimal("0.01")
-    ) == Decimal("2.15")
+    ) == Decimal(t_bond.reference_rate_margin)
 
 
-def test_get_all_bonds_date_serialization(
-    client: TestClient,
-    mock_bondholder_response: AsyncMock,
+async def test_date_serialization(
+    client: AsyncClient,
+    t_bondholder: BondholderModel,
+    t_session: AsyncSession,
 ) -> None:
-    purchase_date = mock_bondholder_response.purchase_date
-    last_update = mock_bondholder_response.last_update
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = [mock_bondholder_response]
+    if not t_bondholder.last_update:
+        t_bondholder.last_update = t_bondholder.purchase_date + timedelta(days=10)
+        t_bondholder = await t_session.merge(t_bondholder)
+        await t_session.commit()
+        await t_session.refresh(t_bondholder)
 
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
+    r = await client.get("api/bonds")
+
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
+
+    assert data[0]["purchase_date"] == t_bondholder.purchase_date.isoformat()
+    assert (
+        data[0]["last_update"].replace("Z", "+00:00")
+        == t_bondholder.last_update.isoformat()
     )
-
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-
-    response = client.get("api/bonds")
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-
-    assert data[0]["purchase_date"] == purchase_date.isoformat()
-    assert data[0]["last_update"].replace("Z", "+00:00") == last_update.isoformat()
-
-
-def test_get_all_bonds_different_users_isolation(
-    mock_bondholder_response: AsyncMock,
-) -> None:
-    user_id_1 = uuid4()
-    user_id_2 = uuid4()
-
-    mock_use_case = AsyncMock()
-    mock_use_case.execute.return_value = [mock_bondholder_response]
-
-    from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
-        bh_get_all_use_case,
-    )
-    from src.adapters.inbound.api.dependencies.current_user_deps import current_user
-
-    app.dependency_overrides[bh_get_all_use_case] = lambda: mock_use_case
-
-    app.dependency_overrides[current_user] = lambda: user_id_1
-    client_1 = TestClient(app)
-    response_1 = client_1.get("api/bonds")
-    assert response_1.status_code == status.HTTP_200_OK
-
-    first_call = mock_use_case.execute.call_args_list[0]
-    assert first_call.kwargs["user_id"] == user_id_1
-
-    app.dependency_overrides[current_user] = lambda: user_id_2
-    client_2 = TestClient(app)
-    response_2 = client_2.get("api/bonds")
-    assert response_2.status_code == status.HTTP_200_OK
-
-    second_call = mock_use_case.execute.call_args_list[1]
-    assert second_call.kwargs["user_id"] == user_id_2
-    assert first_call.kwargs["user_id"] != second_call.kwargs["user_id"]

@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from uuid import UUID
 
+from src.domain.ports.repositories.bondholder import BondHolderRepository
 from src.application.dto.bond import BondDTO, BondUpdateDTO
 from src.domain.exceptions import NotFoundError
 from src.domain.ports.repositories.bond import BondRepository
@@ -8,11 +9,17 @@ from src.domain.entities.bond import Bond as BondEntity
 
 
 class BondUpdateUseCase:
-    def __init__(self, bond_repo: BondRepository) -> None:
+    def __init__(
+        self, bond_repo: BondRepository, bh_repo: BondHolderRepository
+    ) -> None:
+        self.bh_repo: BondHolderRepository = bh_repo
         self.bond_repo: BondRepository = bond_repo
 
-    async def execute(self, dto: BondUpdateDTO, bond_id: UUID) -> BondDTO:
-        bond = await self.bond_repo.get_one(bond_id=bond_id)
+    async def execute(self, dto: BondUpdateDTO, bh_id: UUID) -> BondDTO:
+        bh = await self.bh_repo.get_one(bondholder_id=bh_id)
+        if not bh:
+            raise NotFoundError("BondHolder not found")
+        bond = await self.bond_repo.get_one(bond_id=bh.bond_id)
         if not bond:
             raise NotFoundError("Bond not found")
         update_attr = {k: v for k, v in asdict(dto).items() if v}

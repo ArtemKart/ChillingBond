@@ -13,7 +13,10 @@ from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
     bond_update_use_case,
     bh_create_use_case,
 )
-from src.adapters.inbound.api.dependencies.current_user_deps import current_user
+from src.adapters.inbound.api.dependencies.current_user_deps import (
+    current_user,
+    CurrentUserDep,
+)
 from src.adapters.inbound.api.schemas.bond import (
     BondUpdateRequest,
     BondUpdateResponse,
@@ -56,11 +59,11 @@ bond_router = APIRouter(prefix="/bonds", tags=["bondholder"])
 )
 async def create_bond_purchase(
     bondholder_data: BondHolderCreateRequest,
-    user_id: Annotated[UUID, Depends(current_user)],
+    user: CurrentUserDep,
     use_case: Annotated[BondHolderCreateUseCase, Depends(bh_create_use_case)],
 ):
     bondholder_dto = BondHolderCreateDTO(
-        user_id=user_id,
+        user_id=user.id,
         quantity=bondholder_data.quantity,
         purchase_date=bondholder_data.purchase_date,
     )
@@ -95,10 +98,10 @@ async def create_bond_purchase(
     description="Get all bonds as combined bond and bond holder data",
 )
 async def get_all_bonds(
-    user_id: Annotated[UUID, Depends(current_user)],
+    user: CurrentUserDep,
     use_case: Annotated[BondHolderGetAllUseCase, Depends(bh_get_all_use_case)],
 ):
-    return await use_case.execute(user_id=user_id)
+    return await use_case.execute(user=user)
 
 
 @bond_router.get(
@@ -108,11 +111,11 @@ async def get_all_bonds(
     description="Get combined bond and bond holder data",
 )
 async def get_bond(
-    user_id: Annotated[UUID, Depends(current_user)],
+    user: CurrentUserDep,
     purchase_id: UUID,
     use_case: Annotated[BondHolderGetUseCase, Depends(bh_get_use_case)],
 ):
-    dto = await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
+    dto = await use_case.execute(bondholder_id=purchase_id, user=user)
     return BondHolderResponse(
         id=dto.id,
         quantity=dto.quantity,
@@ -140,11 +143,11 @@ async def update_purchase_quantity(
     use_case: Annotated[
         UpdateBondHolderQuantityUseCase, Depends(update_bh_quantity_use_case)
     ],
-    user_id: Annotated[UUID, Depends(current_user)],
+    user: CurrentUserDep,
 ):
     dto = BondHolderUpdateQuantityDTO(
         id=purchase_id,
-        user_id=user_id,
+        user=user,
         new_quantity=bond_data.new_quantity,
     )
     return await use_case.execute(dto=dto)
@@ -181,7 +184,7 @@ async def update_bond(
             else None
         ),
     )
-    return await use_case.execute(dto=dto, bond_id=purchase_id)  # type: ignore [return-value]
+    return await use_case.execute(dto=dto, bh_id=purchase_id)  # type: ignore [return-value]
 
 
 @bond_router.delete(
@@ -191,10 +194,10 @@ async def update_bond(
 )
 async def delete_bond(
     purchase_id: UUID,
-    user_id: Annotated[UUID, Depends(current_user)],
+    user: CurrentUserDep,
     use_case: Annotated[BondHolderDeleteUseCase, Depends(bh_delete_use_case)],
 ):
     try:
-        await use_case.execute(bondholder_id=purchase_id, user_id=user_id)
+        await use_case.execute(bondholder_id=purchase_id, user=user)
     except NotFoundError as _:
         pass  # Method is idempotent

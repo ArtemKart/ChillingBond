@@ -23,7 +23,7 @@ class UserAuthUseCase(UserBaseUseCase):
             raise InvalidTokenError("Token does not contain user information")
 
         user_id = UUID(user_id_str)
-        user = await self.user_repo.get_user_if_exists(user_id=user_id)
+        user = await self.user_repo.get_user(user_id=user_id)
         if user is None:
             raise AuthenticationError("User not found")
         return self.to_dto(user)

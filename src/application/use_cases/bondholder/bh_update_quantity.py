@@ -20,7 +20,7 @@ class UpdateBondHolderQuantityUseCase(BondHolderBaseUseCase):
         bondholder = await self.bondholder_repo.get_one(bondholder_id=dto.id)
         if not bondholder:
             raise NotFoundError("Bond holder not found")
-        if bondholder.user_id != dto.user_id:
+        if bondholder.user_id != dto.user.id:
             raise AuthorizationError("Permission denied")
         bondholder.change_quantity(dto.new_quantity)
         bondholder = await self.bondholder_repo.update(bondholder)

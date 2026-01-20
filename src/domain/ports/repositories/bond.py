@@ -25,6 +25,17 @@ class BondRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_many(self, ids: list[UUID]) -> list[Bond]:
+        """Retrieves a list of bonds matching the given identifiers.
+
+        Args:
+            ids: The identifiers of the bonds to retrieve.
+
+        Returns:
+            A list of Bond objects matching the given identifiers.
+        """
+
+    @abstractmethod
     async def get_by_series(self, series: str) -> Bond | None:
         """Retrieves a bond by series.
         Args:
@@ -43,7 +54,7 @@ class BondRepository(ABC):
             bond: The Bond object to persist.
 
         Returns:
-            The persisted Bond object.
+            The persisted Bond object if created, None otherwise.
         """
         pass
 
@@ -55,15 +66,18 @@ class BondRepository(ABC):
             bond: The Bond object with updated data.
 
         Returns:
-            The updated Bond object.
+            The updated Bond object if updated, None otherwise.
         """
         pass
 
     @abstractmethod
-    async def delete(self, bond_id: UUID) -> None:
+    async def delete(self, bond_id: UUID) -> Bond | None:
         """Deletes a bond from the repository.
 
         Args:
             bond_id: The unique identifier of the bondholder to delete.
+
+        Returns:
+            The deleted Bond object if deleted, None otherwise.
         """
         pass

@@ -1,143 +1,73 @@
 from fastapi import status
-from unittest.mock import Mock
+
+from httpx import AsyncClient
+
+from src.adapters.outbound.database.models import User as UserModel
 
 
-import pytest
-from unittest.mock import AsyncMock
-
-from starlette.testclient import TestClient
-
-from src.adapters.inbound.api.main import app
-from src.application.use_cases.user.login import UserLoginUseCase
-
-
-@pytest.fixture
-def mock_user_login_use_case(
-    mock_user_repo: AsyncMock, mock_hasher: Mock, mock_token_handler: Mock
-) -> UserLoginUseCase:
-    return UserLoginUseCase(
-        user_repo=mock_user_repo,
-        hasher=mock_hasher,
-        token_handler=mock_token_handler,
-    )
-
-
-@pytest.fixture(autouse=True)
-def setup_login_use_case_override(mock_user_login_use_case: UserLoginUseCase) -> None:
-    from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
-        user_login_use_case,
-    )
-
-    app.dependency_overrides[user_login_use_case] = lambda: mock_user_login_use_case
-
-
-def test_login_success(
-    client: TestClient,
-    mock_user_repo: AsyncMock,
-    user_entity_mock: Mock,
-    mock_hasher: Mock,
-    mock_token_handler: Mock,
+async def test_login_success(
+    client: AsyncClient,
+    t_user: UserModel,
+    plain_pass: str,
 ) -> None:
-    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
-    user_entity_mock.verify_password.return_value = True
-
-    mock_token = Mock()
-    mock_token.token = "test_jwt_token"
-    mock_token.type = "bearer"
-    mock_token_handler.create_token.return_value = mock_token
-
-    form_data = {"username": "test@example.com", "password": "correct_password"}
-
-    response = client.post("api/login/token", data=form_data)
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    
-    assert data['message'] == 'Successfully authenticated'
-    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with("test@example.com")
-    user_entity_mock.verify_password.assert_called_once_with(
-        hasher=mock_hasher, plain_password="correct_password"
-    )
-    mock_token_handler.create_token.assert_called_once_with(
-        subject=str(user_entity_mock.id)
+    r = await client.post(
+        "api/login/token",
+        data={"username": t_user.email, "password": plain_pass},
     )
 
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
+    assert data["message"] == "Successfully authenticated"
 
-def test_login_user_not_found(client: TestClient, mock_user_repo: AsyncMock) -> None:
-    mock_user_repo.get_user_if_exists_by_email.return_value = None
 
+async def test_login_user_not_found(client: AsyncClient) -> None:
     form_data = {"username": "nonexistent@example.com", "password": "any_password"}
 
-    response = client.post("api/login/token", data=form_data)
+    r = await client.post("api/login/token", data=form_data)
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json()["detail"] == "Incorrect username or password"
-
-    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with("nonexistent@example.com")
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
+    assert r.json()["detail"] == "Incorrect username or password"
 
 
-def test_login_incorrect_password(
-    client: TestClient,
-    mock_user_repo: AsyncMock,
-    user_entity_mock: Mock,
-    mock_hasher: Mock,
+async def test_login_incorrect_password(
+    client: AsyncClient,
+    t_user: UserModel,
 ) -> None:
-    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
-    user_entity_mock.verify_password.return_value = False
-
-    form_data = {"username": "test@example.com", "password": "wrong_password"}
-
-    response = client.post("api/login/token", data=form_data)
-
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json()["detail"] == "Incorrect username or password"
-
-    mock_user_repo.get_user_if_exists_by_email.assert_called_once_with("test@example.com")
-    user_entity_mock.verify_password.assert_called_once_with(
-        hasher=mock_hasher, plain_password="wrong_password"
+    r = await client.post(
+        "api/login/token", data={"username": t_user.email, "password": "wrong_password"}
     )
 
-
-def test_login_missing_username(client: TestClient) -> None:
-    form_data = {"password": "some_password"}
-
-    response = client.post("api/login/token", data=form_data)
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+    assert r.status_code == status.HTTP_401_UNAUTHORIZED
+    assert r.json()["detail"] == "Incorrect username or password"
 
 
-def test_login_missing_password(client: TestClient) -> None:
-    form_data = {"username": "test@example.com"}
-    response = client.post("api/login/token", data=form_data)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+async def test_login_missing_username(client: AsyncClient) -> None:
+    r = await client.post("api/login/token", data={"password": "some_password"})
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_login_empty_credentials(client: TestClient) -> None:
-    response = client.post("api/login/token", data={})
+async def test_login_missing_password(client: AsyncClient) -> None:
+    r = await client.post("api/login/token", data={"username": "test@example.com"})
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+async def test_login_empty_credentials(client: AsyncClient) -> None:
+    r = await client.post("api/login/token", data={})
+    assert r.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-def test_login_response_structure(
-    client: TestClient,
-    mock_user_repo: AsyncMock,
-    user_entity_mock: Mock,
-    mock_token_handler: Mock,
+async def test_login_response_structure(
+    client: AsyncClient,
+    t_user: UserModel,
+    plain_pass: str,
 ) -> None:
-    mock_user_repo.get_user_if_exists_by_email.return_value = user_entity_mock
-    user_entity_mock.verify_password.return_value = True
+    r = await client.post(
+        "api/login/token", data={"username": t_user.email, "password": plain_pass}
+    )
 
-    mock_token = Mock()
-    mock_token.token = "jwt_token_123"
-    mock_token.type = "bearer"
-    mock_token_handler.create_token.return_value = mock_token
-
-    form_data = {"username": "test@example.com", "password": "password123"}
-
-    response = client.post("api/login/token", data=form_data)
-
-    assert response.status_code == status.HTTP_200_OK
-    data = response.json()
+    assert r.status_code == status.HTTP_200_OK
+    data = r.json()
     assert "message" in data
+    assert data["message"] == "Successfully authenticated"
     assert len(data) == 1
     assert isinstance(data["message"], str)

@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 
 from src.application.dto.bondholder import BondHolderDTO, BondHolderUpdateQuantityDTO
+from src.application.dto.user import UserDTO
 from src.application.use_cases.bondholder.bh_update_quantity import (
     UpdateBondHolderQuantityUseCase,
 )
@@ -24,10 +25,10 @@ async def use_case(
 
 
 @pytest.fixture
-async def sample_dto() -> BondHolderUpdateQuantityDTO:
+async def sample_dto(user_dto: UserDTO) -> BondHolderUpdateQuantityDTO:
     return BondHolderUpdateQuantityDTO(
         id=uuid4(),
-        user_id=uuid4(),
+        user=user_dto,
         new_quantity=10,
     )
 
@@ -38,10 +39,10 @@ async def test_change_quantity_success(
     mock_bond_repo: AsyncMock,
     bondholder_entity_mock: Mock,
     bond_entity_mock: Mock,
+    user_dto: UserDTO,
 ) -> None:
-    common_user_id = uuid4()
-    bondholder_entity_mock.user_id = common_user_id
-    dto = BondHolderUpdateQuantityDTO(id=uuid4(), user_id=common_user_id, new_quantity=5)
+    bondholder_entity_mock.user_id = user_dto.id
+    dto = BondHolderUpdateQuantityDTO(id=uuid4(), user=user_dto, new_quantity=5)
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
     mock_bond_repo.get_one.return_value = bond_entity_mock
@@ -72,10 +73,11 @@ async def test_user_not_authenticated(
     use_case: UpdateBondHolderQuantityUseCase,
     mock_bondholder_repo: AsyncMock,
     bondholder_entity_mock: Mock,
+    user_dto: UserDTO,
 ) -> None:
     dto = BondHolderUpdateQuantityDTO(
         id=uuid4(),
-        user_id=uuid4(),
+        user=user_dto,
         new_quantity=10,
     )
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
@@ -93,10 +95,10 @@ async def test_bond_not_found(
     mock_bond_repo: AsyncMock,
     sample_dto: BondHolderUpdateQuantityDTO,
     bondholder_entity_mock: Mock,
+    user_dto: UserDTO,
 ) -> None:
-    common_user_id = uuid4()
-    sample_dto.user_id = common_user_id
-    bondholder_entity_mock.user_id = common_user_id
+    sample_dto.user = user_dto
+    bondholder_entity_mock.user_id = user_dto.id
 
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
@@ -120,10 +122,10 @@ async def test_calls_to_dto_method(
     sample_dto: BondHolderUpdateQuantityDTO,
     bondholder_entity_mock: Mock,
     bond_entity_mock: Mock,
+    user_dto: UserDTO,
 ) -> None:
-    common_user_id = uuid4()
-    sample_dto.user_id = common_user_id
-    bondholder_entity_mock.user_id = common_user_id
+    sample_dto.user = user_dto
+    bondholder_entity_mock.user_id = user_dto.id
 
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
@@ -159,10 +161,10 @@ async def test_with_zero_quantity(
     mock_bond_repo: AsyncMock,
     bondholder_entity_mock: Mock,
     bond_entity_mock: Mock,
+    user_dto: UserDTO,
 ) -> None:
-    common_user_id = uuid4()
-    bondholder_entity_mock.user_id = common_user_id
-    dto = BondHolderUpdateQuantityDTO(id=uuid4(), user_id=common_user_id, new_quantity=0)
+    bondholder_entity_mock.user_id = user_dto.id
+    dto = BondHolderUpdateQuantityDTO(id=uuid4(), user=user_dto, new_quantity=0)
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
     mock_bondholder_repo.update.return_value = bondholder_entity_mock
     mock_bond_repo.get_one.return_value = bond_entity_mock
@@ -179,12 +181,12 @@ async def test_with_large_quantity(
     mock_bond_repo: AsyncMock,
     bondholder_entity_mock: Mock,
     bond_entity_mock: Mock,
+    user_dto: UserDTO,
 ) -> None:
-    common_user_id = uuid4()
-    bondholder_entity_mock.user_id = common_user_id
+    bondholder_entity_mock.user_id = user_dto.id
     dto = BondHolderUpdateQuantityDTO(
         id=uuid4(),
-        user_id=common_user_id,
+        user=user_dto,
         new_quantity=1000000,
     )
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock

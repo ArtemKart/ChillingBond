@@ -9,6 +9,7 @@ from src.adapters.outbound.database.models import BondHolder as BondHolderModel
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.repositories.bondholder import SQLAlchemyBondHolderRepository
 from src.domain.entities.bondholder import BondHolder as BondHolderEntity
+from src.domain.exceptions import NotFoundError
 
 
 @pytest.fixture
@@ -110,6 +111,7 @@ async def test_write_success(
     mock_session: AsyncMock,
     bondholder_entity_mock: Mock,
 ) -> None:
+    mock_session.get.return_value = None
     mock_session.commit.return_value = None
     mock_session.refresh.return_value = None
 
@@ -128,6 +130,7 @@ async def test_write_integrity_error(
     mock_session: AsyncMock,
     bondholder_entity_mock: Mock,
 ) -> None:
+    mock_session.get.return_value = None
     mock_session.commit.side_effect = IntegrityError("", "", "")
 
     with pytest.raises(
@@ -143,6 +146,7 @@ async def test_write_sqlalchemy_error(
     mock_session: AsyncMock,
     bondholder_entity_mock: Mock,
 ) -> None:
+    mock_session.get.return_value = None
     mock_session.commit.side_effect = SQLAlchemyError("Database error")
 
     with pytest.raises(
@@ -193,10 +197,7 @@ async def test_update_model_not_found(
     bondholder_entity_mock: Mock,
 ) -> None:
     mock_session.get.return_value = None
-
-    with pytest.raises(
-        SQLAlchemyRepositoryError, match="BondHolder not found"
-    ):
+    with pytest.raises(NotFoundError, match="BondHolder not found"):
         await repository.update(bondholder_entity_mock)
 
 

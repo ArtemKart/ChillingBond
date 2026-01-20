@@ -1,80 +1,110 @@
-from unittest.mock import AsyncMock, Mock
 from uuid import UUID, uuid4
 
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from starlette.testclient import TestClient
+
+from src.adapters.outbound.database.models import BondHolder as BondholderModel
+from src.adapters.outbound.database.models import Bond as BondModel
+from src.adapters.outbound.database.models import User as UserModel
 
 
-async def test_delete_bondholder_delete_bond(
-    client: TestClient,
-    mock_current_user: UUID,
-    mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock,
-    bondholder_entity_mock: Mock,
+async def _check_bondholder_exists(
+    session: AsyncSession,
+    bondholder_id: UUID,
+) -> bool:
+    bondholder = await session.get(BondholderModel, bondholder_id)
+    return bondholder is not None
+
+
+async def test_delete_bond(
+    client: AsyncClient,
+    t_bondholder: BondholderModel,
+    t_session: AsyncSession,
 ) -> None:
-    bondholder_entity_mock.user_id = mock_current_user
-    mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
-    mock_bondholder_repo.count_by_bond_id.return_value = 0
-    mock_bond_repo.delete.return_value = None
+    await _check_bondholder_exists(t_session, t_bondholder.id)
 
-    response = client.delete(f"api/bonds/{bondholder_entity_mock.id}")
+    r = await client.delete(f"api/bonds/{t_bondholder.id}")
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    mock_bondholder_repo.delete.assert_called_once_with(
-        bondholder_id=bondholder_entity_mock.id
-    )
-    mock_bondholder_repo.count_by_bond_id.assert_called_once_with(
-        bond_id=bondholder_entity_mock.bond_id
-    )
-    mock_bond_repo.delete.assert_called_once_with(
-        bond_id=bondholder_entity_mock.bond_id
-    )
+    assert r.status_code == status.HTTP_204_NO_CONTENT
+
+    bondholder = await t_session.get(BondholderModel, t_bondholder.id)
+    assert bondholder is None
 
 
-async def test_delete_bondholder_keep_bond(
-    client: TestClient,
-    mock_current_user: UUID,
-    mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock,
-    bondholder_entity_mock: Mock,
+async def test_keep_bond(
+    client: AsyncClient,
+    t_bondholder: BondholderModel,
+    t_session: AsyncSession,
 ) -> None:
-    bondholder_entity_mock.user_id = mock_current_user
-    mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
-    mock_bondholder_repo.count_by_bond_id.return_value = 1
+    await _check_bondholder_exists(t_session, t_bondholder.id)
 
-    response = client.delete(f"api/bonds/{bondholder_entity_mock.id}")
+    bond_id = t_bondholder.bond_id
+    bond = await t_session.get(BondModel, bond_id)
+    assert bond
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    mock_bondholder_repo.delete.assert_called_once_with(
-        bondholder_id=bondholder_entity_mock.id
+    second_bh = BondholderModel(
+        id=uuid4(),
+        bond_id=bond_id,
+        user_id=t_bondholder.user_id,
+        quantity=50,
+        purchase_date=t_bondholder.purchase_date,
+        last_update=None,
     )
-    mock_bondholder_repo.count_by_bond_id.assert_called_once_with(
-        bond_id=bondholder_entity_mock.bond_id
+    t_session.add(second_bh)
+    await t_session.commit()
+    await t_session.refresh(second_bh)
+
+    r = await client.delete(f"api/bonds/{t_bondholder.id}")
+
+    assert r.status_code == status.HTTP_204_NO_CONTENT
+
+    bond = await t_session.get(BondModel, bond_id)
+    assert bond
+
+
+async def test_bondholder_not_found_idempotent(
+    client: AsyncClient,
+    t_session: AsyncSession,
+) -> None:
+    non_existent_id = uuid4()
+    bondholder = await t_session.get(BondholderModel, non_existent_id)
+    assert not bondholder
+
+    r = await client.delete(f"api/bonds/{non_existent_id}")
+    assert r.status_code == status.HTTP_204_NO_CONTENT
+
+
+async def test_authorization_error(
+    t_session: AsyncSession,
+    client: AsyncClient,
+    t_bond: BondModel,
+) -> None:
+    from datetime import date
+
+    user = UserModel(
+        id=uuid4(),
+        email="test_user@mail.com",
+        password="hashed_password",
+        name="Test User",
     )
-    mock_bond_repo.delete.assert_not_called()
+    t_session.add(user)
+    await t_session.commit()
+    await t_session.refresh(user)
 
+    bondholder = BondholderModel(
+        id=uuid4(),
+        bond_id=t_bond.id,
+        user_id=user.id,
+        quantity=10,
+        purchase_date=date.today(),
+        last_update=None,
+    )
+    t_session.add(bondholder)
+    await t_session.commit()
+    await t_session.refresh(bondholder)
 
-async def test_delete_bondholder_bondholder_not_found_idempotent(
-    client: TestClient,
-    mock_bondholder_repo: AsyncMock,
-) -> None:
-    mock_bondholder_repo.get_one.return_value = None
+    r = await client.delete(f"api/bonds/{bondholder.id}")
 
-    response = client.delete(f"api/bonds/{uuid4()}")
-
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    mock_bondholder_repo.delete.assert_not_called()
-
-
-async def test_delete_bondholder_authorization_error(
-    client: TestClient,
-    mock_bondholder_repo: AsyncMock,
-    bondholder_entity_mock: Mock,
-    mock_current_user: UUID,
-) -> None:
-    mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
-
-    response = client.delete(f"api/bonds/{uuid4()}")
-
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json()["detail"] == "Permission denied"
+    assert r.status_code == status.HTTP_403_FORBIDDEN
+    assert r.json()["detail"] == "Permission denied"

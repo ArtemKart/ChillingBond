@@ -29,15 +29,15 @@ http {
                application/vnd.ms-fontobject image/svg+xml;
 
     upstream backend {
-        server backend:8000;
+        server ${BACKEND_HOST}:${BACKEND_PORT};
     }
 
     upstream frontend {
-        server frontend:3000;
+        server ${FRONTEND_HOST}:${FRONTEND_PORT};
     }
 
     server {
-        listen 80;
+        listen ${PORT};
         server_name localhost;
 
         client_max_body_size 10M;
