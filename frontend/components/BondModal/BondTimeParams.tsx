@@ -16,7 +16,7 @@ export default function BondTimeParams({
     return (
         <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Временные параметры
+                Time Parameters
             </h3>
             <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
@@ -58,7 +58,7 @@ export default function BondTimeParams({
                 {lastUpdate && (
                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                         <span className="text-gray-600">
-                            Последнее обновление
+                            Last update
                         </span>
                         <span className="font-semibold text-gray-900">
                             {new Date(lastUpdate).toLocaleString("ru-RU", {

@@ -20,7 +20,7 @@ export default function BondModalFooter({
     if (isEditing) {
         return (
             <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center gap-2">
-                <div></div> {/* Пустой div для баланса */}
+                <div></div>
                 <div className="flex gap-2">
                     <button
                         onClick={onCancel}
@@ -37,7 +37,7 @@ export default function BondModalFooter({
                         {isSaving ? (
                             <>
                                 <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                Сохранение...
+                                Saving...
                             </>
                         ) : (
                             "Сохранить"
@@ -54,20 +54,20 @@ export default function BondModalFooter({
                 onClick={onDelete}
                 className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
             >
-                Удалить
+                Delete
             </button>
             <div className="flex gap-2">
                 <button
                     onClick={onClose}
                     className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
                 >
-                    Закрыть
+                    Close
                 </button>
                 <button
                     onClick={onEdit}
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                 >
-                    Редактировать
+                    Edit
                 </button>
             </div>
         </div>

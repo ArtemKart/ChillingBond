@@ -18,7 +18,7 @@ export default function BondFinancialParams({
     return (
         <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Финансовые параметры
+                Financial Parameters
             </h3>
             <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
@@ -45,7 +45,7 @@ export default function BondFinancialParams({
 
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">
-                        Начальная процентная ставка
+                        Initial Interest Rate
                     </span>
                     {isEditing ? (
                         <div className="flex items-center gap-1">
@@ -102,7 +102,7 @@ export default function BondFinancialParams({
 
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">
-                        Первый процентный период
+                        First Interest Period
                     </span>
                     {isEditing ? (
                         <div className="flex items-center gap-1">

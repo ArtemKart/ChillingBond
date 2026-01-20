@@ -46,7 +46,7 @@ export default function RegisterPage() {
             );
 
             if (!response.ok) {
-                let errorMessage = "Ошибка регистрации";
+                let errorMessage = "Registration error";
 
                 try {
                     const errorData = await response.json();
@@ -57,10 +57,10 @@ export default function RegisterPage() {
 
                 const friendlyMessages: Record<number, string> = {
                     409: errorMessage,
-                    422: "Проверьте правильность введённых данных",
-                    400: "Неверный запрос",
-                    500: "Ошибка сервера. Попробуйте позже",
-                    503: "Сервис временно недоступен",
+                    422: "Please check that the entered data is correct.\n",
+                    400: "Invalid request\n",
+                    500: "Server error. Please try again later.\n",
+                    503: "Service temporarily unavailable.\n",
                 };
 
                 throw new Error(
@@ -72,13 +72,13 @@ export default function RegisterPage() {
         } catch (err) {
             if (err instanceof TypeError && err.message.includes("fetch")) {
                 setError(
-                    "Не удалось подключиться к серверу. Проверьте интернет-соединение",
+                    "Failed to connect to the server. Please check your internet connection.",
                 );
             } else {
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "Произошла неизвестная ошибка",
+                        : "An unknown error has occurred.\n",
                 );
             }
         } finally {
@@ -92,22 +92,20 @@ export default function RegisterPage() {
                 {/* Header */}
                 <div>
                     <h2 className="text-center text-3xl font-bold text-gray-900">
-                        Регистрация
+                        Create an account
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Уже есть аккаунт?{" "}
+                    <p className="mt-2 text-left text-sm text-gray-600">
+                        Already have an account?{" "}
                         <Link
                             href="/login"
                             className="font-medium text-blue-600 hover:text-blue-500"
                         >
-                            Войти
+                            Log in
                         </Link>
                     </p>
                 </div>
 
-                {/* Form */}
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {/* Error Alert */}
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
                             {error}
@@ -115,81 +113,64 @@ export default function RegisterPage() {
                     )}
 
                     <div className="space-y-4">
-                        {/* Email Field */}
                         <div>
-                            <label
-                                htmlFor="email"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Email <span className="text-red-500">*</span>
-                            </label>
                             <input
                                 id="email"
                                 type="email"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="your@email.com"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder-gray-300 text-gray-900"
+                                placeholder="Your email"
                                 disabled={loading}
                             />
                         </div>
 
-                        {/* Name Field (Optional) */}
                         <div>
-                            <label
-                                htmlFor="name"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Имя{" "}
-                                <span className="text-gray-400 text-xs">
-                                    (необязательно)
-                                </span>
-                            </label>
                             <input
                                 id="name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Иван Иванов"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder-gray-300 text-gray-900"
+                                placeholder="Your name"
                                 disabled={loading}
                             />
                         </div>
 
-                        {/* Password Field */}
                         <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Пароль <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                id="password"
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="••••••••"
-                                minLength={8}
-                                disabled={loading}
-                            />
-                            <p className="mt-1 text-sm text-gray-500">
-                                Минимум 8 символов
-                            </p>
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder-gray-300 text-gray-900"
+                                    placeholder="Your password"
+                                    minLength={8}
+                                    disabled={loading}
+                                />
+                                <div
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-help"
+                                    title="At least 8 characters and 1 number"
+                                >
+                                    <svg
+                                        className="h-5 w-5 text-gray-400 hover:text-gray-600"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Confirm Password Field */}
                         <div>
-                            <label
-                                htmlFor="confirmPassword"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Подтвердите пароль{" "}
-                                <span className="text-red-500">*</span>
-                            </label>
                             <input
                                 id="confirmPassword"
                                 type="password"
@@ -198,21 +179,20 @@ export default function RegisterPage() {
                                 onChange={(e) =>
                                     setConfirmPassword(e.target.value)
                                 }
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="••••••••"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder-gray-300 text-gray-900"
+                                placeholder="Repeat password"
                                 minLength={8}
                                 disabled={loading}
                             />
                         </div>
                     </div>
 
-                    {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={loading}
                         className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                     >
-                        {loading ? "Регистрация..." : "Зарегистрироваться"}
+                        {loading ? "Creating..." : "Create"}
                     </button>
                 </form>
             </div>

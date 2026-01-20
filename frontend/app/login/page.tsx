@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
+import Link from "next/link";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
@@ -24,9 +25,9 @@ export default function LoginPage() {
                 err instanceof Error &&
                 err.message === "Incorrect username or password"
             ) {
-                setError("Неверный логин или пароль");
+                setError("Incorrect username or password");
             } else {
-                setError(err instanceof Error ? err.message : "Ошибка входа");
+                setError(err instanceof Error ? err.message : "Login error");
             }
         } finally {
             setLoading(false);
@@ -38,7 +39,7 @@ export default function LoginPage() {
             <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
                 <div>
                     <h2 className="text-center text-3xl font-bold text-gray-900">
-                        Вход в систему
+                        Log in
                     </h2>
                 </div>
 
@@ -52,10 +53,9 @@ export default function LoginPage() {
                     <div className="space-y-4">
                         <div>
                             <label
-                                htmlFor="username"
+                                htmlFor="email"
                                 className="block text-sm font-medium text-gray-700"
                             >
-                                Логин
                             </label>
                             <input
                                 id="username"
@@ -64,7 +64,7 @@ export default function LoginPage() {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="mt-1 block w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="username"
+                                placeholder="Your email"
                             />
                         </div>
 
@@ -73,7 +73,6 @@ export default function LoginPage() {
                                 htmlFor="password"
                                 className="block text-sm font-medium text-gray-700"
                             >
-                                Пароль
                             </label>
                             <input
                                 id="password"
@@ -82,7 +81,7 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="mt-1 block w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="••••••••"
+                                placeholder="Your password"
                             />
                         </div>
                     </div>
@@ -92,8 +91,14 @@ export default function LoginPage() {
                         disabled={loading}
                         className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
                     >
-                        {loading ? "Вход..." : "Войти"}
+                        {loading ? "Login..." : "Login"}
                     </button>
+                    <div className="text-left text-1xl font-regular text-gray-900">
+                    Do not have an account yet?{" "}
+                        <Link href="/register" className="text-blue-600 hover:underline">
+                            Create it
+                        </Link>
+                    </div>
                 </form>
             </div>
         </div>

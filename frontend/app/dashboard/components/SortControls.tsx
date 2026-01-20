@@ -36,10 +36,10 @@ export function SortControls({
                 }}
                 className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
-                <option value="purchase_date-desc">Самые новые</option>
-                <option value="purchase_date-asc">Самые старые</option>
-                <option value="current_value-desc">Наиболее дорогие</option>
-                <option value="current_value-asc">Наиболее дешевые</option>
+                <option value="purchase_date-desc">newest</option>
+                <option value="purchase_date-asc">oldest</option>
+                <option value="current_value-desc">most expensive</option>
+                <option value="current_value-asc">least Expensive</option>
             </select>
         </div>
     );

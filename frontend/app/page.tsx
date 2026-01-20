@@ -52,23 +52,23 @@ export default function HomePage() {
 
                         {/* Navigation */}
                         <div className="hidden md:flex items-center space-x-8">
-                            <Link
-                                href="/"
-                                className="text-gray-700 hover:text-blue-600 font-medium"
-                            >
-                                Главная
-                            </Link>
+                            {/*<Link*/}
+                            {/*    href="/"*/}
+                            {/*    className="text-gray-700 hover:text-blue-600 font-medium"*/}
+                            {/*>*/}
+                            {/*    Главная*/}
+                            {/*</Link>*/}
                             <Link
                                 href="/dashboard"
                                 className="text-gray-700 hover:text-blue-600 font-medium"
                             >
-                                Дашборд
+                                Dashboard
                             </Link>
                             <Link
                                 href="/about"
                                 className="text-gray-700 hover:text-blue-600 font-medium"
                             >
-                                О проекте
+                                About
                             </Link>
                         </div>
 
@@ -79,7 +79,7 @@ export default function HomePage() {
                                     onClick={handleLogout}
                                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
                                 >
-                                    Выйти
+                                    Logout
                                 </button>
                             ) : (
                                 <>
@@ -87,13 +87,13 @@ export default function HomePage() {
                                         href="/login"
                                         className="text-gray-700 hover:text-blue-600 font-medium"
                                     >
-                                        Войти
+                                        Login
                                     </Link>
                                     <Link
                                         href="/register"
                                         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
                                     >
-                                        Регистрация
+                                        Register
                                     </Link>
                                 </>
                             )}
@@ -106,36 +106,33 @@ export default function HomePage() {
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                 <div className="text-center">
                     <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                        Управляйте своим портфелем
-                        <span className="text-blue-600"> облигаций</span> в
-                        одном месте
+                        Manage your
+                        <span className="text-blue-600"> bonds </span> in a one place
                     </h1>
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                        Отслеживайте доходность, анализируйте инвестиции и
-                        получайте уведомления о выплатах купонов. Всё что нужно
-                        для эффективного управления облигациями.
+                        Track yields, analyze investments, and receive notifications about bond payments.
+                        Everything you need for effective bond management.
                     </p>
                     <div className="flex justify-center gap-4">
                         <Link
                             href="/register"
                             className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition text-lg font-semibold shadow-lg"
                         >
-                            Начать бесплатно
+                            Start for free
                         </Link>
                         <Link
                             href="/dashboard"
                             className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-gray-50 transition text-lg font-semibold border-2 border-blue-600"
                         >
-                            Перейти к дашборду
+                            Go to dashboard
                         </Link>
                     </div>
                 </div>
 
-                {/* Visual placeholder - можно добавить график или иллюстрацию */}
                 <div className="mt-16 bg-white rounded-xl shadow-2xl p-8 border border-gray-200">
                     <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center">
                         <p className="text-gray-500 text-lg">
-                            📊 Визуализация портфеля
+                            📊 Portfolio visualisation
                         </p>
                     </div>
                 </div>
@@ -145,7 +142,7 @@ export default function HomePage() {
             <section className="bg-white py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
-                        Ключевые возможности
+                        Key features
                     </h2>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -155,11 +152,10 @@ export default function HomePage() {
                                 <span className="text-2xl">📈</span>
                             </div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                Отслеживание облигаций
+                                Bond Tracking
                             </h3>
                             <p className="text-gray-600">
-                                Добавляйте облигации в портфель и следите за их
-                                текущей стоимостью в режиме реального времени
+                                Add bonds to your portfolio and track their current value in real time.
                             </p>
                         </div>
 
@@ -169,11 +165,10 @@ export default function HomePage() {
                                 <span className="text-2xl">💰</span>
                             </div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                Анализ доходности
+                                Yield Analysis
                             </h3>
                             <p className="text-gray-600">
-                                Рассчитывайте текущую доходность, прогнозируйте
-                                будущие выплаты и оптимизируйте портфель
+                                Calculate current yields, forecast future payments, and optimize your portfolio.
                             </p>
                         </div>
 
@@ -183,11 +178,10 @@ export default function HomePage() {
                                 <span className="text-2xl">📝</span>
                             </div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                История операций
+                                Transaction History
                             </h3>
                             <p className="text-gray-600">
-                                Ведите полную историю покупок, продаж и
-                                получения купонов для налоговой отчётности
+                                Keep a complete history of bond purchases, sales, and receipts for tax reporting purposes.
                             </p>
                         </div>
 
@@ -197,11 +191,10 @@ export default function HomePage() {
                                 <span className="text-2xl">🔔</span>
                             </div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                Уведомления о выплатах
+                                Payment Notifications
                             </h3>
                             <p className="text-gray-600">
-                                Получайте напоминания о предстоящих выплатах
-                                купонов и погашении облигаций
+                                Receive reminders about upcoming bond payments and bond maturities.
                             </p>
                         </div>
                     </div>
@@ -212,7 +205,7 @@ export default function HomePage() {
             <section className="py-20">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
-                        Как это работает
+                        How it works
                     </h2>
 
                     <div className="space-y-12">
@@ -223,11 +216,11 @@ export default function HomePage() {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                                    Регистрация
+                                    Register
                                 </h3>
                                 <p className="text-gray-600 text-lg">
-                                    Создайте бесплатный аккаунт за 30 секунд.
-                                    Никаких сложных форм или проверок.
+                                    Create a free account in 30 seconds. No complicated forms or verifications.
+
                                 </p>
                             </div>
                         </div>
@@ -239,12 +232,11 @@ export default function HomePage() {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                                    Добавление облигаций
+                                    Add Bonds
                                 </h3>
                                 <p className="text-gray-600 text-lg">
-                                    Внесите информацию о своих облигациях:
-                                    серия, количество, дата покупки. Система
-                                    автоматически рассчитает все показатели.
+                                    Enter your bond information: series, quantity, and purchase date.
+                                    The system will automatically calculate all metrics.
                                 </p>
                             </div>
                         </div>
@@ -256,12 +248,11 @@ export default function HomePage() {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                                    Отслеживание портфеля
+                                    Portfolio Tracking
                                 </h3>
                                 <p className="text-gray-600 text-lg">
-                                    Следите за доходностью, получайте аналитику
-                                    и уведомления. Всё необходимое для успешных
-                                    инвестиций в одном месте.
+                                    Monitor yields, access analytics, and receive notifications.
+                                    Everything you need for successful investing in one place.
                                 </p>
                             </div>
                         </div>
@@ -272,7 +263,7 @@ export default function HomePage() {
                             href="/register"
                             className="inline-block bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition text-lg font-semibold"
                         >
-                            Попробовать сейчас →
+                            Try now →
                         </Link>
                     </div>
                 </div>
@@ -288,21 +279,20 @@ export default function HomePage() {
                                 ChillingBond
                             </h3>
                             <p className="text-gray-400">
-                                Современный инструмент для управления портфелем
-                                облигаций
+                                A modern tool for managing your bond portfolio
                             </p>
                         </div>
 
                         {/* Column 2 */}
                         <div>
-                            <h4 className="font-semibold mb-4">Ссылки</h4>
+                            <h4 className="font-semibold mb-4">Links</h4>
                             <ul className="space-y-2">
                                 <li>
                                     <Link
                                         href="/"
                                         className="text-gray-400 hover:text-white"
                                     >
-                                        Главная
+                                        Home
                                     </Link>
                                 </li>
                                 <li>
@@ -310,7 +300,7 @@ export default function HomePage() {
                                         href="/dashboard"
                                         className="text-gray-400 hover:text-white"
                                     >
-                                        Дашборд
+                                        Dashboard
                                     </Link>
                                 </li>
                                 <li>
@@ -318,7 +308,7 @@ export default function HomePage() {
                                         href="/about"
                                         className="text-gray-400 hover:text-white"
                                     >
-                                        О проекте
+                                        About
                                     </Link>
                                 </li>
                             </ul>
@@ -326,7 +316,7 @@ export default function HomePage() {
 
                         {/* Column 3 */}
                         <div>
-                            <h4 className="font-semibold mb-4">Контакты</h4>
+                            <h4 className="font-semibold mb-4">Contact</h4>
                             <ul className="space-y-2 text-gray-400">
                                 <li>
                                     <a
@@ -341,7 +331,8 @@ export default function HomePage() {
                                         href="/privacy"
                                         className="hover:text-white"
                                     >
-                                        Политика конфиденциальности
+                                        Privacy Policy
+
                                     </Link>
                                 </li>
                                 <li className="flex gap-4 mt-4">
@@ -357,7 +348,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                        <p>&copy; 2025 ChillingBond. Все права защищены.</p>
+                        <p>&copy; 2025 ChillingBond. All rights reserved.</p>
                     </div>
                 </div>
             </footer>
