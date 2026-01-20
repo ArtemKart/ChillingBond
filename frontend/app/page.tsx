@@ -30,7 +30,7 @@ export default function HomePage() {
         try {
             await logout();
         } finally {
-            window.location.href = "/login";
+            window.location.href = "/";
         }
     };
 
