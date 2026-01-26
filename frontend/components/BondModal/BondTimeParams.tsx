@@ -16,11 +16,11 @@ export default function BondTimeParams({
     return (
         <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Временные параметры
+                Time Parameters
             </h3>
             <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Срок погашения</span>
+                    <span className="text-gray-600">Maturity Period</span>
                     {isEditing ? (
                         <div className="flex items-center gap-1">
                             <input
@@ -34,20 +34,20 @@ export default function BondTimeParams({
                                 className="font-semibold text-gray-900 w-24 bg-white border border-gray-300 rounded px-2 py-1 text-right"
                             />
                             <span className="font-semibold text-gray-900">
-                                мес.
+                                mo
                             </span>
                         </div>
                     ) : (
                         <span className="font-semibold text-gray-900">
-                            {maturityPeriod} мес.
+                            {maturityPeriod} mo
                         </span>
                     )}
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Дата покупки</span>
+                    <span className="text-gray-600">Purchase date</span>
                     <span className="font-semibold text-gray-900">
-                        {new Date(purchaseDate).toLocaleDateString("ru-RU", {
+                        {new Date(purchaseDate).toLocaleDateString("en-EN", {
                             year: "numeric",
                             month: "long",
                             day: "numeric",
@@ -58,7 +58,7 @@ export default function BondTimeParams({
                 {lastUpdate && (
                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                         <span className="text-gray-600">
-                            Последнее обновление
+                            Last update
                         </span>
                         <span className="font-semibold text-gray-900">
                             {new Date(lastUpdate).toLocaleString("ru-RU", {

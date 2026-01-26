@@ -8,6 +8,8 @@ import { BondsList } from "./components/BondsList";
 import { Sidebar } from "@/components/Sidebar";
 import BondModal from "@/components/BondModal";
 import AddBondModal from "@/components/AddBondModal";
+import { useRouter } from "next/navigation";
+import { ApiError } from "@/lib/api";
 
 export default function Dashboard() {
     const [bonds, setBonds] = useState<BondHolderResponse[]>([]);
@@ -23,6 +25,8 @@ export default function Dashboard() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [groupByDate, setGroupByDate] = useState(true);
+
+    const router = useRouter();
 
     const sortedBonds = [...bonds].sort((a, b) => {
         let compareValue = 0;
@@ -54,14 +58,17 @@ export default function Dashboard() {
               },
               {} as Record<string, BondHolderResponse[]>,
           )
-        : { "Все облигации": sortedBonds };
+        : { "All bonds": sortedBonds };
 
     const loadBonds = async () => {
         try {
             const result = await apiFetch<BondHolderResponse[]>("/bonds");
             setBonds(result);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Ошибка загрузки");
+            if (err instanceof ApiError && err.status == 401) {
+                router.push("/login")
+            }
+            setError(err instanceof Error ? err.message : "Loading error");
         } finally {
             setLoading(false);
         }
@@ -92,7 +99,7 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-gray-600">Загрузка...</div>
+                <div className="text-gray-600">Loading...</div>
             </div>
         );
     }

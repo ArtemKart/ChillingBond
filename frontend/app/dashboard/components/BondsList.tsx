@@ -15,7 +15,7 @@ export function BondsList({
         return (
             <div className="bg-white rounded-lg shadow">
                 <div className="p-8 text-center text-gray-500">
-                    У вас пока нет облигаций
+                    You have no bonds yet
                 </div>
             </div>
         );
@@ -26,7 +26,7 @@ export function BondsList({
             {Object.entries(groupedBonds).map(([date, dateBonds]) => (
                 <div key={date}>
                     <div className="px-6 py-3 bg-gray-100 text-sm font-medium text-gray-700 border-b border-gray-200">
-                        Куплено {date}
+                        Purchase date {date}
                     </div>
                     <ul className="divide-y divide-gray-200">
                         {dateBonds.map((bond) => (
@@ -39,30 +39,30 @@ export function BondsList({
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
                                             <h3 className="text-lg font-semibold text-gray-900">
-                                                Серия {bond.series}
+                                                Series {bond.series}
                                             </h3>
                                             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-semibold">
-                                                {bond.quantity} шт.
+                                                {bond.quantity} pcs
                                             </span>
                                         </div>
 
                                         <div className="flex gap-6 text-sm text-gray-600">
                                             <div>
                                                 <span className="font-medium">
-                                                    Номинал:
+                                                    Face value:
                                                 </span>{" "}
                                                 {bond.nominal_value.toLocaleString()}{" "}
                                                 PLN
                                             </div>
                                             <div>
                                                 <span className="font-medium">
-                                                    Ставка:
+                                                    Interest rate:
                                                 </span>{" "}
                                                 {bond.initial_interest_rate}%
                                             </div>
                                             <div>
                                                 <span className="font-medium">
-                                                    Куплено:
+                                                    Purchase date:
                                                 </span>{" "}
                                                 {new Date(
                                                     bond.purchase_date,
@@ -73,7 +73,7 @@ export function BondsList({
 
                                     <div className="ml-4">
                                         <span className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                            Подробнее →
+                                            Details →
                                         </span>
                                     </div>
                                 </div>

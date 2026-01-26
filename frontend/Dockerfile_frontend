@@ -1,7 +1,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 
 RUN npm install --legacy-peer-deps
 
@@ -17,7 +17,7 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 COPY --from=deps /app/node_modules ./node_modules
 
-COPY . ./
+COPY ./frontend ./
 
 RUN npm run build
 
