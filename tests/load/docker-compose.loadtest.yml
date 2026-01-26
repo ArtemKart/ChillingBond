@@ -6,6 +6,7 @@ services:
     environment:
       PORT: ${APP_PORT}
       APP_DATABASE_URL: ${DOCKER_DATABASE_URL}
+      MIGRATION_DATABASE_URL: "dummy_url"  # not needed in load tests
     build:
       context: ../../
       dockerfile: dockerfiles/Dockerfile_backend
