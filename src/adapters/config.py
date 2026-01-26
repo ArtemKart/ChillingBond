@@ -9,6 +9,7 @@ from src import ROOTDIR
 
 class Config(BaseSettings):
     APP_DATABASE_URL: str | None = None
+    MIGRATION_DATABASE_URL: str | None = None
 
     DB_APP_USER: str | None = None
     DB_APP_PASSWORD: str | None = None
@@ -40,9 +41,19 @@ class Config(BaseSettings):
             f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
+    @property
+    def database_migration_url(self) -> str:
+        if self.MIGRATION_DATABASE_URL:
+            return self.MIGRATION_DATABASE_URL
+        return (
+            f"{self.DRIVER}://{self.DB_MIGRATION_USER}:"
+            f"{self.DB_MIGRATION_PASSWORD}@{self.POSTGRES_HOST}:"
+            f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
+
     @model_validator(mode="after")
     def check_mutually_exclusive(self) -> Self:
-        if self.APP_DATABASE_URL is not None:
+        if None not in [self.APP_DATABASE_URL, self.MIGRATION_DATABASE_URL]:
             return self
 
         if None not in [
@@ -52,6 +63,8 @@ class Config(BaseSettings):
             self.POSTGRES_HOST,
             self.POSTGRES_PORT,
             self.POSTGRES_DB,
+            self.DB_MIGRATION_USER,
+            self.DB_MIGRATION_PASSWORD,
         ]:
             return self
 
