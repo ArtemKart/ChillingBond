@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
@@ -16,4 +16,4 @@ uv run python -m tests.load.setup_test_db
 
 echo "Run Locust..."
 echo "======================================"
-uv run locust -f tests/load/locustfile.py --host=http://localhost:8000
+uv run locust -f tests/load/locustfile.py --host=http://localhost:8001

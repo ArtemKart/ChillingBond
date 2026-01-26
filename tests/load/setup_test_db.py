@@ -63,7 +63,7 @@ async def setup_load_test_database():
         print("   Password: LoadTest123!")
         print("\n🚀 Ready to run load tests!")
         print(
-            "   Command: locust -f tests/load/locustfile.py --host=http://localhost:8000"
+            "   Command: locust -f tests/load/locustfile.py --host=http://localhost:8001"
         )
 
     except Exception as e:

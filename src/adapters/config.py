@@ -1,25 +1,25 @@
 import secrets
+from typing import Self
 
-from pydantic import Field
+from pydantic import Field, model_validator, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src import ROOTDIR
 
 
 class Config(BaseSettings):
-    MIGRATION_DATABASE_URL: str | None = None
     APP_DATABASE_URL: str | None = None
 
-    DB_APP_USER: str
-    DB_APP_PASSWORD: str
+    DB_APP_USER: str | None = None
+    DB_APP_PASSWORD: str | None = None
 
-    DB_MIGRATION_USER: str
-    DB_MIGRATION_PASSWORD: str
+    DB_MIGRATION_USER: str | None = None
+    DB_MIGRATION_PASSWORD: str | None = None
 
-    DRIVER: str
-    POSTGRES_HOST: str
-    POSTGRES_PORT: str
-    POSTGRES_DB: str
+    DRIVER: str | None = None
+    POSTGRES_HOST: str | None = None
+    POSTGRES_PORT: str | None = None
+    POSTGRES_DB: str | None = None
 
     SECRET_KEY: str = Field(default_factory=lambda: secrets.token_urlsafe(16))
     ALGORITHM: str = "HS256"
@@ -40,14 +40,23 @@ class Config(BaseSettings):
             f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    @property
-    def database_migration_url(self) -> str:
-        if self.MIGRATION_DATABASE_URL:
-            return self.MIGRATION_DATABASE_URL
-        return (
-            f"{self.DRIVER}://{self.DB_MIGRATION_USER}:"
-            f"{self.DB_MIGRATION_PASSWORD}@{self.POSTGRES_HOST}:"
-            f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+    @model_validator(mode="after")
+    def check_mutually_exclusive(self) -> Self:
+        if self.APP_DATABASE_URL is not None:
+            return self
+
+        if None not in [
+            self.DB_APP_USER,
+            self.DB_APP_PASSWORD,
+            self.DRIVER,
+            self.POSTGRES_HOST,
+            self.POSTGRES_PORT,
+            self.POSTGRES_DB,
+        ]:
+            return self
+
+        raise ValidationError(
+            "Provide either APP_DATABASE_URL or all components to build it"
         )
 
 
