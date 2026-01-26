@@ -6,8 +6,8 @@ echo "Run load testing..."
 echo "======================================"
 
 echo "run Docker Compose..."
-docker compose -f tests/load/docker-compose.loadtest.yml down -v
-docker compose -f tests/load/docker-compose.loadtest.yml up -d --build
+docker compose --env-file tests/load/.env.locust -f tests/load/docker-compose.loadtest.yml down -v
+docker compose --env-file tests/load/.env.locust -f tests/load/docker-compose.loadtest.yml up -d --build
 
 sleep 5
 

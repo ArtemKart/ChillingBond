@@ -1,15 +1,16 @@
 ---
 services:
   backend-locust:
+    env_file:
+      - .env.locust
     environment:
-      APP_DATABASE_URL:
-        "postgresql+asyncpg://postgres:postgres@postgres-locust:5432/loadtest_db"
-      PORT: 8001
+      PORT: ${APP_PORT}
+      APP_DATABASE_URL: ${DOCKER_DATABASE_URL}
     build:
       context: ../../
       dockerfile: dockerfiles/Dockerfile_backend
     ports:
-      - "8001:8001"
+      - "${APP_PORT}:${APP_PORT}"
     container_name: backend-locust
     depends_on:
       postgres-locust:
@@ -22,15 +23,17 @@ services:
     image: postgres:17.0
     container_name: postgres-locust
     ports:
-      - "5433:5432"
+      - "5433:${DOCKER_POSTGRES_PORT}"
+    env_file:
+      - .env.locust
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: loadtest_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_loadtest_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
