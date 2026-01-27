@@ -10,19 +10,17 @@ class Email:
     value: str
 
     def __init__(self, value: str) -> None:
-        if not value:
-            raise ValueError("Email cannot be empty")
-
         normalized = value.strip().lower()
         if not self._is_valid(normalized):
-            raise ValueError(f"Invalid email format: {value}")
+            raise ValueError("Invalid email format")
 
         object.__setattr__(self, "value", normalized)
 
     @staticmethod
     def _is_valid(email: str) -> bool:
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        return bool(re.match(pattern, email))
+        res = re.match(pattern, email)
+        return True if res else False
 
     @override
     def __str__(self) -> str:
