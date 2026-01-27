@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class APScheduler:
-
     def __init__(self, container: SchedulerContainer):
         self._scheduler = AsyncIOScheduler()
         self._container = container

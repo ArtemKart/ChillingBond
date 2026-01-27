@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from uuid import uuid4
 
@@ -366,3 +366,12 @@ def test_zero_quantity_bondholder(
     )
 
     assert income == Decimal("0")
+
+
+def test_days_in_period() -> None:
+    purchase_date = date(2025, 9, 15)
+    today = date(2025, 8, 20)
+
+    days = BondHolderIncomeCalculator._days_in_period(purchase_date, today)
+
+    assert days == 31
