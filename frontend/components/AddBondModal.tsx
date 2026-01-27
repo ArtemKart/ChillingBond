@@ -23,20 +23,16 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Keep form inputs as strings where appropriate; cast to numbers on submit.
     const [formData, setFormData] = useState({
-        // Основная информация
         series: "",
         nominal_value: "",
         quantity: 1,
         purchase_date: new Date().toISOString().split("T")[0],
 
-        // Финансовые параметры
         initial_interest_rate: "",
         reference_rate_margin: "",
         first_interest_period: "",
 
-        // Временные параметры
         maturity_period: "",
     });
 
@@ -68,7 +64,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
             onClose();
         } catch (err) {
             setError(
-                err instanceof Error ? err.message : "Ошибка при добавлении",
+                err instanceof Error ? err.message : "Error Adding Item",
             );
         } finally {
             setLoading(false);
@@ -89,7 +85,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
             >
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                     <h2 className="text-xl font-bold text-gray-900">
-                        Добавить облигацию
+                        Add bond
                     </h2>
                     <button
                         onClick={onClose}
@@ -120,12 +116,12 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                     <div className="space-y-4">
                         <div className="text-sm font-semibold text-gray-900">
-                            Основная информация
+                            Basic Information
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Серия
+                                Series
                             </label>
                             <input
                                 type="text"
@@ -143,7 +139,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Номинал
+                                Face value
                             </label>
                             <input
                                 type="number"
@@ -163,7 +159,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Количество
+                                Quantity
                             </label>
                             <input
                                 type="number"
@@ -185,7 +181,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Дата покупки
+                                Purchase date
                             </label>
                             <input
                                 type="date"
@@ -202,12 +198,12 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                         </div>
 
                         <div className="text-sm font-semibold text-gray-900 pt-2">
-                            Финансовые параметры
+                            Financial Parameters
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Начальная процентная ставка
+                                Initial Interest Rate
                             </label>
                             <input
                                 type="number"
@@ -226,7 +222,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Маржа к ставке
+                                Rate Margin
                             </label>
                             <input
                                 type="number"
@@ -245,7 +241,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Первый процентный период (мес)
+                                First Interest Period (mo)
                             </label>
                             <input
                                 type="number"
@@ -263,12 +259,12 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                         </div>
 
                         <div className="text-sm font-semibold text-gray-900 pt-2">
-                            Временные параметры
+                            Time Parameters
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Срок погашения (мес)
+                                Maturity Period (mo)
                             </label>
                             <input
                                 type="number"
@@ -292,14 +288,14 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                             onClick={onClose}
                             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                         >
-                            Отмена
+                            Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
                             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:bg-blue-400"
                         >
-                            {loading ? "Добавление..." : "Добавить"}
+                            {loading ? "Adding..." : "Add"}
                         </button>
                     </div>
                 </form>

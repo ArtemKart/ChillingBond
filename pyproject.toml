@@ -36,3 +36,20 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 89
+
+
+[tool.coverage.report]
+exclude_lines = [
+	"if __name__ == .__main__.:",
+	"raise AssertionError",
+	"if TYPE_CHECKING:",
+	"raise NotImplementedError",
+   ]
+omit = [
+    "src/domain/ports/**",
+    "src/adapters/inbound/api/routers/**",
+    "src/adapters/inbound/api/schemas/**",
+    "src/adapters/inbound/api/main.py",
+    "src/adapters/inbound/api/start_api.py",
+    "src/adapters/inbound/api/dependencies/use_cases/**",
+]

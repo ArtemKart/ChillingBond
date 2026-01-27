@@ -1,6 +1,8 @@
 import asyncio
+import os
 import random
 from decimal import Decimal
+from dotenv import load_dotenv
 
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -16,7 +18,14 @@ from src.adapters.outbound.database.models import BondHolder as BondholderModel
 from src.adapters.outbound.security.bcrypt_hasher import BcryptPasswordHasher
 
 
-DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5433/loadtest_db"
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env.locust"))
+
+
+DATABASE_URL = os.getenv(
+    "APP_DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5433/loadtest_db",
+)
+
 NUM_USERS = 10
 BONDS_QUANTITY = 15
 BONDHOLDERS_PER_USER = 10
@@ -63,7 +72,7 @@ async def setup_load_test_database():
         print("   Password: LoadTest123!")
         print("\n🚀 Ready to run load tests!")
         print(
-            "   Command: locust -f tests/load/locustfile.py --host=http://localhost:8000"
+            "   Command: locust -f tests/load/locustfile.py --host=http://localhost:8001"
         )
 
     except Exception as e:
