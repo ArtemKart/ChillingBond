@@ -37,6 +37,7 @@ export async function apiFetch<T = unknown>(
     const response = await fetch(`${apiUrl}${url}`, {
         ...fetchOptions,
         headers,
+        credentials: "include",
     });
 
     if (!response.ok) {
