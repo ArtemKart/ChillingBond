@@ -2,45 +2,14 @@
 
 import { ApiError, apiFetch } from "@/lib/api";
 import { BondHolderResponse } from "@/types/Bond";
-import {
-    TrendingUp,
-    Users,
-    DollarSign,
-    Package,
-} from "lucide-react";
+import { TrendingUp, Users, DollarSign, Package, Currency, Landmark, FolderKanban } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BondsList } from "./BondsList";
 import BondModal from "@/components/BondModal";
 import AddBondModal from "@/components/AddBondModal";
-
-const summaryMetrics = [
-    {
-        title: "Total Bondholders",
-        value: "---",
-        icon: Users,
-        color: "blue",
-    },
-    {
-        title: "Total Investment",
-        value: "---",
-        icon: DollarSign,
-        color: "green",
-    },
-    {
-        title: "Active Bonds",
-        value: "---",
-        icon: Package,
-        color: "purple",
-    },
-    {
-        title: "Average Yield",
-        value: "---",
-        icon: TrendingUp,
-        color: "orange",
-    },
-];
-
+import { calculateBondMetrics, formatMetricValue } from "./BondMetrics";
+import { fetchTotalMonthlyIncome } from "@/lib/bondCalculations";
 
 export function BondsTab() {
     const router = useRouter();
@@ -55,6 +24,47 @@ export function BondsTab() {
     const [sortBy, setSortBy] = useState("series");
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [bonds, setBonds] = useState<BondHolderResponse[]>([]);
+
+    const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
+    const metrics = useMemo(() => {
+        return calculateBondMetrics(bonds, monthlyIncome);
+    }, [bonds, monthlyIncome]);
+
+    const summaryMetrics = [
+        {
+            title: "Total Bondholders",
+            value: formatMetricValue(
+                "totalBondholders",
+                metrics.totalBondholders,
+            ),
+            icon: Users,
+            color: "blue",
+        },
+        {
+            title: "Total Investment",
+            value: formatMetricValue(
+                "totalInvestment",
+                metrics.totalInvestment,
+            ),
+            icon: Landmark,
+            color: "green",
+        },
+        {
+            title: "Active Bonds",
+            value: formatMetricValue("activeBonds", metrics.activeBonds),
+            icon: FolderKanban,
+            color: "purple",
+        },
+        {
+            title: "Current Month Income",
+            value: formatMetricValue(
+                "currentMonthIncome",
+                metrics.currentMonthIncome,
+            ),
+            icon: TrendingUp,
+            color: "red",
+        },
+    ];
 
     const sortOptions = [
         { value: "series", label: "Series" },
@@ -105,6 +115,12 @@ export function BondsTab() {
         try {
             const result = await apiFetch<BondHolderResponse[]>("/bonds");
             setBonds(result);
+
+            if (result.length > 0) {
+                const bondholderIds = result.map((bond) => bond.id);
+                const income = await fetchTotalMonthlyIncome(bondholderIds);
+                setMonthlyIncome(income);
+            }
         } catch (err) {
             if (err instanceof ApiError && err.status == 401) {
                 router.push("/login");
@@ -174,7 +190,7 @@ export function BondsTab() {
                     onUpdate={loadBonds}
                 />
             )}
-            
+
             {selectedBond && (
                 <BondModal
                     bond={selectedBond}

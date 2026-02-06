@@ -16,11 +16,7 @@ type SortOption =
     | "totalValue"
     | "purchaseDate";
 
-export function BondsList({
-    bonds,
-    onBondClick,
-    onAddClick,
-}: BondsListProps) {
+export function BondsList({ bonds, onBondClick, onAddClick }: BondsListProps) {
     const [groupByDate, setGroupByDate] = useState(false);
     const [showSortMenu, setShowSortMenu] = useState(false);
     const [sortBy, setSortBy] = useState<SortOption>("series");
@@ -32,6 +28,22 @@ export function BondsList({
         { value: "totalValue" as SortOption, label: "Total Value" },
         { value: "purchaseDate" as SortOption, label: "Purchase Date" },
     ];
+
+    const groupBondsByDay = (bonds: BondHolderResponse[]) => {
+        return bonds.reduce(
+            (acc, bond) => {
+                const day = new Date(bond.purchase_date).getDate();
+                const dayKey = day.toString().padStart(2, "0");
+
+                if (!acc[dayKey]) {
+                    acc[dayKey] = [];
+                }
+                acc[dayKey].push(bond);
+                return acc;
+            },
+            {} as Record<string, BondHolderResponse[]>,
+        );
+    };
 
     const sortedBonds = [...bonds].sort((a, b) => {
         switch (sortBy) {
@@ -54,6 +66,8 @@ export function BondsList({
                 return 0;
         }
     });
+
+    const groupedByDay = groupBondsByDay(sortedBonds);
 
     if (bonds.length === 0) {
         return (
@@ -132,66 +146,125 @@ export function BondsList({
                 </div>
             </div>
 
-            {/* Table view */}
-            <div className="overflow-x-auto">
-                <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Series
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Quantity
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Face Value
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Total Value
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Purchase Date
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {sortedBonds.map((bond) => (
-                            <tr
-                                key={bond.id}
-                                onClick={() => onBondClick(bond)}
-                                className="hover:bg-gray-50 cursor-pointer"
-                            >
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-gray-900">
-                                        {bond.series}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900">
-                                        {bond.quantity}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900">
-                                        ${bond.nominal_value.toLocaleString()}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-gray-900">
-                                        $
-                                        {(
-                                            bond.nominal_value * bond.quantity
-                                        ).toLocaleString()}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {bond.purchase_date}
-                                </td>
+            {!groupByDate ? (
+                // Default table
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Series
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Quantity
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Face Value
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total Value
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Purchase Date
+                                </th>
                             </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {sortedBonds.map((bond) => (
+                                <tr
+                                    key={bond.id}
+                                    onClick={() => onBondClick(bond)}
+                                    className="hover:bg-gray-50 cursor-pointer"
+                                >
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-gray-900">
+                                            {bond.series}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900">
+                                            {bond.quantity}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900">
+                                            $
+                                            {bond.nominal_value.toLocaleString()}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-gray-900">
+                                            $
+                                            {(
+                                                bond.nominal_value *
+                                                bond.quantity
+                                            ).toLocaleString()}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {new Date(
+                                            bond.purchase_date,
+                                        ).toLocaleDateString("ru-RU")}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                // Group by purchase day
+                <div>
+                    {Object.entries(groupedByDay)
+                        .sort(
+                            ([dayA], [dayB]) => parseInt(dayA) - parseInt(dayB),
+                        )
+                        .map(([day, dayBonds]) => (
+                            <div key={day}>
+                                <div className="px-6 py-3 bg-gray-50 text-sm font-medium text-gray-700 border-b border-gray-200">
+                                    Day {day} of the month ({dayBonds.length}{" "}
+                                    bonds)
+                                </div>
+                                <div className="divide-y divide-gray-200">
+                                    {dayBonds.map((bond) => (
+                                        <div
+                                            key={bond.id}
+                                            onClick={() => onBondClick(bond)}
+                                            className="px-6 py-4 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
+                                        >
+                                            <div>
+                                                <div className="font-medium text-gray-900">
+                                                    {bond.series}
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    {new Date(
+                                                        bond.purchase_date,
+                                                    ).toLocaleDateString(
+                                                        "ru-RU",
+                                                    )}{" "}
+                                                    · {bond.quantity} pcs · $
+                                                    {bond.nominal_value.toLocaleString()}{" "}
+                                                    each
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-medium text-gray-900">
+                                                    $
+                                                    {(
+                                                        bond.nominal_value *
+                                                        bond.quantity
+                                                    ).toLocaleString()}
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    Total value
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         ))}
-                    </tbody>
-                </table>
-            </div>
+                </div>
+            )}
         </div>
     );
 }

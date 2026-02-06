@@ -7,8 +7,6 @@ import { Sidebar } from "@/app/dashboard/components/SideBar";
 import { TabType } from "@/types/TabType";
 import { useState } from "react";
 
-
-
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState<TabType>("bonds");
 
