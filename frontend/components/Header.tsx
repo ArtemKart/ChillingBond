@@ -1,18 +1,53 @@
 "use client";
 
+import React, { useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
-import { User } from "lucide-react";
-import { usePathname } from 'next/navigation';
+import { UserButton, UserData } from "./UserButton";
 
-export default function Header() {
-    const { isAuthenticated, logout } = useAuth();
-    
+/**
+ * Main Header component.
+ * This integrates the new UI (title + centered layout + UserButton) but preserves
+ * the existing behavior:
+ * - Uses the existing AuthContext to determine authentication state and to logout.
+ * - Hides the Dashboard link when already on /dashboard (as before).
+ * - Keeps the site title linking to root.
+ *
+ * We export default to keep compatibility with existing imports.
+ */
+function Header() {
+    const auth = useAuth();
     const pathname = usePathname();
-    const isDashboard = pathname === '/dashboard';
+    const router = useRouter();
 
-    const handleLogout = async () => {
-        await logout();
+    // Refresh auth state when pathname changes (e.g., after login redirect)
+    useEffect(() => {
+        if (auth.refreshUser) {
+            auth.refreshUser();
+        }
+    }, [pathname]);
+
+    // old code used "isAuthenticated" and "logout"
+    const isAuthenticated = Boolean(auth.isAuthenticated ?? auth.user != null);
+    const logout = auth.logout ?? (async () => {});
+
+    // try to derive user data if available
+    const user = auth.user;
+    const userData: UserData | null = user
+        ? {
+              firstName: "",
+              lastName: "",
+              email: user.email ?? "",
+              name: user.name,
+          }
+        : null;
+
+    const isDashboard = pathname === "/dashboard";
+
+    const openProfile = () => {
+        // prefer a profile route, fallback to /dashboard if none
+        router.push("/profile");
     };
 
     return (
@@ -36,11 +71,20 @@ export default function Header() {
                         </div>
                     )}
 
-                    <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
-                        <User className="size-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <UserButton
+                            isLoggedIn={isAuthenticated}
+                            userData={userData}
+                            onLogout={async () => {
+                                await logout();
+                            }}
+                            onOpenProfile={() => openProfile()}
+                        />
+                    </div>
                 </div>
             </div>
         </header>
     );
 }
+
+export default Header;

@@ -3,13 +3,16 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     getCurrentUser,
+    getUserById,
     login as apiLogin,
     logout as apiLogout,
 } from "@/lib/api";
 
 type User = {
     id: string;
-    username: string;
+    username?: string;
+    email?: string;
+    name?: string;
 };
 
 type AuthContextType = {
@@ -17,28 +20,38 @@ type AuthContextType = {
     user: User | null;
     login: (username: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/**
- * AuthProvider initializes auth state on mount and provides
- * helper methods to login/logout and access current user auth state.
- */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
         null,
     );
     const [user, setUser] = useState<User | null>(null);
 
+    const refreshUser = async () => {
+        try {
+            const { id } = await getCurrentUser();
+            const fullUser = await getUserById(id);
+            setUser(fullUser);
+            setIsAuthenticated(true);
+        } catch {
+            setUser(null);
+            setIsAuthenticated(false);
+        }
+    };
+
     useEffect(() => {
         let cancelled = false;
 
         (async () => {
             try {
-                const u = await getCurrentUser();
+                const { id } = await getCurrentUser();
+                const fullUser = await getUserById(id);
                 if (!cancelled) {
-                    setUser(u as User);
+                    setUser(fullUser);
                     setIsAuthenticated(true);
                 }
             } catch {
@@ -55,40 +68,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const login = async (username: string, password: string) => {
-        // Call API login endpoint; apiLogin throws on failure.
         await apiLogin({ username, password });
-        // After successful login, refresh current user
-        try {
-            const u = await getCurrentUser();
-            setUser(u as User);
-            setIsAuthenticated(true);
-        } catch {
-            setUser(null);
-            setIsAuthenticated(false);
-        }
+        await refreshUser();
     };
 
     const logout = async () => {
         try {
             await apiLogout();
         } finally {
-            // Always clear local state even if API call fails
             setUser(null);
             setIsAuthenticated(false);
         }
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+        <AuthContext.Provider
+            value={{ isAuthenticated, user, login, logout, refreshUser }}
+        >
             {children}
         </AuthContext.Provider>
     );
 }
 
-/**
- * Hook to access authentication context.
- * Throws if used outside of AuthProvider to fail fast.
- */
 export function useAuth(): AuthContextType {
     const ctx = useContext(AuthContext);
     if (!ctx) {

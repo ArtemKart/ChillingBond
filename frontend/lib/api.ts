@@ -104,7 +104,9 @@ interface LoginCredentials {
 
 interface User {
     id: string;
-    username: string;
+    username?: string;
+    email?: string;
+    name?: string;
 }
 
 export async function login(credentials: LoginCredentials): Promise<void> {
@@ -148,7 +150,7 @@ export async function logout(): Promise<void> {
     });
 }
 
-export async function getCurrentUser(): Promise<User> {
+export async function getCurrentUser(): Promise<{ id: string }> {
     const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/login/me`,
         {
@@ -158,6 +160,21 @@ export async function getCurrentUser(): Promise<User> {
 
     if (!response.ok) {
         throw new Error("Not authenticated");
+    }
+
+    return response.json();
+}
+
+export async function getUserById(userId: string): Promise<User> {
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`,
+        {
+            credentials: "include",
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error("Failed to fetch user data");
     }
 
     return response.json();
