@@ -2,11 +2,11 @@
 
 import { ApiError, apiFetch } from "@/lib/api";
 import { BondHolderResponse } from "@/types/Bond";
-import { TrendingUp, Users, DollarSign, Package, Currency, Landmark, FolderKanban } from "lucide-react";
+import { TrendingUp, Users, Landmark, FolderKanban } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BondsList } from "./BondsList";
-import BondModal from "@/components/BondModal";
+import BondModal from "@/app/dashboard/components/BondModal";
 import AddBondModal from "@/components/AddBondModal";
 import { calculateBondMetrics, formatMetricValue } from "./BondMetrics";
 import { fetchTotalMonthlyIncome } from "@/lib/bondCalculations";
@@ -22,7 +22,6 @@ export function BondsTab() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [groupByDate, setGroupByDate] = useState(false);
     const [sortBy, setSortBy] = useState("series");
-    const [showSortMenu, setShowSortMenu] = useState(false);
     const [bonds, setBonds] = useState<BondHolderResponse[]>([]);
 
     const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
@@ -66,14 +65,6 @@ export function BondsTab() {
         },
     ];
 
-    const sortOptions = [
-        { value: "series", label: "Series" },
-        { value: "quantity", label: "Quantity" },
-        { value: "faceValue", label: "Face Value" },
-        { value: "totalValue", label: "Total Value" },
-        { value: "purchaseDate", label: "Purchase Date" },
-    ];
-
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const sortedBonds = [...bonds].sort((a, b) => {
         let compareValue = 0;
@@ -90,10 +81,6 @@ export function BondsTab() {
 
         return sortOrder === "asc" ? compareValue : -compareValue;
     });
-
-    const handleClose = () => {
-        setSelectedBond(null);
-    };
 
     const groupedBonds = groupByDate
         ? sortedBonds.reduce(
@@ -135,14 +122,10 @@ export function BondsTab() {
         loadBonds();
     }, []);
 
-    const refetch = async () => {
-        await loadBonds();
-    };
-
     return (
         <div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                Bonds Overview
+                Bondholders Overview
             </h2>
 
             {/* Summary Metrics */}
@@ -195,6 +178,7 @@ export function BondsTab() {
                 <BondModal
                     bond={selectedBond}
                     onClose={() => setSelectedBond(null)}
+                    onUpdate={loadBonds}
                 />
             )}
         </div>

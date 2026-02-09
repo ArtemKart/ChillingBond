@@ -7,7 +7,7 @@ interface SidebarProps {
 }
 
 const tabs = [
-  { id: 'bonds' as TabType, label: 'Bonds', icon: FileText },
+  { id: 'bonds' as TabType, label: 'Bondholders', icon: FileText },
   { id: 'history' as TabType, label: 'Purchase History', icon: History },
   { id: 'charts' as TabType, label: 'Charts', icon: BarChart3 },
 ];

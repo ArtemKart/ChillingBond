@@ -2,7 +2,6 @@ interface BondBasicInfoProps {
     series: string;
     quantity: number;
     isEditing: boolean;
-    onSeriesChange: (value: string) => void;
     onQuantityChange: (value: number) => void;
 }
 
@@ -10,7 +9,6 @@ export default function BondBasicInfo({
     series,
     quantity,
     isEditing,
-    onSeriesChange,
     onQuantityChange,
 }: BondBasicInfoProps) {
     return (
@@ -21,18 +19,7 @@ export default function BondBasicInfo({
             <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-500 mb-1">Series</p>
-                    {isEditing ? (
-                        <input
-                            type="text"
-                            value={series}
-                            onChange={(e) => onSeriesChange(e.target.value)}
-                            className="text-xl font-bold text-gray-900 w-full bg-white border border-gray-300 rounded px-2 py-1"
-                        />
-                    ) : (
-                        <p className="text-xl font-bold text-gray-900">
-                            {series}
-                        </p>
-                    )}
+                    <p className="text-xl font-bold text-gray-900">{series}</p>
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">

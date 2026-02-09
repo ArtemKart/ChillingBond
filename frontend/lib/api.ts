@@ -104,7 +104,6 @@ interface LoginCredentials {
 
 interface User {
     id: string;
-    username?: string;
     email?: string;
     name?: string;
 }
@@ -131,9 +130,7 @@ export async function login(credentials: LoginCredentials): Promise<void> {
         if (contentType && contentType.includes("application/json")) {
             try {
                 errorData = await response.json();
-            } catch {
-                // Ignore parsing errors
-            }
+            } catch {}
         }
 
         if (response.status === 401) {

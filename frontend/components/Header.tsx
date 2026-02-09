@@ -1,53 +1,39 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
 import { UserButton, UserData } from "./UserButton";
+import { UserProfileModal } from "./UserGroupProfileModal";
 
-/**
- * Main Header component.
- * This integrates the new UI (title + centered layout + UserButton) but preserves
- * the existing behavior:
- * - Uses the existing AuthContext to determine authentication state and to logout.
- * - Hides the Dashboard link when already on /dashboard (as before).
- * - Keeps the site title linking to root.
- *
- * We export default to keep compatibility with existing imports.
- */
 function Header() {
     const auth = useAuth();
     const pathname = usePathname();
-    const router = useRouter();
+    const [showProfileModal, setShowProfileModal] = useState(false);
 
-    // Refresh auth state when pathname changes (e.g., after login redirect)
     useEffect(() => {
         if (auth.refreshUser) {
             auth.refreshUser();
         }
     }, [pathname]);
 
-    // old code used "isAuthenticated" and "logout"
     const isAuthenticated = Boolean(auth.isAuthenticated ?? auth.user != null);
     const logout = auth.logout ?? (async () => {});
 
-    // try to derive user data if available
     const user = auth.user;
     const userData: UserData | null = user
         ? {
-              firstName: "",
-              lastName: "",
+              id: user.id as string,
               email: user.email ?? "",
-              name: user.name,
+              name: user.name ?? "User",
           }
         : null;
 
     const isDashboard = pathname === "/dashboard";
 
     const openProfile = () => {
-        // prefer a profile route, fallback to /dashboard if none
-        router.push("/profile");
+        setShowProfileModal(true);
     };
 
     return (
@@ -83,6 +69,14 @@ function Header() {
                     </div>
                 </div>
             </div>
+
+            {/* Profile Modal */}
+            {showProfileModal && userData && (
+                <UserProfileModal
+                    userData={userData}
+                    onClose={() => setShowProfileModal(false)}
+                />
+            )}
         </header>
     );
 }

@@ -3,13 +3,7 @@
 import { User, LogOut, UserCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-interface UserData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    name?: string;
-}
+import { UserData } from "@/types/UserData";
 
 interface UserButtonProps {
     isLoggedIn: boolean;
@@ -72,12 +66,12 @@ export function UserButton({
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                     {!isLoggedIn ? (
                         <div className="p-4">
                             <button
                                 onClick={handleLoginRedirect}
-                                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
                             >
                                 Login
                             </button>
@@ -86,9 +80,7 @@ export function UserButton({
                         <div className="py-2">
                             <div className="px-4 py-3 border-b border-gray-200">
                                 <p className="text-sm font-medium text-gray-900">
-                                    {userData?.name ||
-                                        `${userData?.firstName} ${userData?.lastName}`.trim() ||
-                                        "User"}
+                                    {userData?.name || "User"}
                                 </p>
                             </div>
                             <button

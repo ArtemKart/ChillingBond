@@ -46,7 +46,7 @@ export function formatMetricValue(
         case "activeBonds":
             return value.toString();
         case "totalInvestment":
-            return `$${value.toLocaleString()}`;
+            return `${value.toLocaleString()} PLN`;
         case "currentMonthIncome":
             return `${value.toLocaleString()} PLN`;
         default:
