@@ -1,158 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { apiFetch, logout } from "@/lib/api";
-import type { BondHolderResponse } from "@/types/bond";
-import { DashboardHeader } from "./components/DashboardHeader";
-import { BondsList } from "./components/BondsList";
-import { Sidebar } from "@/components/Sidebar";
-import BondModal from "@/components/BondModal";
-import AddBondModal from "@/components/AddBondModal";
-import { useRouter } from "next/navigation";
-import { ApiError } from "@/lib/api";
+import { BondsTab } from "@/app/dashboard/components/BondsTab";
+import { ChartsTab } from "@/app/dashboard/components/ChartsTab";
+import { HistoryTab } from "@/app/dashboard/components/HistoryTab";
+import { Sidebar } from "@/app/dashboard/components/SideBar";
+import { TabType } from "@/types/TabType";
+import { useState } from "react";
 
-export default function Dashboard() {
-    const [bonds, setBonds] = useState<BondHolderResponse[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [selectedBond, setSelectedBond] = useState<BondHolderResponse | null>(
-        null,
-    );
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [sortBy, setSortBy] = useState<"purchase_date" | "current_value">(
-        "purchase_date",
-    );
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [groupByDate, setGroupByDate] = useState(true);
-
-    const router = useRouter();
-
-    const sortedBonds = [...bonds].sort((a, b) => {
-        let compareValue = 0;
-
-        if (sortBy === "purchase_date") {
-            compareValue =
-                new Date(a.purchase_date).getTime() -
-                new Date(b.purchase_date).getTime();
-        } else if (sortBy === "current_value") {
-            const valueA = a.quantity * a.nominal_value;
-            const valueB = b.quantity * b.nominal_value;
-            compareValue = valueA - valueB;
-        }
-
-        return sortOrder === "asc" ? compareValue : -compareValue;
-    });
-
-    const groupedBonds = groupByDate
-        ? sortedBonds.reduce(
-              (acc, bond) => {
-                  const dateKey = new Date(
-                      bond.purchase_date,
-                  ).toLocaleDateString("ru-RU");
-                  if (!acc[dateKey]) {
-                      acc[dateKey] = [];
-                  }
-                  acc[dateKey].push(bond);
-                  return acc;
-              },
-              {} as Record<string, BondHolderResponse[]>,
-          )
-        : { "All bonds": sortedBonds };
-
-    const loadBonds = async () => {
-        try {
-            const result = await apiFetch<BondHolderResponse[]>("/bonds");
-            setBonds(result);
-        } catch (err) {
-            if (err instanceof ApiError && err.status == 401) {
-                router.push("/login")
-            }
-            setError(err instanceof Error ? err.message : "Loading error");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadBonds();
-    }, []);
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-        } catch (err) {
-            console.error("Logout failed:", err);
-        } finally {
-            window.location.href = "/";
-        }
-    };
-
-    const handleClose = () => {
-        setSelectedBond(null);
-    };
-
-    const refetch = async () => {
-        await loadBonds();
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-gray-600">Loading...</div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-red-600">{error}</div>
-            </div>
-        );
-    }
+export default function DashboardPage() {
+    const [activeTab, setActiveTab] = useState<TabType>("bonds");
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            <div className="flex-1 p-8">
-                <DashboardHeader
-                    onAddClick={() => setIsAddModalOpen(true)}
-                    onLogout={handleLogout}
-                />
-
-                <BondsList
-                    bonds={sortedBonds}
-                    groupedBonds={groupedBonds}
-                    onBondClick={setSelectedBond}
-                />
+        <div className="min-h-screen bg-gray-50">
+            <div className="flex">
+                <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+                <main className="flex-1 p-8">
+                    {activeTab === "bonds" && <BondsTab />}
+                    {activeTab === "charts" && <ChartsTab />}
+                    {activeTab === "history" && <HistoryTab />}
+                </main>
             </div>
-
-            <Sidebar
-                isOpen={isSidebarOpen}
-                onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={(newSortBy, newSortOrder) => {
-                    setSortBy(newSortBy);
-                    setSortOrder(newSortOrder);
-                }}
-                groupByDate={groupByDate}
-                onGroupByDateChange={setGroupByDate}
-            />
-
-            {selectedBond && (
-                <BondModal
-                    bond={selectedBond}
-                    onClose={handleClose}
-                    onUpdate={refetch}
-                />
-            )}
-            {isAddModalOpen && (
-                <AddBondModal
-                    onClose={() => setIsAddModalOpen(false)}
-                    onUpdate={loadBonds}
-                />
-            )}
         </div>
     );
 }

@@ -37,6 +37,7 @@ export async function apiFetch<T = unknown>(
     const response = await fetch(`${apiUrl}${url}`, {
         ...fetchOptions,
         headers,
+        credentials: "include",
     });
 
     if (!response.ok) {
@@ -103,7 +104,8 @@ interface LoginCredentials {
 
 interface User {
     id: string;
-    username: string;
+    email?: string;
+    name?: string;
 }
 
 export async function login(credentials: LoginCredentials): Promise<void> {
@@ -128,9 +130,7 @@ export async function login(credentials: LoginCredentials): Promise<void> {
         if (contentType && contentType.includes("application/json")) {
             try {
                 errorData = await response.json();
-            } catch {
-                // Ignore parsing errors
-            }
+            } catch {}
         }
 
         if (response.status === 401) {
@@ -147,7 +147,7 @@ export async function logout(): Promise<void> {
     });
 }
 
-export async function getCurrentUser(): Promise<User> {
+export async function getCurrentUser(): Promise<{ id: string }> {
     const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/login/me`,
         {
@@ -157,6 +157,21 @@ export async function getCurrentUser(): Promise<User> {
 
     if (!response.ok) {
         throw new Error("Not authenticated");
+    }
+
+    return response.json();
+}
+
+export async function getUserById(userId: string): Promise<User> {
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`,
+        {
+            credentials: "include",
+        },
+    );
+
+    if (!response.ok) {
+        throw new Error("Failed to fetch user data");
     }
 
     return response.json();
