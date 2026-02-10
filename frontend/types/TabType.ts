@@ -1,2 +1,2 @@
 
-export type TabType = "bonds" | "history" | "charts";
+export type TabType = "bonds" |  "charts";

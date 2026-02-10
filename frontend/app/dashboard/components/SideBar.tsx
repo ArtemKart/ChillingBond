@@ -1,5 +1,5 @@
-import { FileText, History, BarChart3 } from 'lucide-react';
-import { TabType } from '../page';
+import { TabType } from '@/types/TabType';
+import { FileText, BarChart3 } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -8,7 +8,6 @@ interface SidebarProps {
 
 const tabs = [
   { id: 'bonds' as TabType, label: 'Bondholders', icon: FileText },
-  { id: 'history' as TabType, label: 'Purchase History', icon: History },
   { id: 'charts' as TabType, label: 'Charts', icon: BarChart3 },
 ];
 
