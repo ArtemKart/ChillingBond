@@ -7,7 +7,7 @@ from src.adapters.inbound.api.dependencies.repo_deps import (
     BondHolderRepoDep,
     BondRepoDep,
 )
-from src.adapters.inbound.api.dependencies.service_deps import get_bh_deletion_service
+from src.adapters.inbound.api.dependencies.service_deps import bh_deletion_service
 from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.application.use_cases.bondholder.bh_create import (
     BondHolderCreateUseCase,
@@ -73,7 +73,7 @@ def bh_delete_use_case(
     bondholder_repo: BondHolderRepoDep,
     event_publisher: EventPublisherDep,
     bh_del_service: Annotated[
-        BondHolderDeletionService, Depends(get_bh_deletion_service)
+        BondHolderDeletionService, Depends(bh_deletion_service)
     ],
 ) -> BondHolderDeleteUseCase:
     return BondHolderDeleteUseCase(
