@@ -12,7 +12,7 @@ from src.application.use_cases.data.get_equity_history import GetEquityHistoryUs
 data_router = APIRouter(prefix="/data", tags=["Data"])
 
 
-@data_router.get("equity", response_model=EquityResponse)
+@data_router.get("/equity", response_model=EquityResponse)
 async def get_equity(
     user_dto: CurrentUserDep,
     use_case: Annotated[GetEquityHistoryUseCase, Depends(get_equity_history_use_case)],
@@ -23,4 +23,5 @@ async def get_equity(
     - Time series of portfolio value
     - Ordered by date ascending
     """
-    return await use_case.execute(user=user_dto)
+    dto = await use_case.execute(user=user_dto)
+    return EquityResponse(equity=dto.data)

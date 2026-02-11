@@ -17,6 +17,7 @@ from src.adapters.inbound.api.exception_handlers import (
 from src.adapters.inbound.api.routers.bonds import bond_router
 from src.adapters.inbound.api.routers.calculations import calculations_router
 from src.adapters.inbound.api.routers.auth import auth_router
+from src.adapters.inbound.api.routers.data import data_router
 from src.adapters.inbound.api.routers.users import users_router
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.exceptions import DomainError
@@ -51,6 +52,7 @@ app.include_router(users_router, prefix="/api")
 app.include_router(bond_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(calculations_router, prefix="/api")
+app.include_router(data_router, prefix="/api")
 
 
 @app.get("/health")

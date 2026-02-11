@@ -10,25 +10,52 @@ import {
     ResponsiveContainer,
     Legend,
 } from "recharts";
+import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 
-// Placeholder data - replace with real data later
-const portfolioValueData = [
-    { date: "2024-01", totalValue: 150000 },
-    { date: "2024-02", totalValue: 165000 },
-    { date: "2024-03", totalValue: 180000 },
-    { date: "2024-04", totalValue: 175000 },
-    { date: "2024-05", totalValue: 195000 },
-    { date: "2024-06", totalValue: 210000 },
-];
+interface EquityDataPoint {
+    date: string;
+    totalValue: number;
+}
 
-const bondTypeData = [
-    { type: "Type A", value: 80000 },
-    { type: "Type B", value: 60000 },
-    { type: "Type C", value: 45000 },
-    { type: "Type D", value: 25000 },
-];
+interface EquityResponse {
+    equity: [string, string][];
+}
+
 
 export function ChartsTab() {
+    const [portfolioData, setPortfolioData] = useState<EquityDataPoint[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchEquityData = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const response =
+                    await api.get<EquityResponse>("/data/equity");
+
+                const transformedData: EquityDataPoint[] = response.equity.map(
+                    ([date, value]) => ({
+                        date,
+                        totalValue: parseFloat(value),
+                    }),
+                );
+
+                setPortfolioData(transformedData);
+            } catch (err) {
+                console.error("Failed to fetch equity data:", err);
+                setError("Failed to load portfolio data");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchEquityData();
+    }, []);
+
     return (
         <div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
@@ -41,77 +68,69 @@ export function ChartsTab() {
                     <h3 className="font-semibold text-gray-900 mb-6">
                         Portfolio Value Over Time
                     </h3>
-                    <ResponsiveContainer width="100%" height={350}>
-                        <LineChart data={portfolioValueData}>
-                            <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#e5e7eb"
-                            />
-                            <XAxis
-                                dataKey="date"
-                                stroke="#6b7280"
-                                fontSize={12}
-                            />
-                            <YAxis stroke="#6b7280" fontSize={12} />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: "white",
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: "0.5rem",
-                                }}
-                                formatter={(value: number) =>
-                                    `$${value.toLocaleString()}`
-                                }
-                            />
-                            <Legend />
-                            <Line
-                                type="monotone"
-                                dataKey="totalValue"
-                                name="Total Value"
-                                stroke="#3b82f6"
-                                strokeWidth={3}
-                                dot={{ fill: "#3b82f6", r: 5 }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
 
-                {/* Bonds by Type */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <h3 className="font-semibold text-gray-900 mb-6">
-                        Bonds by Type
-                    </h3>
-                    <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={bondTypeData}>
-                            <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#e5e7eb"
-                            />
-                            <XAxis
-                                dataKey="type"
-                                stroke="#6b7280"
-                                fontSize={12}
-                            />
-                            <YAxis stroke="#6b7280" fontSize={12} />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: "white",
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: "0.5rem",
-                                }}
-                                formatter={(value: number) =>
-                                    `$${value.toLocaleString()}`
-                                }
-                            />
-                            <Legend />
-                            <Bar
-                                dataKey="value"
-                                name="Bond Value"
-                                fill="#3b82f6"
-                                radius={[8, 8, 0, 0]}
-                            />
-                        </BarChart>
-                    </ResponsiveContainer>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-[350px]">
+                            <div className="text-center">
+                                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                                <p className="mt-2 text-sm text-gray-500">
+                                    Loading data...
+                                </p>
+                            </div>
+                        </div>
+                    ) : error ? (
+                        <div className="flex items-center justify-center h-[350px]">
+                            <div className="text-center">
+                                <p className="text-red-600 font-medium">
+                                    {error}
+                                </p>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        </div>
+                    ) : portfolioData.length === 0 ? (
+                        <div className="flex items-center justify-center h-[350px] text-gray-400">
+                            <p>No data available</p>
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={350}>
+                            <LineChart data={portfolioData}>
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                    stroke="#e5e7eb"
+                                />
+                                <XAxis
+                                    dataKey="date"
+                                    stroke="#6b7280"
+                                    fontSize={12}
+                                />
+                                <YAxis stroke="#6b7280" fontSize={12} />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: "white",
+                                        border: "1px solid #e5e7eb",
+                                        borderRadius: "0.5rem",
+                                    }}
+                                    formatter={(value: number) =>
+                                        `${value.toLocaleString()} PLN`
+                                    }
+                                />
+                                <Legend />
+                                <Line
+                                    type="monotone"
+                                    dataKey="totalValue"
+                                    name="Total Value"
+                                    stroke="#3b82f6"
+                                    strokeWidth={3}
+                                    dot={{ fill: "#3b82f6", r: 5 }}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
                 </div>
 
                 {/* Placeholder for future charts */}
