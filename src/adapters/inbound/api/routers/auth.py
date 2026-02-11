@@ -14,15 +14,15 @@ from src.adapters.inbound.api.schemas.auth import TokenResponse, UUIDResponse
 from src.application.use_cases.user.login import UserLoginUseCase
 from src.domain.exceptions import AuthenticationError
 
-login_router = APIRouter(tags=["login"])
+auth_router = APIRouter(tags=["auth"])
 
 
-@login_router.get("/login/me", response_model=UUIDResponse)
+@auth_router.get("/login/me", response_model=UUIDResponse)
 async def me(user: CurrentUserDep):
     return UUIDResponse(id=user.id)
 
 
-@login_router.post(
+@auth_router.post(
     "/login/token", response_model=TokenResponse, status_code=status.HTTP_200_OK
 )
 async def login(
@@ -49,7 +49,7 @@ async def login(
         )
 
 
-@login_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@auth_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(response: Response):
     response.delete_cookie(
         key="access_token",

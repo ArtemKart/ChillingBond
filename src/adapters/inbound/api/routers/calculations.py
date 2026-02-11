@@ -13,10 +13,10 @@ from src.application.use_cases.calculations.calculate_income import (
     CalculateIncomeUseCase,
 )
 
-calculation_router = APIRouter(prefix="/calculations", tags=["Calculations"])
+calculations_router = APIRouter(prefix="/calculations", tags=["Calculations"])
 
 
-@calculation_router.post("/month-income", dependencies=[Depends(current_user)])
+@calculations_router.post("/month-income", dependencies=[Depends(current_user)])
 async def calculate_income(
     use_case: Annotated[CalculateIncomeUseCase, Depends(get_calculate_income_use_case)],
     bondholder_id: UUID = Query(...),
