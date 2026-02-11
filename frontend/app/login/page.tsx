@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -11,6 +11,7 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,7 +19,7 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            await login({ username, password });
+            await login(username, password);
             router.push("/dashboard");
         } catch (err) {
             if (
@@ -55,8 +56,7 @@ export default function LoginPage() {
                             <label
                                 htmlFor="email"
                                 className="block text-sm font-medium text-gray-700"
-                            >
-                            </label>
+                            ></label>
                             <input
                                 id="username"
                                 type="text"
@@ -72,8 +72,7 @@ export default function LoginPage() {
                             <label
                                 htmlFor="password"
                                 className="block text-sm font-medium text-gray-700"
-                            >
-                            </label>
+                            ></label>
                             <input
                                 id="password"
                                 type="password"
@@ -94,8 +93,11 @@ export default function LoginPage() {
                         {loading ? "Login..." : "Login"}
                     </button>
                     <div className="text-left text-1xl font-regular text-gray-900">
-                    Do not have an account yet?{" "}
-                        <Link href="/register" className="text-blue-600 hover:underline">
+                        Do not have an account yet?{" "}
+                        <Link
+                            href="/register"
+                            className="text-blue-600 hover:underline"
+                        >
                             Create it
                         </Link>
                     </div>

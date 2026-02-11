@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import {
+    fetchMonthlyIncome,
+    calculateEstimatedMonthlyIncome,
+} from "@/lib/bondCalculations";
 
 interface BondCalculationsProps {
     bondHolderId: string;
@@ -21,32 +24,30 @@ export default function BondCalculations({
     const [error, setError] = useState("");
 
     useEffect(() => {
-        const fetchMonthlyIncome = async () => {
+        const loadIncome = async () => {
             try {
-                const result = await apiFetch<number>(
-                    `/calculations/month-income?bondholder_id=${bondHolderId}`,
-                    {
-                        method: "POST",
-                    },
-                );
+                const result = await fetchMonthlyIncome(bondHolderId);
                 setIncome(result);
             } catch (err) {
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "Failed to retrieve income data.\n",
+                        : "Failed to retrieve income data.",
                 );
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchMonthlyIncome();
+        loadIncome();
     }, [bondHolderId]);
 
     const totalInvestment = nominalValue * quantity;
-    const calculatedMonthlyAverage =
-        (totalInvestment * (initialInterestRate / 100)) / 12;
+    const calculatedMonthlyAverage = calculateEstimatedMonthlyIncome(
+        nominalValue,
+        quantity,
+        initialInterestRate,
+    );
 
     const formatValue = (val: number) => {
         return val.toLocaleString("ru-RU", {
@@ -91,7 +92,8 @@ export default function BondCalculations({
 
             {error && (
                 <div className="text-amber-600 text-xs bg-amber-50 p-2 rounded border border-amber-100">
-                    Due to service error, the calculation is based on the initial interest rate.
+                    Due to service error, the calculation is based on the
+                    initial interest rate.
                 </div>
             )}
         </div>

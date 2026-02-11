@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { BondHolderResponse } from "@/types/bond";
 import { apiFetch } from "@/lib/api";
 import BondModalHeader from "./BondModalHeader";
 import BondBasicInfo from "./BondBasicInfo";
@@ -9,6 +8,7 @@ import BondFinancialParams from "./BondFinancialParams";
 import BondTimeParams from "./BondTimeParams";
 import BondCalculations from "./BondCalculations";
 import BondModalFooter from "./BondModalFooter";
+import { BondHolderResponse } from "@/types/Bond";
 
 interface BondModalProps {
     bond: BondHolderResponse;
@@ -34,6 +34,15 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
     const handleEdit = () => {
         setIsEditing(true);
         setError("");
+        setEditedBond({
+            series: bond.series,
+            nominal_value: bond.nominal_value,
+            maturity_period: bond.maturity_period,
+            initial_interest_rate: bond.initial_interest_rate,
+            first_interest_period: bond.first_interest_period,
+            reference_rate_margin: bond.reference_rate_margin,
+            quantity: bond.quantity,
+        });
     };
 
     const handleCancel = () => {
@@ -69,20 +78,6 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
         setError("");
 
         try {
-            // Update specification
-            await apiFetch(`/bonds/${bond.bond_id}/specification`, {
-                method: "PUT",
-                body: JSON.stringify({
-                    series: editedBond.series,
-                    nominal_value: editedBond.nominal_value,
-                    maturity_period: editedBond.maturity_period,
-                    initial_interest_rate: editedBond.initial_interest_rate,
-                    first_interest_period: editedBond.first_interest_period,
-                    reference_rate_margin: editedBond.reference_rate_margin,
-                }),
-            });
-
-            // Update quantity if changed
             if (editedBond.quantity !== bond.quantity) {
                 await apiFetch(`/bonds/${bond.id}/quantity`, {
                     method: "PATCH",
@@ -133,9 +128,6 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
                         series={editedBond.series}
                         quantity={editedBond.quantity}
                         isEditing={isEditing}
-                        onSeriesChange={(value) =>
-                            handleChange("series", value)
-                        }
                         onQuantityChange={(value) =>
                             handleChange("quantity", value)
                         }
@@ -146,18 +138,12 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
                         initialInterestRate={editedBond.initial_interest_rate}
                         referenceRateMargin={editedBond.reference_rate_margin}
                         firstInterestPeriod={editedBond.first_interest_period}
-                        isEditing={isEditing}
-                        onChange={handleChange}
                     />
 
                     <BondTimeParams
                         maturityPeriod={editedBond.maturity_period}
                         purchaseDate={bond.purchase_date}
                         lastUpdate={bond.last_update || undefined}
-                        isEditing={isEditing}
-                        onMaturityPeriodChange={(value) =>
-                            handleChange("maturity_period", value)
-                        }
                     />
 
                     <BondCalculations

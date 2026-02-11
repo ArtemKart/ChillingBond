@@ -2,16 +2,12 @@ interface BondTimeParamsProps {
     maturityPeriod: number;
     purchaseDate: string;
     lastUpdate?: string;
-    isEditing: boolean;
-    onMaturityPeriodChange: (value: number) => void;
 }
 
 export default function BondTimeParams({
     maturityPeriod,
     purchaseDate,
     lastUpdate,
-    isEditing,
-    onMaturityPeriodChange,
 }: BondTimeParamsProps) {
     return (
         <div>
@@ -21,27 +17,9 @@ export default function BondTimeParams({
             <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <span className="text-gray-600">Maturity Period</span>
-                    {isEditing ? (
-                        <div className="flex items-center gap-1">
-                            <input
-                                type="number"
-                                value={maturityPeriod}
-                                onChange={(e) =>
-                                    onMaturityPeriodChange(
-                                        parseInt(e.target.value),
-                                    )
-                                }
-                                className="font-semibold text-gray-900 w-24 bg-white border border-gray-300 rounded px-2 py-1 text-right"
-                            />
-                            <span className="font-semibold text-gray-900">
-                                mo
-                            </span>
-                        </div>
-                    ) : (
-                        <span className="font-semibold text-gray-900">
-                            {maturityPeriod} mo
-                        </span>
-                    )}
+                    <span className="font-semibold text-gray-900">
+                        {maturityPeriod} mo
+                    </span>
                 </div>
 
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
@@ -57,9 +35,7 @@ export default function BondTimeParams({
 
                 {lastUpdate && (
                     <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                        <span className="text-gray-600">
-                            Last update
-                        </span>
+                        <span className="text-gray-600">Last update</span>
                         <span className="font-semibold text-gray-900">
                             {new Date(lastUpdate).toLocaleString("ru-RU", {
                                 year: "numeric",
