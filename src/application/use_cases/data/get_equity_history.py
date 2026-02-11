@@ -30,5 +30,6 @@ class GetEquityHistoryUseCase:
         history_data = self.service.get_equity_history(bondholder_data=bondholder_data)
         return self._to_dto(data=history_data)
 
-    def _to_dto(self, data: list[tuple[date, Decimal]]) -> EquityDTO:
+    @staticmethod
+    def _to_dto(data: list[tuple[date, Decimal]]) -> EquityDTO:
         return EquityDTO(data=data)

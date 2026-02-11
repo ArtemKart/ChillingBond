@@ -16,6 +16,7 @@ from src.domain.ports.repositories.reference_rate import ReferenceRateRepository
 from src.domain.ports.repositories.user import UserRepository
 from src.domain.ports.services.password_hasher import PasswordHasher
 from src.domain.ports.services.token_handler import TokenHandler
+from src.domain.services.analytics.analytics_service import AnalyticsService
 from src.domain.services.bondholder_deletion_service import BondHolderDeletionService
 from src.domain.services.bondholder_income_calculator import BondHolderIncomeCalculator
 
@@ -122,3 +123,8 @@ def bh_del_service_mock():
 @pytest.fixture
 def mock_bh_income_calculator() -> Mock:
     return Mock(spec=BondHolderIncomeCalculator)
+
+
+@pytest.fixture
+def mock_analytics_service() -> Mock:
+    return Mock(spec=AnalyticsService)

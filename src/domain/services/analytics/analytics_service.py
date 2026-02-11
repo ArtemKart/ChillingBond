@@ -18,21 +18,24 @@ class AnalyticsService:
     ) -> list[tuple[date, Decimal]]:
         bh_face_value = {bh.id: fv for bh, fv in bondholder_data}
         bondholders = [bh for bh, _ in bondholder_data]
-        
+
         sorted_bhs = sorted(bondholders, key=lambda x: x.purchase_date)
-        
+
         first_date = sorted_bhs[0].purchase_date
         last_date = datetime.now().date()
 
         timeline = self._determine_time_interval(first_date, last_date)
         points = self._find_timeline_points(first_date, last_date, timeline)
-        
+
         history_equity: list[tuple[date, Decimal]] = []
         current_equity = Decimal(0)
         bh_index = 0
-        
+
         for date_point in points:
-            while bh_index < len(sorted_bhs) and sorted_bhs[bh_index].purchase_date <= date_point:
+            while (
+                bh_index < len(sorted_bhs)
+                and sorted_bhs[bh_index].purchase_date <= date_point
+            ):
                 bh = sorted_bhs[bh_index]
                 current_equity += bh.quantity * bh_face_value[bh.id]
                 bh_index += 1
@@ -47,8 +50,9 @@ class AnalyticsService:
                 return interval
         return self.DEFAULT_INTERVAL
 
+    @staticmethod
     def _find_timeline_points(
-        self, first_date: date, last_date: date, interval: timedelta
+        first_date: date, last_date: date, interval: timedelta
     ) -> list[date]:
         points = []
         current_date = first_date
