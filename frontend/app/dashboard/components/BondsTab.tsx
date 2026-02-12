@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BondsList } from "./BondsList";
 import BondModal from "@/app/dashboard/components/BondModal";
-import AddBondModal from "@/components/AddBondModal";
+import AddBondModal from "@/app/dashboard/components/AddBondModal";
 import { calculateBondMetrics, formatMetricValue } from "./BondMetrics";
 import { fetchTotalMonthlyIncome } from "@/lib/bondCalculations";
 
