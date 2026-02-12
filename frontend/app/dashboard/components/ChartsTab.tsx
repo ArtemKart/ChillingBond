@@ -22,7 +22,6 @@ interface EquityResponse {
     equity: [string, string][];
 }
 
-
 export function ChartsTab() {
     const [portfolioData, setPortfolioData] = useState<EquityDataPoint[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -34,8 +33,7 @@ export function ChartsTab() {
                 setIsLoading(true);
                 setError(null);
 
-                const response =
-                    await api.get<EquityResponse>("/data/equity");
+                const response = await api.get<EquityResponse>("/data/equity");
 
                 const transformedData: EquityDataPoint[] = response.equity.map(
                     ([date, value]) => ({
@@ -115,8 +113,10 @@ export function ChartsTab() {
                                         border: "1px solid #e5e7eb",
                                         borderRadius: "0.5rem",
                                     }}
-                                    formatter={(value: number) =>
-                                        `${value.toLocaleString()} PLN`
+                                    formatter={(value) =>
+                                        value
+                                            ? `${value.toLocaleString()} PLN`
+                                            : ""
                                     }
                                 />
                                 <Legend />
