@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { apiFetch } from "@/lib/api";
-import {
-    Clock,
-    DollarSign,
-    Info,
-    X,
-} from "lucide-react";
+import { Clock, DollarSign, Info, X } from "lucide-react";
 
 interface AddBondModalProps {
     onClose: () => void;
@@ -362,11 +357,11 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 required
                                 min="0"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
-                                value={formData.nominal_value}
+                                value={formData.nominalValue}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        nominal_value: e.target.value,
+                                        nominalValue: e.target.value,
                                     })
                                 }
                             />
@@ -402,11 +397,11 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 type="date"
                                 required
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
-                                value={formData.purchase_date}
+                                value={formData.purchaseDate}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        purchase_date: e.target.value,
+                                        purchaseDate: e.target.value,
                                     })
                                 }
                             />
@@ -425,11 +420,11 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 step="0.01"
                                 required
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
-                                value={formData.initial_interest_rate}
+                                value={formData.initialInterestRate}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        initial_interest_rate: e.target.value,
+                                        initialInterestRate: e.target.value,
                                     })
                                 }
                             />
@@ -444,11 +439,12 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 step="0.01"
                                 required
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
-                                value={formData.reference_rate_margin}
+                                value={formData.referenceRateMargin}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        reference_rate_margin: e.target.value,
+                                        referenceRateMargin:
+                                            parseFloat(e.target.value) || 0,
                                     })
                                 }
                             />
@@ -463,11 +459,12 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 required
                                 min="1"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
-                                value={formData.first_interest_period}
+                                value={formData.firstInterestPeriod}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        first_interest_period: e.target.value,
+                                        firstInterestPeriod:
+                                            parseInt(e.target.value) || 0,
                                     })
                                 }
                             />
@@ -486,11 +483,11 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                                 required
                                 min="1"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-900"
-                                value={formData.maturity_period}
+                                value={formData.maturityPeriod}
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        maturity_period: e.target.value,
+                                        maturityPeriod: e.target.value,
                                     })
                                 }
                             />
