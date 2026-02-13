@@ -1,5 +1,7 @@
 interface ApiFetchOptions extends RequestInit {
     token?: string;
+    maxRetries?: number;
+    retryDelay?: number;
 }
 
 export class ApiError extends Error {
@@ -13,6 +15,50 @@ export class ApiError extends Error {
     }
 }
 
+async function fetchWithRetry(
+    url: string,
+    options: RequestInit,
+    maxRetries: number = 3,
+    baseDelay: number = 2000,
+): Promise<Response> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+
+            if (
+                (response.status === 502 ||
+                    response.status === 503 ||
+                    response.status === 504) &&
+                attempt < maxRetries
+            ) {
+                const delay = baseDelay * Math.pow(2, attempt);
+                console.log(
+                    `Server unavailable (${response.status}), retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                continue;
+            }
+
+            return response;
+        } catch (error) {
+            lastError = error as Error;
+
+            if (attempt < maxRetries) {
+                const delay = baseDelay * Math.pow(2, attempt);
+                console.log(
+                    `Network error: ${(error as Error).message}, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                continue;
+            }
+        }
+    }
+
+    throw lastError || new Error("Max retries exceeded");
+}
+
 export async function apiFetch<T = unknown>(
     url: string,
     options: ApiFetchOptions = {},
@@ -23,7 +69,12 @@ export async function apiFetch<T = unknown>(
         throw new Error("NEXT_PUBLIC_API_URL is not defined");
     }
 
-    const { token, ...fetchOptions } = options;
+    const {
+        token,
+        maxRetries = 3,
+        retryDelay = 2000,
+        ...fetchOptions
+    } = options;
 
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
@@ -34,11 +85,16 @@ export async function apiFetch<T = unknown>(
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${apiUrl}${url}`, {
-        ...fetchOptions,
-        headers,
-        credentials: "include",
-    });
+    const response = await fetchWithRetry(
+        `${apiUrl}${url}`,
+        {
+            ...fetchOptions,
+            headers,
+            credentials: "include",
+        },
+        maxRetries,
+        retryDelay,
+    );
 
     if (!response.ok) {
         let errorData;
@@ -69,32 +125,50 @@ export async function apiFetch<T = unknown>(
 }
 
 export const api = {
-    get: <T = unknown>(url: string, token?: string) =>
-        apiFetch<T>(url, { method: "GET", token }),
+    get: <T = unknown>(url: string, token?: string, maxRetries?: number) =>
+        apiFetch<T>(url, { method: "GET", token, maxRetries }),
 
-    post: <T = unknown>(url: string, data?: unknown, token?: string) =>
+    post: <T = unknown>(
+        url: string,
+        data?: unknown,
+        token?: string,
+        maxRetries?: number,
+    ) =>
         apiFetch<T>(url, {
             method: "POST",
             body: data ? JSON.stringify(data) : undefined,
             token,
+            maxRetries,
         }),
 
-    put: <T = unknown>(url: string, data: unknown, token?: string) =>
+    put: <T = unknown>(
+        url: string,
+        data: unknown,
+        token?: string,
+        maxRetries?: number,
+    ) =>
         apiFetch<T>(url, {
             method: "PUT",
             body: JSON.stringify(data),
             token,
+            maxRetries,
         }),
 
-    patch: <T = unknown>(url: string, data: unknown, token?: string) =>
+    patch: <T = unknown>(
+        url: string,
+        data: unknown,
+        token?: string,
+        maxRetries?: number,
+    ) =>
         apiFetch<T>(url, {
             method: "PATCH",
             body: JSON.stringify(data),
             token,
+            maxRetries,
         }),
 
-    delete: <T = unknown>(url: string, token?: string) =>
-        apiFetch<T>(url, { method: "DELETE", token }),
+    delete: <T = unknown>(url: string, token?: string, maxRetries?: number) =>
+        apiFetch<T>(url, { method: "DELETE", token, maxRetries }),
 };
 
 interface LoginCredentials {
@@ -109,8 +183,14 @@ interface User {
 }
 
 export async function login(credentials: LoginCredentials): Promise<void> {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/login/token`,
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        throw new Error("NEXT_PUBLIC_API_URL is not defined");
+    }
+
+    const response = await fetchWithRetry(
+        `${apiUrl}/login/token`,
         {
             method: "POST",
             headers: {
@@ -121,6 +201,8 @@ export async function login(credentials: LoginCredentials): Promise<void> {
             ),
             credentials: "include",
         },
+        3,
+        3000,
     );
 
     if (!response.ok) {
@@ -141,18 +223,37 @@ export async function login(credentials: LoginCredentials): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout`, {
-        method: "POST",
-        credentials: "include",
-    });
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        throw new Error("NEXT_PUBLIC_API_URL is not defined");
+    }
+
+    await fetchWithRetry(
+        `${apiUrl}/logout`,
+        {
+            method: "POST",
+            credentials: "include",
+        },
+        2,
+        1000,
+    );
 }
 
 export async function getCurrentUser(): Promise<{ id: string }> {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/login/me`,
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        throw new Error("NEXT_PUBLIC_API_URL is not defined");
+    }
+
+    const response = await fetchWithRetry(
+        `${apiUrl}/login/me`,
         {
             credentials: "include",
         },
+        2,
+        2000,
     );
 
     if (!response.ok) {
@@ -163,11 +264,19 @@ export async function getCurrentUser(): Promise<{ id: string }> {
 }
 
 export async function getUserById(userId: string): Promise<User> {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`,
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        throw new Error("NEXT_PUBLIC_API_URL is not defined");
+    }
+
+    const response = await fetchWithRetry(
+        `${apiUrl}/users/${userId}`,
         {
             credentials: "include",
         },
+        2,
+        2000,
     );
 
     if (!response.ok) {
