@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
-import { UserButton, UserData } from "./UserButton";
 import { UserProfileModal } from "./UserGroupProfileModal";
+import { UserData } from "@/types/UserData";
+import { UserButton } from "./UserButton";
 
 function Header() {
     const auth = useAuth();
@@ -17,9 +18,6 @@ function Header() {
             auth.refreshUser();
         }
     }, [pathname]);
-
-    const isAuthenticated = Boolean(auth.isAuthenticated ?? auth.user != null);
-    const logout = auth.logout ?? (async () => {});
 
     const user = auth.user;
     const userData: UserData | null = user
@@ -58,14 +56,7 @@ function Header() {
                     )}
 
                     <div className="flex items-center gap-2">
-                        <UserButton
-                            isLoggedIn={isAuthenticated}
-                            userData={userData}
-                            onLogout={async () => {
-                                await logout();
-                            }}
-                            onOpenProfile={() => openProfile()}
-                        />
+                        <UserButton onOpenProfile={() => openProfile()} />
                     </div>
                 </div>
             </div>
