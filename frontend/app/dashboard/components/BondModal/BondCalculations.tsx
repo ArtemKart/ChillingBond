@@ -73,7 +73,7 @@ export default function BondCalculations({
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg">
                     <p className="text-xs text-green-600 font-medium uppercase">
-                        Monthly Income
+                      Expected month income
                     </p>
                     <div className="flex items-baseline gap-1">
                         <p className="text-xl font-bold text-green-900">

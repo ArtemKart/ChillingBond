@@ -83,7 +83,9 @@ export function BondsList({ bonds, onBondClick, onAddClick }: BondsListProps) {
         <div className="bg-white rounded-lg border border-gray-200">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <h3 className="font-semibold text-gray-900">Your Bondholders</h3>
+                    <h3 className="font-semibold text-gray-900">
+                        Your Bondholders
+                    </h3>
                     <button
                         onClick={onAddClick}
                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -188,13 +190,11 @@ export function BondsList({ bonds, onBondClick, onAddClick }: BondsListProps) {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
-                                            $
                                             {bond.nominal_value.toLocaleString()}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-gray-900">
-                                            $
                                             {(
                                                 bond.nominal_value *
                                                 bond.quantity
@@ -241,9 +241,7 @@ export function BondsList({ bonds, onBondClick, onAddClick }: BondsListProps) {
                                                     ).toLocaleDateString(
                                                         "ru-RU",
                                                     )}{" "}
-                                                    · {bond.quantity} pcs · $
-                                                    {bond.nominal_value.toLocaleString()}{" "}
-                                                    each
+                                                    · {bond.quantity} pcs
                                                 </div>
                                             </div>
                                             <div className="text-right">

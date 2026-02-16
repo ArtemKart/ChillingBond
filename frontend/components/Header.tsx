@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
-import { UserButton, UserData } from "./UserButton";
 import { UserProfileModal } from "./UserGroupProfileModal";
+import { UserData } from "@/types/UserData";
+import { UserButton } from "./UserButton";
 
 function Header() {
     const auth = useAuth();
@@ -18,9 +19,6 @@ function Header() {
         }
     }, [pathname]);
 
-    const isAuthenticated = Boolean(auth.isAuthenticated ?? auth.user != null);
-    const logout = auth.logout ?? (async () => {});
-
     const user = auth.user;
     const userData: UserData | null = user
         ? {
@@ -29,8 +27,6 @@ function Header() {
               name: user.name ?? "User",
           }
         : null;
-
-    const isDashboard = pathname === "/dashboard";
 
     const openProfile = () => {
         setShowProfileModal(true);
@@ -45,27 +41,8 @@ function Header() {
                             ChillingBond
                         </h1>
                     </Link>
-
-                    {!isDashboard && (
-                        <div className="hidden md:flex items-center space-x-8">
-                            <Link
-                                href="/dashboard"
-                                className="text-gray-700 hover:text-blue-600 font-medium"
-                            >
-                                Dashboard
-                            </Link>
-                        </div>
-                    )}
-
                     <div className="flex items-center gap-2">
-                        <UserButton
-                            isLoggedIn={isAuthenticated}
-                            userData={userData}
-                            onLogout={async () => {
-                                await logout();
-                            }}
-                            onOpenProfile={() => openProfile()}
-                        />
+                        <UserButton onOpenProfile={() => openProfile()} />
                     </div>
                 </div>
             </div>

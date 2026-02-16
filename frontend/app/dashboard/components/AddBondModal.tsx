@@ -104,7 +104,7 @@ export default function AddBondModal({ onClose, onUpdate }: AddBondModalProps) {
                 <form onSubmit={handleSubmit} className="p-6">
                     <div className="space-y-6">
                         {/* Bond Information */}
-                        <div className="border-t border-gray-200 pt-6">
+                        <div className="">
                             <h3 className="font-semibold text-gray-900 mb-4">
                                 <div className="flex items-center gap-2">
                                     <Info className="size-4" />

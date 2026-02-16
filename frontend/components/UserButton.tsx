@@ -3,24 +3,18 @@
 import { User, LogOut, UserCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { UserData } from "@/types/UserData";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UserButtonProps {
-    isLoggedIn: boolean;
-    userData: UserData | null;
-    onLogout: () => void;
     onOpenProfile: () => void;
 }
 
-export function UserButton({
-    isLoggedIn,
-    userData,
-    onLogout,
-    onOpenProfile,
-}: UserButtonProps) {
+export function UserButton({ onOpenProfile }: UserButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+
+    const { isAuthenticated, user, logout } = useAuth();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -41,8 +35,8 @@ export function UserButton({
         };
     }, [isOpen]);
 
-    const handleLogout = () => {
-        onLogout();
+    const handleLogout = async () => {
+        await logout();
         setIsOpen(false);
         router.push("/");
     };
@@ -56,6 +50,16 @@ export function UserButton({
         router.push("/login");
     };
 
+    if (isAuthenticated === null) {
+        return (
+            <div className="relative">
+                <button className="p-2 text-gray-400 rounded-lg">
+                    <User className="size-5" />
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -67,7 +71,7 @@ export function UserButton({
 
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    {!isLoggedIn ? (
+                    {!isAuthenticated ? (
                         <div className="p-4">
                             <button
                                 onClick={handleLoginRedirect}
@@ -80,7 +84,7 @@ export function UserButton({
                         <div className="py-2">
                             <div className="px-4 py-3 border-b border-gray-200">
                                 <p className="text-sm font-medium text-gray-900">
-                                    {userData?.name || "User"}
+                                    {user?.name || "User"}
                                 </p>
                             </div>
                             <button
@@ -104,5 +108,3 @@ export function UserButton({
         </div>
     );
 }
-
-export type { UserData };
