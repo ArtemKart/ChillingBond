@@ -3,11 +3,27 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout } from "@/lib/api";
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
 
 export default function HomePage() {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
         null,
     );
+    const data = [
+        { month: "Jan", value: 12000 },
+        { month: "Feb", value: 13500 },
+        { month: "Mar", value: 12800 },
+        { month: "Apr", value: 15000 },
+        { month: "May", value: 16500 },
+        { month: "Jun", value: 17200 },
+    ];
 
     useEffect(() => {
         let cancelled = false;
@@ -36,17 +52,18 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-            
             {/* Hero Section */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                 <div className="text-center">
                     <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                         Manage your
-                        <span className="text-blue-600"> bonds </span> in a one place
+                        <span className="text-blue-600"> bonds </span> in a one
+                        place
                     </h1>
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                        Track yields, analyze investments, and receive notifications about bond payments.
-                        Everything you need for effective bond management.
+                        Track yields, analyze investments, and receive
+                        notifications about bond payments. Everything you need
+                        for effective bond management.
                     </p>
                     <div className="flex justify-center gap-4">
                         <Link
@@ -65,10 +82,44 @@ export default function HomePage() {
                 </div>
 
                 <div className="mt-16 bg-white rounded-xl shadow-2xl p-8 border border-gray-200">
-                    <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg flex items-center justify-center">
-                        <p className="text-gray-500 text-lg">
-                            📊 Portfolio visualisation
-                        </p>
+                    <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg p-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={data}>
+                                <defs>
+                                    <linearGradient
+                                        id="colorValue"
+                                        x1="0"
+                                        y1="0"
+                                        x2="0"
+                                        y2="1"
+                                    >
+                                        <stop
+                                            offset="5%"
+                                            stopColor="#3B82F6"
+                                            stopOpacity={0.4}
+                                        />
+                                        <stop
+                                            offset="95%"
+                                            stopColor="#3B82F6"
+                                            stopOpacity={0}
+                                        />
+                                    </linearGradient>
+                                </defs>
+
+                                <XAxis dataKey="month" />
+                                <YAxis />
+                                <Tooltip />
+
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#3B82F6"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorValue)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
             </section>
@@ -90,7 +141,8 @@ export default function HomePage() {
                                 Bond Tracking
                             </h3>
                             <p className="text-gray-600">
-                                Add bonds to your portfolio and track their current value in real time.
+                                Add bonds to your portfolio and track their
+                                current value in real time.
                             </p>
                         </div>
 
@@ -103,7 +155,8 @@ export default function HomePage() {
                                 Yield Analysis
                             </h3>
                             <p className="text-gray-600">
-                                Calculate current yields, forecast future payments, and optimize your portfolio.
+                                Calculate current yields, forecast future
+                                payments, and optimize your portfolio.
                             </p>
                         </div>
 
@@ -116,7 +169,8 @@ export default function HomePage() {
                                 Transaction History
                             </h3>
                             <p className="text-gray-600">
-                                Keep a complete history of bond purchases, sales, and receipts for tax reporting purposes.
+                                Keep a complete history of bond purchases,
+                                sales, and receipts for tax reporting purposes.
                             </p>
                         </div>
 
@@ -129,7 +183,8 @@ export default function HomePage() {
                                 Payment Notifications
                             </h3>
                             <p className="text-gray-600">
-                                Receive reminders about upcoming bond payments and bond maturities.
+                                Receive reminders about upcoming bond payments
+                                and bond maturities.
                             </p>
                         </div>
                     </div>
@@ -154,8 +209,8 @@ export default function HomePage() {
                                     Register
                                 </h3>
                                 <p className="text-gray-600 text-lg">
-                                    Create a free account in 30 seconds. No complicated forms or verifications.
-
+                                    Create a free account in 30 seconds. No
+                                    complicated forms or verifications.
                                 </p>
                             </div>
                         </div>
@@ -170,8 +225,9 @@ export default function HomePage() {
                                     Add Bonds
                                 </h3>
                                 <p className="text-gray-600 text-lg">
-                                    Enter your bond information: series, quantity, and purchase date.
-                                    The system will automatically calculate all metrics.
+                                    Enter your bond information: series,
+                                    quantity, and purchase date. The system will
+                                    automatically calculate all metrics.
                                 </p>
                             </div>
                         </div>
@@ -186,8 +242,9 @@ export default function HomePage() {
                                     Portfolio Tracking
                                 </h3>
                                 <p className="text-gray-600 text-lg">
-                                    Monitor yields, access analytics, and receive notifications.
-                                    Everything you need for successful investing in one place.
+                                    Monitor yields, access analytics, and
+                                    receive notifications. Everything you need
+                                    for successful investing in one place.
                                 </p>
                             </div>
                         </div>
@@ -267,7 +324,6 @@ export default function HomePage() {
                                         className="hover:text-white"
                                     >
                                         Privacy Policy
-
                                     </Link>
                                 </li>
                                 <li className="flex gap-4 mt-4">
