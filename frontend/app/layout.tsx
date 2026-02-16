@@ -17,6 +17,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: "ChillingBond - manage your bonds with a pleasure",
     description: "Application created for bonds management",
+    verification: {
+        google: "glR8IGl58UdLURoZlst_aSDhNuvmmbgqppEIQnOjR3w",
+    },
 };
 
 export default function RootLayout({
