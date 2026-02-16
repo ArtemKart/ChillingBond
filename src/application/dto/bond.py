@@ -3,7 +3,7 @@ from uuid import UUID
 from decimal import Decimal
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BondDTO:
     id: UUID
     nominal_value: Decimal
@@ -14,7 +14,7 @@ class BondDTO:
     reference_rate_margin: Decimal
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BondCreateDTO:
     series: str
     nominal_value: Decimal
@@ -24,7 +24,7 @@ class BondCreateDTO:
     reference_rate_margin: Decimal
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BondUpdateDTO:
     nominal_value: Decimal | None = None
     series: str | None = None
