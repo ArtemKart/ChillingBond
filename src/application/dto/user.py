@@ -2,14 +2,14 @@ from dataclasses import dataclass
 from uuid import UUID
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class UserDTO:
     id: UUID
     email: str
     name: str | None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class UserCreateDTO:
     email: str
     password: str
