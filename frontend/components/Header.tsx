@@ -28,8 +28,6 @@ function Header() {
           }
         : null;
 
-    const isDashboard = pathname === "/dashboard";
-
     const openProfile = () => {
         setShowProfileModal(true);
     };
@@ -43,18 +41,6 @@ function Header() {
                             ChillingBond
                         </h1>
                     </Link>
-
-                    {!isDashboard && (
-                        <div className="hidden md:flex items-center space-x-8">
-                            <Link
-                                href="/dashboard"
-                                className="text-gray-700 hover:text-blue-600 font-medium"
-                            >
-                                Dashboard
-                            </Link>
-                        </div>
-                    )}
-
                     <div className="flex items-center gap-2">
                         <UserButton onOpenProfile={() => openProfile()} />
                     </div>
