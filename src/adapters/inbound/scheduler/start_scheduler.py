@@ -2,7 +2,7 @@ import asyncio
 import logging
 import signal
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 
 from src.adapters.inbound.scheduler.apscheduler import APScheduler
 from src.adapters.inbound.scheduler.scheduler_container import SchedulerContainer
@@ -19,7 +19,7 @@ def handle_shutdown(signum, frame):
 
 def health_check_task():
     logger.info(
-        f"❤️ Scheduler is ALIVE! Current time: {datetime.utcnow().isoformat()} UTC"
+        f"❤️ Scheduler is ALIVE! Current time: {datetime.now(UTC).isoformat()} UTC"
     )
 
 
