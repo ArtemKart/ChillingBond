@@ -7,16 +7,11 @@ import {
     login as apiLogin,
     logout as apiLogout,
 } from "@/lib/api";
-
-type User = {
-    id: string;
-    email?: string;
-    name?: string;
-};
+import { UserData } from "@/types/UserData";
 
 type AuthContextType = {
     isAuthenticated: boolean | null;
-    user: User | null;
+    user: UserData | null;
     login: (username: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
@@ -28,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
         null,
     );
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<UserData | null>(null);
 
     const refreshUser = async () => {
         try {

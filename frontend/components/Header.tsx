@@ -1,24 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
 import { UserProfileModal } from "./UserGroupProfileModal";
 import { UserData } from "@/types/UserData";
 import { UserButton } from "./UserButton";
+import { useState } from "react";
 
 function Header() {
     const auth = useAuth();
-    const pathname = usePathname();
     const [showProfileModal, setShowProfileModal] = useState(false);
-
-    useEffect(() => {
-        if (auth.refreshUser) {
-            auth.refreshUser();
-        }
-    }, [pathname]);
-
     const user = auth.user;
     const userData: UserData | null = user
         ? {
