@@ -10,5 +10,5 @@ class BcryptPasswordHasher(PasswordHasher):
         salt = bcrypt.gensalt(rounds=self.rounds)
         return bcrypt.hashpw(password.encode(), salt).decode()
 
-    def verify(self, password: str, hashed: str) -> bool:
-        return bcrypt.checkpw(password.encode(), hashed.encode())
+    def verify(self, password: str, hashed_password: str) -> bool:
+        return bcrypt.checkpw(password.encode(), hashed_password.encode())

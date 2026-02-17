@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 class APScheduler:
     def __init__(self, container: SchedulerContainer):
+        self._container: SchedulerContainer = container
         self._scheduler = AsyncIOScheduler()
-        self._container = container
 
     @staticmethod
     async def _use_case_task_wrapper(
