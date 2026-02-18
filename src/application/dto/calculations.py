@@ -4,4 +4,4 @@ from decimal import Decimal
 
 @dataclass(frozen=True, slots=True)
 class MonthlyIncomeResponseDTO:
-    value: Decimal
+    data: list[Decimal]

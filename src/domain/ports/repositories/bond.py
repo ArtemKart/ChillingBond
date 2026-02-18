@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 
 from src.domain.entities.bond import Bond
+from src.domain.entities.bondholder import BondHolder
 
 
 class BondRepository(ABC):
@@ -79,5 +80,17 @@ class BondRepository(ABC):
 
         Returns:
             The deleted Bond object if deleted, None otherwise.
+        """
+        pass
+
+    @abstractmethod
+    async def fetch_dict_from_bondholders(self, bondholders: list[BondHolder]) -> dict[UUID, Bond]:
+        """Fetch bonds from the repository by passed bondholders.
+
+        Args:
+            bondholders: list of Bondholder objects.
+
+        Returns:
+            A dictionary mapping bond UUIDs to Bond objects.
         """
         pass
