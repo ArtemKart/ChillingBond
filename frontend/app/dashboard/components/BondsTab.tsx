@@ -104,9 +104,12 @@ export function BondsTab() {
             setBonds(result);
 
             if (result.length > 0) {
-                const incomeMap = await fetchMonthlyIncome();
-                setIncomeMap(incomeMap);
-                const total = Object.values(incomeMap).reduce((sum, v) => sum + v, 0);
+                const fetchedIncomeMap = await fetchMonthlyIncome();
+                setIncomeMap(fetchedIncomeMap);
+                const total = Object.values(fetchedIncomeMap).reduce(
+                    (sum, v) => sum + v,
+                    0,
+                );
                 setMonthlyIncome(total);
             }
         } catch (err) {
@@ -176,12 +179,15 @@ export function BondsTab() {
             )}
 
             {selectedBond && (
-                <BondModal
-                    bond={selectedBond}
-                    income={incomeMap[selectedBond.id] ?? null}
-                    onClose={() => setSelectedBond(null)}
-                    onUpdate={loadBonds}
-                />
+                <>
+                    {console.log("income value:", incomeMap[selectedBond.id])}
+                    <BondModal
+                        bond={selectedBond}
+                        income={incomeMap[selectedBond.id] ?? null}
+                        onClose={() => setSelectedBond(null)}
+                        onUpdate={loadBonds}
+                    />
+                </>
             )}
         </div>
     );

@@ -12,9 +12,12 @@ export async function fetchMonthlyIncome(
         dateToUse = `${year}-${month}-01`;
     }
 
-    return await apiFetch<Record<string, number>>(
+    const response = await apiFetch<{ data: Record<string, string> }>(
         `/calculations/month-income?target_date=${dateToUse}`,
         { method: "POST" },
+    );
+    return Object.fromEntries(
+        Object.entries(response.data).map(([k, v]) => [k, parseFloat(v)])
     );
 }
 

@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, Mock
 from uuid import uuid4
@@ -10,7 +9,6 @@ from src.adapters.outbound.database.models import Bond as BondModel
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.adapters.outbound.repositories.bond import SQLAlchemyBondRepository
 from src.domain.entities.bond import Bond as BondEntity
-from src.domain.entities.bondholder import BondHolder as BondHolderEntity
 
 
 @pytest.fixture

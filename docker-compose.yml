@@ -91,7 +91,7 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile_scheduler
-        container_name: chillingbond-scheduler
+        container_name: scheduler
         env_file: .env
         environment:
             API_URL: http://backend:8000
