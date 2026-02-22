@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
+from uuid import UUID
 
 from src.application.dto.calculations import MonthlyIncomeResponseDTO
 from src.application.dto.user import UserDTO
@@ -40,7 +41,7 @@ class CalculateIncomeUseCase(CalculationsBaseUseCase):
         reference_rate = await self.ref_rate_repo.get_by_date(target_date=target_date)
         if not reference_rate:
             raise NotFoundError("Reference rate not found for the given date.")
-        income_data = []
+        income_data = {}
         for bh in bondholders:
             bond = bonds_dict[bh.bond_id]
             income = self.bh_income_calculator.calculate_monthly_bh_income(
@@ -49,9 +50,9 @@ class CalculateIncomeUseCase(CalculationsBaseUseCase):
                 reference_rate=reference_rate,
                 day=target_date,
             )
-            income_data.append(income.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+            income_data[bh.id] = income.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         return self._to_dto(income_data)
 
     @staticmethod
-    def _to_dto(data: list[Decimal]) -> MonthlyIncomeResponseDTO:
+    def _to_dto(data: dict[UUID, Decimal]) -> MonthlyIncomeResponseDTO:
         return MonthlyIncomeResponseDTO(data=data)

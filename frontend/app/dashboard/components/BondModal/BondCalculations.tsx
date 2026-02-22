@@ -11,10 +11,10 @@ interface BondCalculationsProps {
     nominalValue: number;
     quantity: number;
     initialInterestRate: number;
+    income: number | null;
 }
 
 export default function BondCalculations({
-    bondHolderId,
     nominalValue,
     quantity,
     initialInterestRate,
@@ -22,25 +22,6 @@ export default function BondCalculations({
     const [income, setIncome] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
-    useEffect(() => {
-        const loadIncome = async () => {
-            try {
-                const result = await fetchMonthlyIncome(bondHolderId);
-                setIncome(result);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to retrieve income data.",
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadIncome();
-    }, [bondHolderId]);
 
     const totalInvestment = nominalValue * quantity;
     const calculatedMonthlyAverage = calculateEstimatedMonthlyIncome(
