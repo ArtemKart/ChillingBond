@@ -1,14 +1,13 @@
 from datetime import date
-from decimal import ROUND_HALF_UP, Decimal
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
-from src.adapters.inbound.api.dependencies.current_user_deps import current_user
+from src.adapters.inbound.api.dependencies.current_user_deps import CurrentUserDep
 from src.adapters.inbound.api.dependencies.use_cases.calculations_deps import (
     get_calculate_income_use_case,
 )
+from src.adapters.inbound.api.schemas.calculations import MonthIncomeResponse
 from src.application.use_cases.calculations.calculate_income import (
     CalculateIncomeUseCase,
 )
@@ -16,14 +15,10 @@ from src.application.use_cases.calculations.calculate_income import (
 calculations_router = APIRouter(prefix="/calculations", tags=["Calculations"])
 
 
-@calculations_router.post("/month-income", dependencies=[Depends(current_user)])
+@calculations_router.post("/month-income", response_model=MonthIncomeResponse)
 async def calculate_income(
+    user_dto: CurrentUserDep,
     use_case: Annotated[CalculateIncomeUseCase, Depends(get_calculate_income_use_case)],
-    bondholder_id: UUID = Query(...),
-    target_date: date = Query(
-        default_factory=date.today,
-        description="Date for income calculation.",
-    ),
-) -> Decimal:
-    dto = await use_case.execute(bondholder_id=bondholder_id, target_date=target_date)
-    return dto.value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    target_date: Annotated[date, Query(description="Date for income calculation.")] = date.today(),
+):
+    return await use_case.execute(user=user_dto, target_date=target_date)

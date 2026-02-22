@@ -256,3 +256,129 @@ def test_update_model(
     assert bond_model.initial_interest_rate == Decimal("8.0")
     assert bond_model.first_interest_period == 60
     assert bond_model.reference_rate_margin == Decimal("3.0")
+
+async def test_get_many_returns_entities(
+    repository: SQLAlchemyBondRepository,
+    mock_session: AsyncMock,
+    bond_model: BondModel,
+    bond_entity_mock: Mock,
+) -> None:
+    mock_scalars = MagicMock()
+    mock_scalars.__iter__ = MagicMock(return_value=iter([bond_model]))
+    mock_session.scalars.return_value = mock_scalars
+
+    result = await repository.get_many([bond_entity_mock.id])
+
+    mock_session.scalars.assert_called_once()
+    assert len(result) == 1
+    assert result[0].id == bond_entity_mock.id
+    assert result[0].series == bond_entity_mock.series
+    assert result[0].nominal_value == bond_entity_mock.nominal_value
+
+
+async def test_get_many_returns_empty_list(
+    repository: SQLAlchemyBondRepository,
+    mock_session: AsyncMock,
+) -> None:
+    mock_scalars = MagicMock()
+    mock_scalars.__iter__ = MagicMock(return_value=iter([]))
+    mock_session.scalars.return_value = mock_scalars
+
+    result = await repository.get_many([uuid4(), uuid4()])
+
+    mock_session.scalars.assert_called_once()
+    assert result == []
+
+
+async def test_get_many_multiple_bonds(
+    repository: SQLAlchemyBondRepository,
+    mock_session: AsyncMock,
+    bond_entity_mock: Mock,
+) -> None:
+    bond_model_1 = BondModel(
+        id=bond_entity_mock.id,
+        series=bond_entity_mock.series,
+        nominal_value=bond_entity_mock.nominal_value,
+        maturity_period=bond_entity_mock.maturity_period,
+        initial_interest_rate=bond_entity_mock.initial_interest_rate,
+        first_interest_period=bond_entity_mock.first_interest_period,
+        reference_rate_margin=bond_entity_mock.reference_rate_margin,
+    )
+    second_id = uuid4()
+    bond_model_2 = BondModel(
+        id=second_id,
+        series="XYZ0001",
+        nominal_value=bond_entity_mock.nominal_value,
+        maturity_period=bond_entity_mock.maturity_period,
+        initial_interest_rate=bond_entity_mock.initial_interest_rate,
+        first_interest_period=bond_entity_mock.first_interest_period,
+        reference_rate_margin=bond_entity_mock.reference_rate_margin,
+    )
+
+    mock_scalars = MagicMock()
+    mock_scalars.__iter__ = MagicMock(return_value=iter([bond_model_1, bond_model_2]))
+    mock_session.scalars.return_value = mock_scalars
+
+    result = await repository.get_many([bond_entity_mock.id, second_id])
+
+    assert len(result) == 2
+    assert result[0].id == bond_entity_mock.id
+    assert result[1].id == second_id
+
+
+# --- fetch_dict_from_bondholders ---
+
+
+async def test_fetch_dict_from_bondholders_success(
+    repository: SQLAlchemyBondRepository,
+    mock_session: AsyncMock,
+    bond_model: BondModel,
+    bond_entity_mock: Mock,
+) -> None:
+    bondholder = Mock()
+    bondholder.bond_id = bond_entity_mock.id
+
+    mock_scalars = MagicMock()
+    mock_scalars.__iter__ = MagicMock(return_value=iter([bond_model]))
+    mock_session.scalars.return_value = mock_scalars
+
+    result = await repository.fetch_dict_from_bondholders([bondholder])
+
+    assert len(result) == 1
+    assert bond_entity_mock.id in result
+    assert result[bond_entity_mock.id].id == bond_entity_mock.id
+    assert result[bond_entity_mock.id].series == bond_entity_mock.series
+
+
+async def test_fetch_dict_from_bondholders_empty_list(
+    repository: SQLAlchemyBondRepository,
+    mock_session: AsyncMock,
+) -> None:
+    mock_scalars = MagicMock()
+    mock_scalars.__iter__ = MagicMock(return_value=iter([]))
+    mock_session.scalars.return_value = mock_scalars
+
+    result = await repository.fetch_dict_from_bondholders([])
+
+    assert result == {}
+
+
+async def test_fetch_dict_from_bondholders_deduplicates_bond_ids(
+    repository: SQLAlchemyBondRepository,
+    mock_session: AsyncMock,
+    bond_model: BondModel,
+    bond_entity_mock: Mock,
+) -> None:
+    """Two bondholders with common bond_id — result should have one k/v"""
+    bh1, bh2 = Mock(), Mock()
+    bh1.bond_id = bond_entity_mock.id
+    bh2.bond_id = bond_entity_mock.id
+
+    mock_scalars = MagicMock()
+    mock_scalars.__iter__ = MagicMock(return_value=iter([bond_model]))
+    mock_session.scalars.return_value = mock_scalars
+
+    result = await repository.fetch_dict_from_bondholders([bh1, bh2])
+
+    assert len(result) == 1
+    assert bond_entity_mock.id in result

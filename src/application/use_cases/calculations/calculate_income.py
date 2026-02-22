@@ -1,8 +1,9 @@
 from datetime import date
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from uuid import UUID
 
 from src.application.dto.calculations import MonthlyIncomeResponseDTO
+from src.application.dto.user import UserDTO
 from src.application.use_cases.calculations.base import (
     CalculationsBaseUseCase,
 )
@@ -27,25 +28,31 @@ class CalculateIncomeUseCase(CalculationsBaseUseCase):
         self.ref_rate_repo = reference_rate_repo
 
     async def execute(
-        self, bondholder_id: UUID, target_date: date
+        self, user: UserDTO, target_date: date
     ) -> MonthlyIncomeResponseDTO:
-        bondholder = await self.bondholder_repo.get_one(bondholder_id=bondholder_id)
-        if not bondholder:
-            raise NotFoundError("Bondholder not found.")
-        bond = await self.bond_repo.get_one(bond_id=bondholder.bond_id)
-        if not bond:
-            raise NotFoundError("Bond not found.")
+        bondholders = await self.bondholder_repo.get_all(user_id=user.id)
+        if not bondholders:
+            raise NotFoundError("Bondholders not found.")
+        bonds_dict = await self.bond_repo.fetch_dict_from_bondholders(
+            bondholders=bondholders
+        )
+        if not bonds_dict:
+            raise NotFoundError("Bonds not found.")
         reference_rate = await self.ref_rate_repo.get_by_date(target_date=target_date)
         if not reference_rate:
             raise NotFoundError("Reference rate not found for the given date.")
-        income = self.bh_income_calculator.calculate_monthly_bh_income(
-            bondholder=bondholder,
-            bond=bond,
-            reference_rate=reference_rate,
-            day=target_date,
-        )
-        return self._to_dto(income)
+        income_data = {}
+        for bh in bondholders:
+            bond = bonds_dict[bh.bond_id]
+            income = self.bh_income_calculator.calculate_monthly_bh_income(
+                bondholder=bh,
+                bond=bond,
+                reference_rate=reference_rate,
+                day=target_date,
+            )
+            income_data[bh.id] = income.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return self._to_dto(income_data)
 
     @staticmethod
-    def _to_dto(income: Decimal) -> MonthlyIncomeResponseDTO:
-        return MonthlyIncomeResponseDTO(value=income)
+    def _to_dto(data: dict[UUID, Decimal]) -> MonthlyIncomeResponseDTO:
+        return MonthlyIncomeResponseDTO(data=data)

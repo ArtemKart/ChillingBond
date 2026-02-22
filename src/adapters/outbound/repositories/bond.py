@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.domain.entities.bondholder import BondHolder
 from src.domain.exceptions import NotFoundError
 from src.adapters.outbound.exceptions import SQLAlchemyRepositoryError
 from src.domain.entities.bond import Bond as BondEntity
@@ -72,6 +73,13 @@ class SQLAlchemyBondRepository(BondRepository):
             error_msg = "Failed to delete bond"
             await self._session.rollback()
             raise SQLAlchemyRepositoryError(error_msg) from e
+
+    async def fetch_dict_from_bondholders(
+        self, bondholders: list[BondHolder]
+    ) -> dict[UUID, BondEntity]:
+        bond_ids = [bh.bond_id for bh in bondholders]
+        bonds = await self.get_many(bond_ids)
+        return {bond.id: bond for bond in bonds}
 
     @staticmethod
     def _to_entity(model: BondModel) -> BondEntity:
