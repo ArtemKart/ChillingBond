@@ -15,9 +15,9 @@ from src.domain.entities.reference_rate import ReferenceRate as ReferenceRateEnt
 
 
 @pytest.fixture
-def nbp_provider_mock() -> Mock:
-    mock = Mock(spec=NBPDataProvider)
-    mock.fetcher = Mock(spec=NBPXMLFetcher)
+def nbp_provider_mock() -> AsyncMock:
+    mock = AsyncMock(spec=NBPDataProvider)
+    mock.fetcher = AsyncMock(spec=NBPXMLFetcher)
     mock.parser = Mock(spec=NBPXMLParser)
     return mock
 
@@ -25,7 +25,7 @@ def nbp_provider_mock() -> Mock:
 @pytest.fixture
 def use_case(
     mock_reference_rate_repo: AsyncMock,
-    nbp_provider_mock: Mock,
+    nbp_provider_mock: AsyncMock,
 ) -> UpdateReferenceRateUseCase:
     return UpdateReferenceRateUseCase(
         reference_rate_repo=mock_reference_rate_repo,
@@ -35,18 +35,20 @@ def use_case(
 
 async def test_no_rate_in_db_saves_new_rate(
     use_case: UpdateReferenceRateUseCase,
+    nbp_provider_mock: AsyncMock,
+    mock_reference_rate_repo: AsyncMock,
 ) -> None:
     """Test saving new rate when database is empty."""
     current_rate = Decimal("5.75")
     effective_date = date(2025, 1, 15)
 
-    use_case._rate_provider.get_current_rate.return_value = (
+    nbp_provider_mock.get_current_rate.return_value = (
         current_rate,
         effective_date,
     )
-    use_case._ref_rate_repo.get_latest.return_value = None
-    use_case._ref_rate_repo.save = AsyncMock()
-    use_case._ref_rate_repo.update = AsyncMock()
+    mock_reference_rate_repo.get_latest.return_value = None
+    mock_reference_rate_repo.save = AsyncMock()
+    mock_reference_rate_repo.update = AsyncMock()
 
     result = await use_case.execute()
 
@@ -56,11 +58,15 @@ async def test_no_rate_in_db_saves_new_rate(
     assert result.rate_value == current_rate
     assert result.effective_date == effective_date
 
-    use_case._ref_rate_repo.save.assert_called_once()
-    use_case._ref_rate_repo.update.assert_not_called()
+    mock_reference_rate_repo.save.assert_called_once()
+    mock_reference_rate_repo.update.assert_not_called()
 
 
-async def test_rate_not_changed(use_case: UpdateReferenceRateUseCase) -> None:
+async def test_rate_not_changed(
+    use_case: UpdateReferenceRateUseCase,
+    nbp_provider_mock: AsyncMock,
+    mock_reference_rate_repo: AsyncMock,
+) -> None:
     """Test when current rate matches database rate."""
     current_rate = Decimal("5.75")
     effective_date = date(2025, 1, 15)
@@ -72,13 +78,13 @@ async def test_rate_not_changed(use_case: UpdateReferenceRateUseCase) -> None:
         end_date=None,
     )
 
-    use_case._rate_provider.get_current_rate.return_value = (
+    nbp_provider_mock.get_current_rate.return_value = (
         current_rate,
         effective_date,
     )
-    use_case._ref_rate_repo.get_latest.return_value = existing_rate
-    use_case._ref_rate_repo.save = AsyncMock()
-    use_case._ref_rate_repo.update = AsyncMock()
+    mock_reference_rate_repo.get_latest.return_value = existing_rate
+    mock_reference_rate_repo.save = AsyncMock()
+    mock_reference_rate_repo.update = AsyncMock()
 
     result = await use_case.execute()
 
@@ -88,12 +94,14 @@ async def test_rate_not_changed(use_case: UpdateReferenceRateUseCase) -> None:
     assert result.rate_value == current_rate
     assert result.effective_date == effective_date
 
-    use_case._ref_rate_repo.save.assert_not_called()
-    use_case._ref_rate_repo.update.assert_not_called()
+    mock_reference_rate_repo.save.assert_not_called()
+    mock_reference_rate_repo.update.assert_not_called()
 
 
 async def test_rate_value_changed_updates_old_and_saves_new(
     use_case: UpdateReferenceRateUseCase,
+    nbp_provider_mock: AsyncMock,
+    mock_reference_rate_repo: AsyncMock,
 ) -> None:
     """Test when rate value changes."""
     fake_today = datetime(2025, 1, 26, 10, 0, 0)
@@ -110,10 +118,10 @@ async def test_rate_value_changed_updates_old_and_saves_new(
         end_date=None,
     )
 
-    use_case._rate_provider.get_current_rate.return_value = (new_rate, new_date)
-    use_case._ref_rate_repo.get_latest.return_value = existing_rate
-    use_case._ref_rate_repo.update = AsyncMock()
-    use_case._ref_rate_repo.save = AsyncMock()
+    nbp_provider_mock.get_current_rate.return_value = (new_rate, new_date)
+    mock_reference_rate_repo.get_latest.return_value = existing_rate
+    mock_reference_rate_repo.update = AsyncMock()
+    mock_reference_rate_repo.save = AsyncMock()
 
     with patch(
         "src.application.use_cases.reference_rate.update.datetime"
@@ -129,17 +137,19 @@ async def test_rate_value_changed_updates_old_and_saves_new(
 
     # Verify old rate was closed
     assert existing_rate.end_date == fake_today
-    use_case._ref_rate_repo.update.assert_called_once_with(existing_rate)
+    mock_reference_rate_repo.update.assert_called_once_with(existing_rate)
 
     # Verify new rate was saved
-    use_case._ref_rate_repo.save.assert_called_once()
-    saved_rate = use_case._ref_rate_repo.save.call_args[1]["ref_rate"]
+    mock_reference_rate_repo.save.assert_called_once()
+    saved_rate = mock_reference_rate_repo.save.call_args[1]["ref_rate"]
     assert saved_rate.value == new_rate
     assert saved_rate.start_date == new_date
 
 
 async def test_effective_date_changed_updates_old_and_saves_new(
     use_case: UpdateReferenceRateUseCase,
+    nbp_provider_mock: AsyncMock,
+    mock_reference_rate_repo: AsyncMock,
 ) -> None:
     """Test when effective date changes but value stays the same."""
     fake_today = datetime(2025, 1, 26, 15, 30, 0)
@@ -149,16 +159,16 @@ async def test_effective_date_changed_updates_old_and_saves_new(
     new_date = date(2025, 1, 15)
 
     existing_rate = ReferenceRateEntity(
-        id=1,
+        id=uuid4(),
         value=rate_value,
         start_date=old_date,
         end_date=None,
     )
 
-    use_case._rate_provider.get_current_rate.return_value = (rate_value, new_date)
-    use_case._ref_rate_repo.get_latest.return_value = existing_rate
-    use_case._ref_rate_repo.update = AsyncMock()
-    use_case._ref_rate_repo.save = AsyncMock()
+    nbp_provider_mock.get_current_rate.return_value = (rate_value, new_date)
+    mock_reference_rate_repo.get_latest.return_value = existing_rate
+    mock_reference_rate_repo.update = AsyncMock()
+    mock_reference_rate_repo.save = AsyncMock()
 
     with patch(
         "src.application.use_cases.reference_rate.update.datetime"
@@ -169,19 +179,19 @@ async def test_effective_date_changed_updates_old_and_saves_new(
     assert result.success is True
     assert result.rate_changed is True
     assert existing_rate.end_date == fake_today
-    use_case._ref_rate_repo.update.assert_called_once_with(existing_rate)
-    use_case._ref_rate_repo.save.assert_called_once()
+    mock_reference_rate_repo.update.assert_called_once_with(existing_rate)
+    mock_reference_rate_repo.save.assert_called_once()
 
 
 async def test_provider_fails_returns_error(
     use_case: UpdateReferenceRateUseCase,
+    nbp_provider_mock: AsyncMock,
+    mock_reference_rate_repo: AsyncMock,
 ) -> None:
     """Test error handling when provider fails."""
-    use_case._rate_provider.get_current_rate.side_effect = Exception(
-        "API connection failed"
-    )
-    use_case._ref_rate_repo.save = AsyncMock()
-    use_case._ref_rate_repo.update = AsyncMock()
+    nbp_provider_mock.get_current_rate.side_effect = Exception("API connection failed")
+    mock_reference_rate_repo.save = AsyncMock()
+    mock_reference_rate_repo.update = AsyncMock()
 
     result = await use_case.execute()
 
@@ -191,24 +201,26 @@ async def test_provider_fails_returns_error(
     assert result.rate_value is None
     assert result.effective_date is None
 
-    use_case._ref_rate_repo.save.assert_not_called()
-    use_case._ref_rate_repo.update.assert_not_called()
+    mock_reference_rate_repo.save.assert_not_called()
+    mock_reference_rate_repo.update.assert_not_called()
 
 
 async def test_repository_save_fails_returns_error(
     use_case: UpdateReferenceRateUseCase,
+    nbp_provider_mock: AsyncMock,
+    mock_reference_rate_repo: AsyncMock,
 ) -> None:
     """Test error handling when repository save fails."""
 
     current_rate = Decimal("5.75")
     effective_date = date(2025, 1, 15)
 
-    use_case._rate_provider.get_current_rate.return_value = (
+    nbp_provider_mock.get_current_rate.return_value = (
         current_rate,
         effective_date,
     )
-    use_case._ref_rate_repo.get_latest.return_value = None
-    use_case._ref_rate_repo.save.side_effect = Exception("Database error")
+    mock_reference_rate_repo.get_latest.return_value = None
+    mock_reference_rate_repo.save.side_effect = Exception("Database error")
 
     result = await use_case.execute()
 
@@ -219,6 +231,8 @@ async def test_repository_save_fails_returns_error(
 
 async def test_repository_update_fails_returns_error(
     use_case: UpdateReferenceRateUseCase,
+    nbp_provider_mock: AsyncMock,
+    mock_reference_rate_repo: AsyncMock,
 ) -> None:
     """Test error handling when repository update fails."""
     old_rate = Decimal("5.75")
@@ -233,9 +247,9 @@ async def test_repository_update_fails_returns_error(
         end_date=None,
     )
 
-    use_case._rate_provider.get_current_rate.return_value = (new_rate, new_date)
-    use_case._ref_rate_repo.get_latest.return_value = existing_rate
-    use_case._ref_rate_repo.update.side_effect = Exception("Update failed")
+    nbp_provider_mock.get_current_rate.return_value = (new_rate, new_date)
+    mock_reference_rate_repo.get_latest.return_value = existing_rate
+    mock_reference_rate_repo.update.side_effect = Exception("Update failed")
 
     result = await use_case.execute()
 
