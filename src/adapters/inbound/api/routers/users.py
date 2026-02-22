@@ -28,18 +28,6 @@ async def create_user(
     return await use_case.execute(user_dto=dto)
 
 
-@users_router.get(
-    "/{user_id}", response_model=UserResponse, status_code=status.HTTP_200_OK
-)
-async def get_user(user_id: UUID, repo: UserRepoDep):
-    user = await repo.get_user(user_id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    return user
-
-
 @users_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: UUID, repo: UserRepoDep):
     user = await repo.get_user(user_id)

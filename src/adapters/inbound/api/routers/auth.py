@@ -10,16 +10,17 @@ from src.adapters.inbound.api.dependencies.current_user_deps import (
 from src.adapters.inbound.api.dependencies.use_cases.user_deps import (
     user_login_use_case,
 )
-from src.adapters.inbound.api.schemas.auth import TokenResponse, UUIDResponse
+from src.adapters.inbound.api.schemas.auth import TokenResponse
+from src.adapters.inbound.api.schemas.user import UserResponse
 from src.application.use_cases.user.login import UserLoginUseCase
 from src.domain.exceptions import AuthenticationError
 
 auth_router = APIRouter(tags=["auth"])
 
 
-@auth_router.get("/login/me", response_model=UUIDResponse)
+@auth_router.get("/login/me", response_model=UserResponse)
 async def me(user: CurrentUserDep):
-    return UUIDResponse(id=user.id)
+    return user
 
 
 @auth_router.post(

@@ -246,11 +246,10 @@ export function BondsList({ bonds, onBondClick, onAddClick }: BondsListProps) {
                                             </div>
                                             <div className="text-right">
                                                 <div className="font-medium text-gray-900">
-                                                    $
                                                     {(
                                                         bond.nominal_value *
                                                         bond.quantity
-                                                    ).toLocaleString()}
+                                                    ).toLocaleString()} PLN
                                                 </div>
                                                 <div className="text-sm text-gray-500">
                                                     Total value
