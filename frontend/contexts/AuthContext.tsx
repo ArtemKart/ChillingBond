@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     getCurrentUser,
-    getUserById,
     login as apiLogin,
     logout as apiLogout,
 } from "@/lib/api";
@@ -27,8 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refreshUser = async () => {
         try {
-            const { id } = await getCurrentUser();
-            const fullUser = await getUserById(id);
+            const fullUser = await getCurrentUser();
             setUser(fullUser);
             setIsAuthenticated(true);
         } catch {
@@ -42,8 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         (async () => {
             try {
-                const { id } = await getCurrentUser();
-                const fullUser = await getUserById(id);
+                const fullUser = await getCurrentUser();
                 if (!cancelled) {
                     setUser(fullUser);
                     setIsAuthenticated(true);

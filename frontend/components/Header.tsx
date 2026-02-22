@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "../contexts/AuthContext";
 import { UserProfileModal } from "./UserGroupProfileModal";
 import { UserData } from "@/types/UserData";
 import { UserButton } from "./UserButton";
 import { useState } from "react";
+import {useAuth} from "@/contexts/AuthContext";
 
 function Header() {
     const auth = useAuth();
@@ -40,6 +40,7 @@ function Header() {
 
             {/* Profile Modal */}
             {showProfileModal && userData && (
+                console.log("Opening profile modal with user data:", userData),
                 <UserProfileModal
                     userData={userData}
                     onClose={() => setShowProfileModal(false)}

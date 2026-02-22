@@ -222,10 +222,6 @@ export async function logout(): Promise<void> {
     return api.post("/logout", undefined, undefined, 0);
 }
 
-export async function getCurrentUser(): Promise<{ id: string }> {
-    return api.get<{ id: string }>("/login/me", undefined, 0);
-}
-
-export async function getUserById(userId: string): Promise<UserData> {
-    return api.get<UserData>(`/users/${userId}`, undefined, 0);
+export async function getCurrentUser(): Promise<UserData> {
+    return api.get<UserData>("/login/me", undefined, 0);
 }
