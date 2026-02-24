@@ -3,20 +3,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     getCurrentUser,
-    getUserById,
     login as apiLogin,
     logout as apiLogout,
 } from "@/lib/api";
-
-type User = {
-    id: string;
-    email?: string;
-    name?: string;
-};
+import { UserData } from "@/types/UserData";
 
 type AuthContextType = {
     isAuthenticated: boolean | null;
-    user: User | null;
+    user: UserData | null;
     login: (username: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
@@ -28,12 +22,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
         null,
     );
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<UserData | null>(null);
 
     const refreshUser = async () => {
         try {
-            const { id } = await getCurrentUser();
-            const fullUser = await getUserById(id);
+            const fullUser = await getCurrentUser();
             setUser(fullUser);
             setIsAuthenticated(true);
         } catch {
@@ -47,8 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         (async () => {
             try {
-                const { id } = await getCurrentUser();
-                const fullUser = await getUserById(id);
+                const fullUser = await getCurrentUser();
                 if (!cancelled) {
                     setUser(fullUser);
                     setIsAuthenticated(true);

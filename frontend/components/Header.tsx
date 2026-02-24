@@ -1,24 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useAuth } from "../contexts/AuthContext";
 import { UserProfileModal } from "./UserGroupProfileModal";
 import { UserData } from "@/types/UserData";
 import { UserButton } from "./UserButton";
+import { useState } from "react";
+import {useAuth} from "@/contexts/AuthContext";
 
 function Header() {
     const auth = useAuth();
-    const pathname = usePathname();
     const [showProfileModal, setShowProfileModal] = useState(false);
-
-    useEffect(() => {
-        if (auth.refreshUser) {
-            auth.refreshUser();
-        }
-    }, [pathname]);
-
     const user = auth.user;
     const userData: UserData | null = user
         ? {
@@ -49,6 +40,7 @@ function Header() {
 
             {/* Profile Modal */}
             {showProfileModal && userData && (
+                console.log("Opening profile modal with user data:", userData),
                 <UserProfileModal
                     userData={userData}
                     onClose={() => setShowProfileModal(false)}

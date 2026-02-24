@@ -215,9 +215,7 @@ export function BondsList({ bonds, onBondClick, onAddClick }: BondsListProps) {
                 // Group by purchase day
                 <div>
                     {Object.entries(groupedByDay)
-                        .sort(
-                            ([dayA], [dayB]) => parseInt(dayA) - parseInt(dayB),
-                        )
+                        .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
                         .map(([day, dayBonds]) => (
                             <div key={day}>
                                 <div className="px-6 py-3 bg-gray-50 text-sm font-medium text-gray-700 border-b border-gray-200">
@@ -246,11 +244,10 @@ export function BondsList({ bonds, onBondClick, onAddClick }: BondsListProps) {
                                             </div>
                                             <div className="text-right">
                                                 <div className="font-medium text-gray-900">
-                                                    $
                                                     {(
                                                         bond.nominal_value *
                                                         bond.quantity
-                                                    ).toLocaleString()}
+                                                    ).toLocaleString()} PLN
                                                 </div>
                                                 <div className="text-sm text-gray-500">
                                                     Total value

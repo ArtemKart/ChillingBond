@@ -6,8 +6,10 @@ from uuid import UUID
 from src.application.dto.user import UserDTO
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BondHolderDTO:
+    id: UUID
+    
     user_id: UUID
     quantity: int
     purchase_date: date
@@ -20,18 +22,17 @@ class BondHolderDTO:
     first_interest_period: int
     reference_rate_margin: Decimal
 
-    id: UUID | None = None
     last_update: datetime | None = None
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BondHolderUpdateQuantityDTO:
     id: UUID
     user: UserDTO
     new_quantity: int
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BondHolderCreateDTO:
     user_id: UUID
     quantity: int

@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from uuid import UUID
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class MonthlyIncomeResponseDTO:
-    value: Decimal
+    data: dict[UUID, Decimal]

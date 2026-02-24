@@ -9,7 +9,7 @@ import { BondsList } from "./BondsList";
 import BondModal from "@/app/dashboard/components/BondModal";
 import AddBondModal from "@/app/dashboard/components/AddBondModal";
 import { calculateBondMetrics, formatMetricValue } from "./BondMetrics";
-import { fetchTotalMonthlyIncome } from "@/lib/bondCalculations";
+import { fetchMonthlyIncome } from "@/lib/bondCalculations";
 
 export function BondsTab() {
     const router = useRouter();
@@ -23,7 +23,6 @@ export function BondsTab() {
     const [groupByDate, setGroupByDate] = useState(false);
     const [sortBy, setSortBy] = useState("series");
     const [bonds, setBonds] = useState<BondHolderResponse[]>([]);
-
     const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
     const metrics = useMemo(() => {
         return calculateBondMetrics(bonds, monthlyIncome);
@@ -98,15 +97,20 @@ export function BondsTab() {
           )
         : { "All bonds": sortedBonds };
 
+    const [incomeMap, setIncomeMap] = useState<Record<string, number>>({});
     const loadBonds = async () => {
         try {
             const result = await apiFetch<BondHolderResponse[]>("/bonds");
             setBonds(result);
 
             if (result.length > 0) {
-                const bondholderIds = result.map((bond) => bond.id);
-                const income = await fetchTotalMonthlyIncome(bondholderIds);
-                setMonthlyIncome(income);
+                const fetchedIncomeMap = await fetchMonthlyIncome();
+                setIncomeMap(fetchedIncomeMap);
+                const total = Object.values(fetchedIncomeMap).reduce(
+                    (sum, v) => sum + v,
+                    0,
+                );
+                setMonthlyIncome(total);
             }
         } catch (err) {
             if (err instanceof ApiError && err.status == 401) {
@@ -175,11 +179,15 @@ export function BondsTab() {
             )}
 
             {selectedBond && (
-                <BondModal
-                    bond={selectedBond}
-                    onClose={() => setSelectedBond(null)}
-                    onUpdate={loadBonds}
-                />
+                <>
+                    {console.log("income value:", incomeMap[selectedBond.id])}
+                    <BondModal
+                        bond={selectedBond}
+                        income={incomeMap[selectedBond.id] ?? null}
+                        onClose={() => setSelectedBond(null)}
+                        onUpdate={loadBonds}
+                    />
+                </>
             )}
         </div>
     );

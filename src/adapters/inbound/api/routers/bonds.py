@@ -10,29 +10,21 @@ from src.adapters.inbound.api.dependencies.use_cases.bond_deps import (
     bh_get_all_use_case,
     bh_get_use_case,
     update_bh_quantity_use_case,
-    bond_update_use_case,
     bh_create_use_case,
 )
 from src.adapters.inbound.api.dependencies.current_user_deps import (
-    current_user,
     CurrentUserDep,
-)
-from src.adapters.inbound.api.schemas.bond import (
-    BondUpdateRequest,
-    BondUpdateResponse,
-    EmptyBondUpdateResponse,
 )
 from src.adapters.inbound.api.schemas.bondholder import (
     BondHolderChangeRequest,
     BondHolderCreateRequest,
     BondHolderResponse,
 )
-from src.application.dto.bond import BondCreateDTO, BondUpdateDTO
+from src.application.dto.bond import BondCreateDTO
 from src.application.dto.bondholder import (
     BondHolderUpdateQuantityDTO,
     BondHolderCreateDTO,
 )
-from src.application.use_cases.bond_update import BondUpdateUseCase
 from src.application.use_cases.bondholder.bh_update_quantity import (
     UpdateBondHolderQuantityUseCase,
 )
@@ -151,40 +143,6 @@ async def update_purchase_quantity(
         new_quantity=bond_data.new_quantity,
     )
     return await use_case.execute(dto=dto)
-
-
-@bond_router.put(
-    "/{purchase_id}/specification",
-    dependencies=[Depends(current_user)],
-    status_code=status.HTTP_200_OK,
-    description="Update bond specification data",
-)
-async def update_bond(
-    purchase_id: UUID,
-    bond_data: BondUpdateRequest,
-    use_case: Annotated[BondUpdateUseCase, Depends(bond_update_use_case)],
-) -> BondUpdateResponse | EmptyBondUpdateResponse:
-    if not bond_data.model_dump(exclude_none=True):
-        return EmptyBondUpdateResponse()
-    dto = BondUpdateDTO(
-        nominal_value=(
-            Decimal(bond_data.nominal_value) if bond_data.nominal_value else None
-        ),
-        series=bond_data.series,
-        maturity_period=bond_data.maturity_period,
-        initial_interest_rate=(
-            Decimal(bond_data.initial_interest_rate)
-            if bond_data.initial_interest_rate
-            else None
-        ),
-        first_interest_period=bond_data.first_interest_period,
-        reference_rate_margin=(
-            Decimal(bond_data.reference_rate_margin)
-            if bond_data.reference_rate_margin
-            else None
-        ),
-    )
-    return await use_case.execute(dto=dto, bh_id=purchase_id)  # type: ignore [return-value]
 
 
 @bond_router.delete(

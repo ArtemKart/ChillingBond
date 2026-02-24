@@ -1,3 +1,5 @@
+import { UserData } from "@/types/UserData";
+
 interface ApiFetchOptions extends RequestInit {
     token?: string;
     maxRetries?: number;
@@ -176,12 +178,6 @@ interface LoginCredentials {
     password: string;
 }
 
-interface User {
-    id: string;
-    email?: string;
-    name?: string;
-}
-
 export async function login(credentials: LoginCredentials): Promise<void> {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -223,65 +219,9 @@ export async function login(credentials: LoginCredentials): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    if (!apiUrl) {
-        throw new Error("NEXT_PUBLIC_API_URL is not defined");
-    }
-
-    await fetchWithRetry(
-        `${apiUrl}/logout`,
-        {
-            method: "POST",
-            credentials: "include",
-        },
-        2,
-        1000,
-    );
+    return api.post("/logout", undefined, undefined, 0);
 }
 
-export async function getCurrentUser(): Promise<{ id: string }> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    if (!apiUrl) {
-        throw new Error("NEXT_PUBLIC_API_URL is not defined");
-    }
-
-    const response = await fetchWithRetry(
-        `${apiUrl}/login/me`,
-        {
-            credentials: "include",
-        },
-        2,
-        2000,
-    );
-
-    if (!response.ok) {
-        throw new Error("Not authenticated");
-    }
-
-    return response.json();
-}
-
-export async function getUserById(userId: string): Promise<User> {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    if (!apiUrl) {
-        throw new Error("NEXT_PUBLIC_API_URL is not defined");
-    }
-
-    const response = await fetchWithRetry(
-        `${apiUrl}/users/${userId}`,
-        {
-            credentials: "include",
-        },
-        2,
-        2000,
-    );
-
-    if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-    }
-
-    return response.json();
+export async function getCurrentUser(): Promise<UserData> {
+    return api.get<UserData>("/login/me", undefined, 0);
 }

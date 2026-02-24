@@ -97,7 +97,6 @@ async def test_bond_not_found(
     bondholder_entity_mock: Mock,
     user_dto: UserDTO,
 ) -> None:
-    sample_dto.user = user_dto
     bondholder_entity_mock.user_id = user_dto.id
 
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock
@@ -124,7 +123,6 @@ async def test_calls_to_dto_method(
     bond_entity_mock: Mock,
     user_dto: UserDTO,
 ) -> None:
-    sample_dto.user = user_dto
     bondholder_entity_mock.user_id = user_dto.id
 
     mock_bondholder_repo.get_one.return_value = bondholder_entity_mock

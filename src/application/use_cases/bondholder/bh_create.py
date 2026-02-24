@@ -44,8 +44,6 @@ class BondHolderCreateUseCase(BondHolderBaseUseCase):
             reference_rate_margin=b_dto.reference_rate_margin,
         )
         new_bond = await self.bond_repo.write(new_bond)
-        if not new_bond:
-            raise
         new_bh = BondHolderEntity.create(
             bond_id=new_bond.id,
             user_id=bh_dto.user_id,

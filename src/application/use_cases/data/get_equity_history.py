@@ -23,9 +23,7 @@ class GetEquityHistoryUseCase:
         bhs = await self.bh_repo.get_all(user_id=user.id)
         if not bhs:
             return self._to_dto(data=[])
-        bond_ids = list({bh.bond_id for bh in bhs})
-        bonds = await self.bond_repo.get_many(bond_ids)
-        bonds_dict = {bond.id: bond for bond in bonds}
+        bonds_dict = await self.bond_repo.fetch_dict_from_bondholders(bondholders=bhs)
         bondholder_data = [(bh, bonds_dict[bh.bond_id].nominal_value) for bh in bhs]
         history_data = self.service.get_equity_history(bondholder_data=bondholder_data)
         return self._to_dto(data=history_data)

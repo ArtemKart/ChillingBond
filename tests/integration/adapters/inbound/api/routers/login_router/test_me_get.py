@@ -11,8 +11,10 @@ async def test_me_success(client: AsyncClient, t_current_user: UserDTO) -> None:
 
     assert r.status_code == status.HTTP_200_OK
     data = r.json()
-    assert "id" in data
+    assert len(data) == 3
     assert data["id"] == str(t_current_user.id)
+    assert data["email"] == str(t_current_user.email)
+    assert data["name"] == str(t_current_user.name)
 
 
 async def test_me_returns_correct_uuid_format(client: AsyncClient) -> None:
@@ -42,6 +44,10 @@ async def test_me_response_structure(client: AsyncClient) -> None:
     assert r.status_code == status.HTTP_200_OK
     data = r.json()
 
-    assert len(data) == 1
+    assert len(data) == 3
     assert "id" in data
     assert isinstance(data["id"], str)
+    assert "email" in data
+    assert isinstance(data["email"], str)
+    assert "name" in data
+    assert isinstance(data["name"], (str, type(None)))

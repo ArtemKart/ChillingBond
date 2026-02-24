@@ -12,11 +12,12 @@ import { BondHolderResponse } from "@/types/Bond";
 
 interface BondModalProps {
     bond: BondHolderResponse;
+    income: number | null;
     onClose: () => void;
     onUpdate: () => void;
 }
 
-export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
+export default function BondModal({ bond, income, onClose, onUpdate }: BondModalProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState("");
@@ -151,6 +152,7 @@ export default function BondModal({ bond, onClose, onUpdate }: BondModalProps) {
                         nominalValue={bond.nominal_value}
                         quantity={bond.quantity}
                         initialInterestRate={bond.initial_interest_rate}
+                        income={income}
                     />
                 </div>
 

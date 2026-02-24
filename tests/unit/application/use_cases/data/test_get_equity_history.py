@@ -56,42 +56,6 @@ async def test_execute_calls_repo_with_correct_user_id(
     mock_bondholder_repo.get_all.assert_called_once_with(user_id=user_dto.id)
 
 
-async def test_execute_retrieves_bonds_by_unique_bond_ids(
-    use_case: GetEquityHistoryUseCase,
-    mock_bondholder_repo: AsyncMock,
-    mock_bond_repo: AsyncMock,
-    mock_analytics_service: Mock,
-    user_dto: UserDTO,
-) -> None:
-    class MockBondHolder:
-        def __init__(self, bond_id: UUID) -> None:
-            self.bond_id = bond_id
-
-    class MockBond:
-        def __init__(self, id: UUID, nominal_value: Decimal) -> None:
-            self.id = id
-            self.nominal_value = nominal_value
-
-    bond_id_1: UUID = uuid4()
-    bond_id_2: UUID = uuid4()
-
-    mock_bondholder_repo.get_all.return_value = [
-        MockBondHolder(bond_id_1),
-        MockBondHolder(bond_id_1),
-        MockBondHolder(bond_id_2),
-    ]
-    mock_bond_repo.get_many.return_value = [
-        MockBond(id=bond_id_1, nominal_value=100),
-        MockBond(id=bond_id_2, nominal_value=50),
-    ]
-    mock_analytics_service.get_equity_history.return_value = []
-
-    await use_case.execute(user_dto)
-
-    call_args = mock_bond_repo.get_many.call_args[0][0]
-    assert set(call_args) == {bond_id_1, bond_id_2}
-
-
 async def test_execute_passes_bondholder_data_to_service(
     use_case: GetEquityHistoryUseCase,
     mock_bondholder_repo: AsyncMock,
@@ -109,14 +73,14 @@ async def test_execute_passes_bondholder_data_to_service(
             self.id = id
             self.nominal_value = nominal_value
 
-    bond_id: UUID = uuid4()
-    nominal_value: Decimal = Decimal("1000")
+    bond_id = uuid4()
+    nominal_value = Decimal("1000")
 
-    bh1: MockBondHolder = MockBondHolder(bond_id, uuid4())
-    bh2: MockBondHolder = MockBondHolder(bond_id, uuid4())
+    bh1 = MockBondHolder(bond_id, uuid4())
+    bh2 = MockBondHolder(bond_id, uuid4())
 
     mock_bondholder_repo.get_all.return_value = [bh1, bh2]
-    mock_bond_repo.get_many.return_value = [MockBond(bond_id, nominal_value)]
+    mock_bond_repo.fetch_dict_from_bondholders.return_value = {bond_id: MockBond(bond_id, nominal_value)}
     mock_analytics_service.get_equity_history.return_value = []
 
     await use_case.execute(user_dto)

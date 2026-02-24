@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getCurrentUser, logout } from "@/lib/api";
 import {
     AreaChart,
     Area,
@@ -13,9 +11,6 @@ import {
 } from "recharts";
 
 export default function HomePage() {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(
-        null,
-    );
     const data = [
         { month: "Jan", value: 12000 },
         { month: "Feb", value: 13500 },
@@ -24,32 +19,6 @@ export default function HomePage() {
         { month: "May", value: 16500 },
         { month: "Jun", value: 17200 },
     ];
-
-    useEffect(() => {
-        let cancelled = false;
-
-        (async () => {
-            try {
-                await getCurrentUser();
-                if (!cancelled) setIsAuthenticated(true);
-            } catch {
-                if (!cancelled) setIsAuthenticated(false);
-            }
-        })();
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-        } finally {
-            window.location.href = "/";
-        }
-    };
-
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
             {/* Hero Section */}
